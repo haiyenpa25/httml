@@ -2,7 +2,7 @@
     <!-- Brand Logo -->
     <a href="{{ url('dashboard') }}" class="brand-link">
         <img src="{{ asset('dist/img/AdminLTELogo.png') }}" alt="Hội Thánh Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-        <span class="brand-text font-weight-light">Quản Lý Hội Thánh</span>
+        <span class="brand-text font-weight-light">HTTML</span>
     </a>
 
     <!-- Sidebar -->
@@ -36,7 +36,7 @@
                 <li class="nav-item">
                     <a href="{{ url('dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Dashboard</p>
+                        <p>Bảng thông báo</p>
                     </a>
                 </li>
 
@@ -52,7 +52,7 @@
                     <ul class="nav nav-treeview">
                         <!-- Ban Chấp Sự -->
                         <li class="nav-item">
-                            <a href="{{ route('departments.deacons') }}" class="nav-link">
+                            <a href="{{ route('ban-chap-su.index') }}" class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Ban Chấp Sự</p>
                             </a>
@@ -69,91 +69,91 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.culinary') }}" class="nav-link">
+                                    <a href="{{ route('ban-am-thuc.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Ẩm Thực</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.prayer') }}" class="nav-link">
+                                    <a href="{{ route('ban-cau-nguyen.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Cầu Nguyện</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.witness') }}" class="nav-link">
+                                 <li class="nav-item">
+                                    <a href="{{ route('ban-chung-dao.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Chứng Đạo</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.education') }}" class="nav-link">
+                                    <a href="{{ route('ban-co-doc-giao-duc.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Cơ Đốc Giáo Dục</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.music') }}" class="nav-link">
+                                    <a href="{{ route('ban-dan.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Đàn</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.logistics') }}" class="nav-link">
+                                    <a href="{{ route('ban-hau-can.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Hậu Cần</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.worship') }}" class="nav-link">
+                                    <a href="{{ route('ban-hat-tho-phuong.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Hát Thờ Phượng</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.events') }}" class="nav-link">
+                                    <a href="{{ route('ban-khanh-tiet.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Khánh Tiết</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.tech-audio') }}" class="nav-link">
+                                    <a href="{{ route('ban-ky-thuat-am-thanh.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Kỹ Thuật - Âm Thanh</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.reception') }}" class="nav-link">
+                                    <a href="{{ route('ban-le-tan.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Lễ Tân</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.projector') }}" class="nav-link">
+                                    <a href="{{ route('ban-may-chieu.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Máy Chiếu</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.visitation') }}" class="nav-link">
+                                    <a href="{{ route('ban-tham-vieng.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Thăm Viếng</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.order') }}" class="nav-link">
+                                    <a href="{{ route('ban-trat-tu.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Trật Tự</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.evangelism') }}" class="nav-link">
+                                    <a href="{{ route('ban-truyen-giang.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Truyền Giảng</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.pastoral.media') }}" class="nav-link">
+                                    <a href="{{ route('ban-truyen-thong-may-chieu.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Truyền Thông - Máy Chiếu</p>
                                     </a>
@@ -172,25 +172,25 @@
                             </a>
                             <ul class="nav nav-treeview">
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.groups.youth') }}" class="nav-link">
+                                    <a href="{{ route('ban-thanh-nien.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Thanh Niên</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.groups.adults') }}" class="nav-link">
+                                    <a href="{{ route('ban-thanh-trang.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Thanh Tráng</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.groups.children') }}" class="nav-link">
+                                    <a href="{{ route('ban-thieu-nhi-au.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Thiếu Nhi Ấu</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('departments.groups.elders') }}" class="nav-link">
+                                    <a href="{{ route('ban-trung-lao.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Trung Lão</p>
                                     </a>
