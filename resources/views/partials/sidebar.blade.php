@@ -285,7 +285,7 @@
                             </a>
                         </li>
                          <li class="nav-item">
-                            <a href="{{ route('than-huu.show', ['id' => 1]) }}" class="nav-link">
+                            <a href="#" class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Thông tin thân hữu</p>
                             </a>
