@@ -21,6 +21,16 @@ use App\Http\Controllers\BanThanhNienController;
 use App\Http\Controllers\BanThanhTrangController;
 use App\Http\Controllers\BanThieuNhiAuController;
 use App\Http\Controllers\BanTrungLaoController;
+use App\Http\Controllers\TinHuuController;
+use App\Http\Controllers\DienGiaController;
+use App\Http\Controllers\ThanHuuController;
+use App\Http\Controllers\ThietBiController;
+use App\Http\Controllers\TaiChinhController;
+use App\Http\Controllers\ThoPhuongController;
+use App\Http\Controllers\TaiLieuController;
+use App\Http\Controllers\ThongBaoController;
+use App\Http\Controllers\BaoCaoController; // Controller chung cho báo cáo
+use App\Http\Controllers\CaiDatController; // Controller cho cài đặt hệ thống
 
 
 Route::get('/', function () {
@@ -33,10 +43,6 @@ Route::get('/template', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 });
-
-
-
-
 
 
 
@@ -227,3 +233,100 @@ Route::prefix('quan-ly-ban-nganh')->group(function () {
         ]);
     });
 });
+
+// Quản lý Tín Hữu
+Route::prefix('quan-ly-tin-huu')->group(function () {
+    Route::get('danh-sach-tin-huu', [TinHuuController::class, 'index'])->name('tin-huu.index');
+    Route::get('them-tin-huu', [TinHuuController::class, 'create'])->name('tin-huu.create');
+    Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('tin-huu.nhan_su');
+    Route::get('thong-tin-tin-huu/{id}', [TinHuuController::class, 'show'])->name('tin-huu.show');
+});
+
+// Quản lý Diễn Giả
+Route::prefix('quan-ly-dien-gia')->group(function () {
+    Route::resource('dien-gia', DienGiaController::class)->names([
+        'index' => 'dien-gia.index',
+        'create' => 'dien-gia.create',
+        'store' => 'dien-gia.store',
+        'show' => 'dien-gia.show',
+        'edit' => 'dien-gia.edit',
+        'update' => 'dien-gia.update',
+        'destroy' => 'dien-gia.destroy',
+    ]);
+});
+
+// Quản lý Thân Hữu
+Route::prefix('quan-ly-than-huu')->group(function () {
+    Route::resource('than-huu', ThanHuuController::class)->names([
+        'index' => 'than-huu.index',
+        'create' => 'than-huu.create',
+        'store' => 'than-huu.store',
+        'show' => 'than-huu.show',
+        'edit' => 'than-huu.edit',
+        'update' => 'than-huu.update',
+        'destroy' => 'than-huu.destroy',
+    ]);
+});
+
+// Quản lý Thiết bị
+Route::prefix('quan-ly-thiet-bi')->group(function () {
+    Route::resource('thiet-bi', ThietBiController::class)->names([
+        'index' => 'thiet-bi.index',
+        'create' => 'thiet-bi.create',
+        'store' => 'thiet-bi.store',
+        'show' => 'thiet-bi.show',
+        'edit' => 'thiet-bi.edit',
+        'update' => 'thiet-bi.update',
+        'destroy' => 'thiet-bi.destroy',
+    ]);
+    Route::get('bao-cao-thiet-bi', [ThietBiController::class, 'baoCao'])->name('thiet-bi.bao_cao');
+    Route::get('thanh-ly-thiet-bi', [ThietBiController::class, 'thanhLy'])->name('thiet-bi.thanh_ly');
+});
+
+// Quản lý Tài Chính
+Route::prefix('quan-ly-tai-chinh')->group(function () {
+    Route::get('bao-cao-tai-chinh', [TaiChinhController::class, 'baoCao'])->name('tai-chinh.bao_cao');
+    Route::resource('thu-chi', TaiChinhController::class)->names([
+        'index' => 'thu-chi.index',
+        'create' => 'thu-chi.create',
+        'store' => 'thu-chi.store',
+        'show' => 'thu-chi.show',
+        'edit' => 'thu-chi.edit',
+        'update' => 'thu-chi.update',
+        'destroy' => 'thu-chi.destroy',
+    ]);
+});
+
+// Quản lý Thờ Phượng
+Route::prefix('quan-ly-tho-phuong')->group(function () {
+    Route::get('danh-sach-buoi-nhom', [ThoPhuongController::class, 'danhSachBuoiNhom'])->name('tho-phuong.buoi_nhom');
+    Route::get('danh-sach-ngay-le', [ThoPhuongController::class, 'danhSachNgayLe'])->name('tho-phuong.ngay_le');
+    Route::get('them-buoi-nhom', [ThoPhuongController::class, 'create'])->name('tho-phuong.create');
+});
+
+// Quản lý Tài liệu
+Route::prefix('quan-ly-tai-lieu')->group(function () {
+    Route::resource('tai-lieu', TaiLieuController::class)->names([
+        'index' => 'tai-lieu.index',
+        'create' => 'tai-lieu.create',
+        'store' => 'tai-lieu.store',
+        'show' => 'tai-lieu.show',
+        'edit' => 'tai-lieu.edit',
+        'update' => 'tai-lieu.update',
+        'destroy' => 'tai-lieu.destroy',
+    ]);
+});
+
+// Quản lý Thông báo
+Route::get('quan-ly-thong-bao/thong-bao', [ThongBaoController::class, 'index'])->name('thong-bao.index');
+
+// Báo cáo
+Route::prefix('bao-cao')->group(function () {
+    Route::get('bao-cao-tho-phuong', [BaoCaoController::class, 'baoCaoThoPhuong'])->name('bao-cao.tho_phuong');
+    Route::get('bao-cao-thiet-bi', [BaoCaoController::class, 'baoCaoThietBi'])->name('bao-cao.thiet_bi');
+    Route::get('bao-cao-tai-chinh', [BaoCaoController::class, 'baoCaoTaiChinh'])->name('bao-cao.tai_chinh');
+    Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('bao-cao.ban_nganh');
+});
+
+// Cài đặt
+Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->name('cai-dat.he_thong');

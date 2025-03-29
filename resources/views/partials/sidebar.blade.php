@@ -36,7 +36,7 @@
                 <li class="nav-item">
                     <a href="{{ url('dashboard') }}" class="nav-link {{ request()->is('dashboard') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Bảng thông báo</p>
+                        <p>Dashboard</p>
                     </a>
                 </li>
 
@@ -80,7 +80,7 @@
                                         <p>Ban Cầu Nguyện</p>
                                     </a>
                                 </li>
-                                 <li class="nav-item">
+                                <li class="nav-item">
                                     <a href="{{ route('ban-chung-dao.index') }}" class="nav-link">
                                         <i class="far fa-dot-circle nav-icon"></i>
                                         <p>Ban Chứng Đạo</p>
@@ -198,6 +198,270 @@
                             </ul>
                         </li>
                     </ul>
+                </li>
+
+                <!-- Quản lý Tín Hữu -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-id-card"></i>
+                        <p>
+                            Quản lý Tín Hữu
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('tin-huu.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Tín Hữu</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('tin-huu.create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Tín Hữu</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('tin-huu.nhan_su') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Nhân sự</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('tin-huu.show', ['id' => 1]) }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thông tin Tín Hữu</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Diễn Giả -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-microphone"></i>
+                        <p>
+                            Quản lý Diễn Giả
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('dien-gia.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Diễn Giả</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('dien-gia.create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Diễn Giả</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Thân Hữu -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-handshake"></i>
+                        <p>
+                            Quản lý Thân Hữu
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('than-huu.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Thân Hữu</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('than-huu.create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Thân Hữu</p>
+                            </a>
+                        </li>
+                         <li class="nav-item">
+                            <a href="{{ route('than-huu.show', ['id' => 1]) }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thông tin thân hữu</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Thiết bị -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-desktop"></i>
+                        <p>
+                            Quản lý Thiết bị
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('thiet-bi.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Thiết bị</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thiet-bi.create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Thiết bị</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thiet-bi.bao_cao') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo thiết bị</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thiet-bi.thanh_ly') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thanh lý thiết bị</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Tài Chính -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-money-bill"></i>
+                        <p>
+                            Quản lý Tài Chính
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('tai-chinh.bao_cao') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo tài chính</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thu-chi.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thu Chi</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Thờ Phượng -->
+                 <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-church"></i>
+                        <p>
+                            Quản lý Thờ Phượng
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('tho-phuong.buoi_nhom') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Buổi nhóm</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('tho-phuong.ngay_le') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Ngày Lễ</p>
+                            </a>
+                        </li>
+                         <li class="nav-item">
+                            <a href="{{ route('tho-phuong.create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Buổi nhóm</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Tài liệu -->
+                <li class="nav-item">
+                   <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        <p>
+                            Quản lý Tài liệu
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('tai-lieu.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Tài liệu</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('tai-lieu.create') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Tài liệu</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Quản lý Thông báo -->
+                <li class="nav-item">
+                    <a href="{{ route('thong-bao.index') }}" class="nav-link">
+                        <i class="nav-icon fas fa-bell"></i>
+                        <p>Thông báo</p>
+                    </a>
+                </li>
+
+                <!-- Báo cáo -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fas fa-chart-bar"></i>
+                        <p>
+                            Báo cáo
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('bao-cao.tho_phuong') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo Thờ Phượng</p>
+                            </a>
+                        </li>
+                          <li class="nav-item">
+                            <a href="{{ route('bao-cao.thiet_bi') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo thiết bị</p>
+                            </a>
+                        </li>
+                          <li class="nav-item">
+                            <a href="{{ route('bao-cao.tai_chinh') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo tài chính</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('bao-cao.ban_nganh') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo ban ngành</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Cài đặt -->
+                <li class="nav-item">
+                    <a href="{{ route('cai-dat.he_thong') }}" class="nav-link">
+                        <i class="nav-icon fas fa-cog"></i>
+                        <p>Cài đặt Hệ thống</p>
+                    </a>
                 </li>
             </ul>
         </nav>
