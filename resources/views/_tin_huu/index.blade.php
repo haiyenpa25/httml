@@ -29,7 +29,7 @@
                         <div class="card-header">
                             <h3 class="card-title">Danh sách các tín hữu</h3>
                             <div class="card-tools">
-                                <a href="{{ route('tin-huu.create') }}" class="btn btn-primary">
+                                <a href="{{ route('_tin_huu.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus"></i> Thêm Mới
                                 </a>
                             </div>
@@ -60,13 +60,13 @@
                                             <td>{{ $tinHuu->gioi_tinh }}</td>
                                             <td>{{ $tinHuu->tinh_trang_hon_nhan }}</td>
                                             <td>
-                                                <a href="{{ route('tin-huu.show', $tinHuu->id) }}" class="btn btn-sm btn-info">
+                                                <a href="{{ route('_tin_huu.show', $tinHuu->id) }}" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i> Xem
                                                 </a>
-                                                <a href="{{ route('tin-huu.edit', $tinHuu->id) }}" class="btn btn-sm btn-warning">
+                                                <a href="{{ route('_tin_huu.edit', $tinHuu->id) }}" class="btn btn-sm btn-warning">
                                                     <i class="fas fa-edit"></i> Sửa
                                                 </a>
-                                                <form action="{{ route('tin-huu.destroy', $tinHuu->id) }}" method="POST" style="display: inline-block;">
+                                                <form action="{{ route('_tin_huu.destroy', $tinHuu->id) }}" method="POST" style="display: inline-block;">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">

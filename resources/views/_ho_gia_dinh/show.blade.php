@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Chi Tiết Người Dùng')
+@section('title', 'Thông Tin Chi Tiết Hộ Gia Đình')
 
 @section('content')
     <!-- Content Header (Page header) -->
@@ -8,11 +8,11 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Chi Tiết Người Dùng</h1>
+                    <h1>Thông Tin Chi Tiết Hộ Gia Đình</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Quản lý Người Dùng</a></li>
+                        <li class="breadcrumb-item"><a href="#">Quản lý Hộ Gia Đình</a></li>
                         <li class="breadcrumb-item active">Chi Tiết</li>
                     </ol>
                 </div>
@@ -27,33 +27,25 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Thông Tin Người Dùng</h3>
+                            <h3 class="card-title">Thông Tin Chi Tiết</h3>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <tr>
-                                    <td>Họ Tên</td>
-                                    <td>{{ $nguoiDung->tinHuu->ho_ten ?? 'Không có' }}</td>
+                                    <th>Số Hộ</th>
+                                    <td>{{ $hoGiaDinh->so_ho }}</td>
                                 </tr>
                                 <tr>
-                                    <td>Email</td>
-                                    <td>{{ $nguoiDung->email }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Vai Trò</td>
-                                    <td>{{ $nguoiDung->vai_tro }}</td>
+                                    <th>Địa Chỉ</th>
+                                    <td>{{ $hoGiaDinh->dia_chi }}</td>
                                 </tr>
                             </table>
                         </div>
                         <!-- /.card-body -->
                         <div class="card-footer">
-                            <a href="{{ route('nguoi-dung.edit', $nguoiDung->id) }}" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Sửa
-                            </a>
-                            <a href="{{ route('nguoi-dung.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Quay lại
-                            </a>
+                            <a href="{{ route('_ho_gia_dinh.edit', $hoGiaDinh->id) }}" class="btn btn-primary">Sửa</a>
+                            <a href="{{ route('_ho_gia_dinh.index') }}" class="btn btn-secondary">Quay lại</a>
                         </div>
                     </div>
                     <!-- /.card -->
@@ -62,5 +54,4 @@
             <!-- /.row -->
         </div>
     </section>
-    <!-- /.content -->
 @endsection

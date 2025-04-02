@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Danh Sách Nhân Sự')
+@section('title', 'Danh Sách Người Dùng')
 
 @section('content')
     <!-- Content Header (Page header) -->
@@ -8,12 +8,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Danh Sách Nhân Sự</h1>
+                    <h1>Danh Sách Người Dùng</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Quản lý Tín Hữu</a></li>
-                        <li class="breadcrumb-item active">Nhân Sự</li>
+                        <li class="breadcrumb-item"><a href="#">Quản lý Người Dùng</a></li>
+                        <li class="breadcrumb-item active">Danh Sách</li>
                     </ol>
                 </div>
             </div>
@@ -27,8 +27,12 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Danh sách các nhân sự</h3>
-
+                            <h3 class="card-title">Danh sách các người dùng</h3>
+                            <div class="card-tools">
+                                <a href="{{ route('nguoi_dung.create') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Thêm Mới
+                                </a>
+                            </div>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body">
@@ -42,22 +46,32 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($nhanSu as $nhanvien)
+                                    @foreach($nguoiDungs as $nguoiDung)
                                         <tr>
-                                            <td>{{ $nhanvien->ho_ten }}</td>
-                                            <td>{{ $nhanvien->nguoiDung->email }}</td>
-                                            <td>{{ $nhanvien->nguoiDung->vai_tro }}</td>
+                                            <td>{{ $nguoiDung->tinHuu->ho_ten ?? 'Không có' }}</td>
+                                            <td>{{ $nguoiDung->email }}</td>
+                                            <td>{{ $nguoiDung->vai_tro }}</td>
                                             <td>
-                                                 <a href="{{ route('_tin_huu.show', $nhanvien->id) }}" class="btn btn-sm btn-info">
+                                                <a href="{{ route('nguoi_dung.show', $nguoiDung->id) }}" class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i> Xem
                                                 </a>
+                                                <a href="{{ route('nguoi_dung.edit', $nguoiDung->id) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </a>
+                                                <form action="{{ route('nguoi_dung.destroy', $nguoiDung->id) }}" method="POST" style="display: inline-block;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">
+                                                        <i class="fas fa-trash"></i> Xóa
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                       <th>Họ Tên</th>
+                                        <th>Họ Tên</th>
                                         <th>Email</th>
                                         <th>Vai Trò</th>
                                         <th>Hành Động</th>

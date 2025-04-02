@@ -23,6 +23,10 @@ class NguoiDung extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'mat_khau' => 'hashed',
+    ];
+
     public function tinHuu()
     {
         return $this->belongsTo(TinHuu::class, 'tin_huu_id');

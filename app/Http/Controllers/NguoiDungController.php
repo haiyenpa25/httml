@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 
+enum VaiTro: string
+{
+    case QUAN_TRI = 'quan_tri';
+    case TRUONG_BAN = 'truong_ban';
+    case THANH_VIEN = 'thanh_vien';
+}
+
 use App\Models\NguoiDung;
 use App\Models\TinHuu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash; // Thêm để mã hóa mật khẩu
+use Illuminate\Validation\Rule;
 
 class NguoiDungController extends Controller
 {
@@ -27,14 +35,14 @@ class NguoiDungController extends Controller
             'tin_huu_id' => 'required|exists:tin_huu,id|unique:nguoi_dung,tin_huu_id',
             'email' => 'required|email|unique:nguoi_dung,email',
             'mat_khau' => 'required|min:6',
-            'vai_tro' => 'nullable|enum:quan_tri,truong_ban,thanh_vien',
+            'vai_tro' => ['nullable', Rule::enum(VaiTro::class)], // Sửa dòng này
         ]);
 
         $validatedData['mat_khau'] = Hash::make($validatedData['mat_khau']); // Mã hóa mật khẩu
 
         NguoiDung::create($validatedData);
 
-        return redirect()->route('nguoi-dung.index')->with('success', 'Người dùng đã được thêm thành công!');
+        return redirect()->route('nguoi_dung.index')->with('success', 'Người dùng đã được thêm thành công!');
     }
 
     public function show(NguoiDung $nguoiDung)
@@ -51,10 +59,10 @@ class NguoiDungController extends Controller
     public function update(Request $request, NguoiDung $nguoiDung)
     {
         $validatedData = $request->validate([
-            'tin_huu_id' => 'required|exists:tin_huu,id|unique:nguoi_dung,tin_huu_id,' . $nguoiDung->id,
-            'email' => 'required|email|unique:nguoi_dung,email,' . $nguoiDung->id,
-            'mat_khau' => 'nullable|min:6',
-            'vai_tro' => 'nullable|enum:quan_tri,truong_ban,thanh_vien',
+            'tin_huu_id' => 'required|exists:tin_huu,id|unique:nguoi_dung,tin_huu_id',
+            'email' => 'required|email|unique:nguoi_dung,email',
+            'mat_khau' => 'required|min:6',
+            'vai_tro' => ['nullable', Rule::enum(VaiTro::class)], // Sửa dòng này
         ]);
 
         if ($request->filled('mat_khau')) {
@@ -65,12 +73,12 @@ class NguoiDungController extends Controller
 
         $nguoiDung->update($validatedData);
 
-        return redirect()->route('nguoi-dung.index')->with('success', 'Người dùng đã được cập nhật thành công!');
+        return redirect()->route('nguoi_dung.index')->with('success', 'Người dùng đã được cập nhật thành công!');
     }
 
     public function destroy(NguoiDung $nguoiDung)
     {
         $nguoiDung->delete();
-        return redirect()->route('nguoi-dung.index')->with('success', 'Người dùng đã được xóa thành công!');
+        return redirect()->route('nguoi_dung.index')->with('success', 'Người dùng đã được xóa thành công!');
     }
 }
