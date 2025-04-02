@@ -59,16 +59,14 @@ class NguoiDungController extends Controller
     public function update(Request $request, NguoiDung $nguoiDung)
     {
         $validatedData = $request->validate([
-            'tin_huu_id' => 'required|exists:tin_huu,id|unique:nguoi_dung,tin_huu_id',
-            'email' => 'required|email|unique:nguoi_dung,email',
-            'mat_khau' => 'required|min:6',
-            'vai_tro' => ['nullable', Rule::enum(VaiTro::class)], // Sửa dòng này
+            'tin_huu_id' => 'required|exists:tin_huu,id|unique:nguoi_dung,tin_huu_id,' . $nguoiDung->id,
+            'email' => 'required|email|unique:nguoi_dung,email,' . $nguoiDung->id,
+            'mat_khau' => 'nullable|min:6', // cho phép null vì có check field
+            'vai_tro' => ['nullable', Rule::enum(VaiTro::class)],
         ]);
 
         if ($request->filled('mat_khau')) {
             $validatedData['mat_khau'] = Hash::make($validatedData['mat_khau']);
-        } else {
-            unset($validatedData['mat_khau']); // Không cập nhật mật khẩu nếu không có giá trị mới
         }
 
         $nguoiDung->update($validatedData);

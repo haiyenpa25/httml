@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use App\Models\NguoiDung; // Import Model NguoiDung
+use Illuminate\Support\Facades\Hash; // Import Hash
 
 class AuthController extends Controller
 {
@@ -16,22 +17,17 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
-            'mat_khau' => 'required', // Use 'mat_khau' to match database column name
+            'email' => 'required',
+            'mat_khau' => 'required',
         ]);
 
-        //dd($request->all()); // Kiểm tra dữ liệu đầu vào
+        $user = NguoiDung::where('email', $credentials['email'])->first();
 
-        $authAttemptResult = Auth::attempt(['email' => $credentials['email'], 'mat_khau' => $credentials['mat_khau']]);
-
-        dd($authAttemptResult); // Kiểm tra kết quả của Auth::attempt()
-
-        if ($authAttemptResult) {
+        if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
+            Auth::login($user, $request->has('remember'));
             $request->session()->regenerate();
-            return redirect()->intended('dashboard'); // Chuyển hướng đến trang dashboard sau khi đăng nhập thành công
+            return redirect()->intended('/dashboard'); // Thay đổi đường dẫn nếu cần
         }
-
-        Log::error('Login attempt failed for email: ' . $credentials['email']); // Ghi log lỗi đăng nhập
 
         return back()->withErrors([
             'email' => 'Thông tin đăng nhập không chính xác.',
@@ -45,6 +41,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login'); // Chuyển hướng đến trang đăng nhập sau khi đăng xuất
+        return redirect('/login');
     }
 }

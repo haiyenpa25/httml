@@ -31,4 +31,8 @@ class NguoiDung extends Authenticatable
     {
         return $this->belongsTo(TinHuu::class, 'tin_huu_id');
     }
+    public function getAuthPassword()
+    {
+        return $this->MatKhau; // Trả về 'MatKhau' thay vì 'mat_khau'
+    }
 }
