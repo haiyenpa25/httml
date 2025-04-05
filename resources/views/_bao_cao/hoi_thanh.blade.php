@@ -7,12 +7,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Dashboard v2</h1>
+            <h1 class="m-0">Hội thánh</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Dashboard v2</li>
+              <li class="breadcrumb-item"><a href="#">Báo cáo</a></li>
+              <li class="breadcrumb-item active">Hội thánh</li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -301,7 +301,83 @@
             </div>
           </div>
         </div>
-        
+
+
+        <!-- Số liệu liên quan tới kênh youtube-->
+        <div class="row">
+          
+          <!-- Accordion - col 7 -->
+          <div class="col-md-7" id="accordion">
+              <!-- Copy toàn bộ phần accordion bạn đã gửi vào đây -->
+              {{-- START: Accordion content --}}
+              @foreach(range(1, 4) as $i)
+                  <div class="card {{ $i <= 3 ? 'card-primary' : ($i <= 6 ? 'card-warning' : 'card-danger') }} card-outline">
+                      <a class="d-block w-100" data-toggle="collapse" href="#collapse{{ $i }}">
+                          <div class="card-header">
+                              <h4 class="card-title w-100">
+                                  {{ $i }}. Các báo cáo liên quan {{ $i }}
+                              </h4>
+                          </div>
+                      </a>
+                      <div id="collapse{{ $i }}" class="collapse {{ $i === 1 ? 'show' : '' }}" data-parent="#accordion">
+                          <div class="card-body">
+                              Đây là nội dung: 
+                          </div>
+                      </div>
+                  </div>
+              @endforeach
+              {{-- END --}}
+          </div>
+      
+          <!-- DataTable - col 5 -->
+          <div class="col-md-5">
+              <div class="card">
+                  <div class="card-header">
+                      <h3 class="card-title">Báo Cáo Truy Cập YouTube - Tháng 3</h3>
+                  </div>
+                  <div class="card-body">
+                      <table id="youtube-stats" class="table table-bordered table-hover">
+                          <thead>
+                              <tr>
+                                  <th>Ngày</th>
+                                  <th>Lượt xem</th>
+                                  <th>Giờ xem</th>
+                                  <th>ĐK mới</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              @php
+                                  $stats = [
+                                      ['ngay' => '03/03', 'views' => 1250, 'hours' => 230, 'new_subs' => 5],
+                                      ['ngay' => '10/03', 'views' => 1420, 'hours' => 260, 'new_subs' => 5],
+                                      ['ngay' => '17/03', 'views' => 1580, 'hours' => 295, 'new_subs' => 6],
+                                      ['ngay' => '24/03', 'views' => 1750, 'hours' => 310, 'new_subs' => 9],
+                                      ['ngay' => '31/03', 'views' => 1900, 'hours' => 335, 'new_subs' => 8],
+                                  ];
+                              @endphp
+                              @foreach ($stats as $s)
+                                  <tr>
+                                      <td>{{ $s['ngay'] }}</td>
+                                      <td>{{ number_format($s['views']) }}</td>
+                                      <td>{{ $s['hours'] }} giờ</td>
+                                      <td>{{ $s['new_subs'] }}</td>
+                                  </tr>
+                              @endforeach
+                          </tbody>
+                          <tfoot>
+                              <tr>
+                                  <th>Ngày</th>
+                                  <th>Lượt xem</th>
+                                  <th>Giờ xem</th>
+                                  <th>ĐK mới</th>
+                              </tr>
+                          </tfoot>
+                      </table>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
 
        
       </div><!--/. container-fluid -->
