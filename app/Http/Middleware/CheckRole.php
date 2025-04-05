@@ -18,10 +18,13 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
+
         if (!Auth::check()) {
             return redirect('/login'); // Chưa đăng nhập
         }
-
+        dd(Auth::user()); // Xem thông tin người dùng đang đăng nhập
+        dd($roles);      // Xem các vai trò được cho phép
+        
         $user = Auth::user();
 
         if (in_array($user->vai_tro, $roles)) { // Sử dụng $user->vai_tro
