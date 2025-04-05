@@ -4,30 +4,37 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  ...$roles
-     * @return \Illuminate\Http\Response
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @param  string|null  ...$roles
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next, string ...$roles): Response
+    public function handle(Request $request, Closure $next, ...$roles)
     {
         if (!Auth::check()) {
-            return redirect('/login'); // Chưa đăng nhập
+            return redirect('login'); // Hoặc chuyển hướng đến trang đăng nhập
         }
 
         $user = Auth::user();
 
-        if (in_array($user->vai_tro, $roles)) { // Sử dụng $user->vai_tro
-            return $next($request); // Có quyền truy cập
+        if (empty($roles))
+        {
+             return $next($request); // Cho phép truy cập nếu không có vai trò nào được chỉ định
         }
 
-        abort(403, 'Bạn không có quyền truy cập trang này.'); // Không có quyền truy cập
+        if (in_array($user->vai_tro, $roles)) {
+            return $next($request); // Cho phép truy cập nếu người dùng có một trong các vai trò được phép
+        }
+
+        // Nếu không có quyền, chuyển hướng hoặc trả về lỗi
+        abort(403, 'Bạn không có quyền truy cập trang này.'); // Hoặc chuyển hướng đến trang thông báo lỗi
     }
 }

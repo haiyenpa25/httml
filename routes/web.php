@@ -39,39 +39,18 @@ use App\Models\NguoiDung;
 use App\Models\TinHuu;
 use App\Models\User;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\PermissionRoleController;
-use App\Http\Controllers\PermissionUserController;
-use App\Http\Controllers\PermissionRoleUserController;
 
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('dashboard');
+});
+Route::get('/template', function () {
+    return view('template');
 });
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-Route::get('/trang-chu', function () {
-    return view('dashboard');
-})->middleware('auth', 'checkRole:quan_tri,truong_ban')->name('trang-chu');
-
-Route::prefix('quan-ly-tin-huu')->middleware('auth', 'checkRole:quan_tri,truong_ban')->group(function () {
-    Route::resource('tin-huu', TinHuuController::class)->names([
-        'index' => '_tin_huu.index',
-        'create' => '_tin_huu.create',
-        'store' => '_tin_huu.store',
-        'show' => '_tin_huu.show',
-        'edit' => '_tin_huu.edit',
-        'update' => '_tin_huu.update',
-        'destroy' => '_tin_huu.destroy',
-    ]);
-    Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');
-});
-
-
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
 Route::resource('nguoi-dung', NguoiDungController::class)->names([
@@ -84,6 +63,17 @@ Route::resource('nguoi-dung', NguoiDungController::class)->names([
     'destroy' => 'nguoi_dung.destroy',
 ]);
 
+Route::resource('tin-huu', TinHuuController::class)->names([
+    'index' => '_tin_huu.index',
+    'create' => '_tin_huu.create',
+    'store' => '_tin_huu.store',
+    'show' => '_tin_huu.show',
+    'edit' => '_tin_huu.edit',
+    'update' => '_tin_huu.update',
+    'destroy' => '_tin_huu.destroy',
+]);
+Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');
+
 
 Route::resource('ho-gia-dinh', HoGiaDinhController::class)->names([
     'index' => '_ho_gia_dinh.index',
@@ -95,11 +85,18 @@ Route::resource('ho-gia-dinh', HoGiaDinhController::class)->names([
     'destroy' => '_ho_gia_dinh.destroy',
 ]);
 
-
-
-
-
-
+// Route::prefix('quan-ly-tin-huu')->middleware('checkRole:quan_tri,truong_ban')->group(function () {
+//     Route::resource('tin-huu', TinHuuController::class)->names([
+//         'index' => '_tin_huu.index',
+//         'create' => '_tin_huu.create',
+//         'store' => '_tin_huu.store',
+//         'show' => '_tin_huu.show',
+//         'edit' => '_tin_huu.edit',
+//         'update' => '_tin_huu.update',
+//         'destroy' => '_tin_huu.destroy',
+//     ]);
+//     Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');
+// });
 
 
 
