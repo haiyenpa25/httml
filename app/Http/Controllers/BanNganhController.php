@@ -8,18 +8,27 @@ use Illuminate\Http\Request;
 
 class BanNganhController extends Controller
 {
+    /**
+     * Danh sách tất cả Ban Ngành
+     */
     public function index()
     {
         $banNganhs = BanNganh::all();
         return view('_ban_nganh.index', compact('banNganhs'));
     }
 
+    /**
+     * Form tạo mới Ban Ngành
+     */
     public function create()
     {
         $tinHuus = TinHuu::all();
         return view('_ban_nganh.create', compact('tinHuus'));
     }
 
+    /**
+     * Lưu thông tin Ban Ngành mới
+     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -34,18 +43,30 @@ class BanNganhController extends Controller
         return redirect()->route('_ban_nganh.index')->with('success', 'Ban ngành đã được thêm thành công!');
     }
 
-    public function show(BanNganh $banNganh)
+    /**
+     * Xem chi tiết Ban Ngành
+     */
+    public function show(BanNganh $danh_sach)
     {
+        $banNganh = $danh_sach; // Đặt lại biến cho khớp với view
         return view('_ban_nganh.show', compact('banNganh'));
     }
 
-    public function edit(BanNganh $banNganh)
+    /**
+     * Form chỉnh sửa Ban Ngành
+     */
+    public function edit(BanNganh $danh_sach)
     {
+        $banNganh = $danh_sach;
         $tinHuus = TinHuu::all();
+
         return view('_ban_nganh.edit', compact('banNganh', 'tinHuus'));
     }
 
-    public function update(Request $request, BanNganh $banNganh)
+    /**
+     * Cập nhật Ban Ngành
+     */
+    public function update(Request $request, BanNganh $danh_sach)
     {
         $validatedData = $request->validate([
             'ten' => 'required|max:255',
@@ -54,14 +75,18 @@ class BanNganhController extends Controller
             'truong_ban_id' => 'nullable|exists:tin_huu,id',
         ]);
 
-        $banNganh->update($validatedData);
+        $danh_sach->update($validatedData);
 
         return redirect()->route('_ban_nganh.index')->with('success', 'Ban ngành đã được cập nhật thành công!');
     }
 
-    public function destroy(BanNganh $banNganh)
+    /**
+     * Xóa Ban Ngành
+     */
+    public function destroy(BanNganh $danh_sach)
     {
-        $banNganh->delete();
+        $danh_sach->delete();
+
         return redirect()->route('_ban_nganh.index')->with('success', 'Ban ngành đã được xóa thành công!');
     }
 }

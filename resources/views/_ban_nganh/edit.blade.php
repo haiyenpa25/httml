@@ -16,8 +16,12 @@
                 <h3 class="card-title">Thông Tin Ban Ngành</h3>
             </div>
 
-            {{-- Sửa action route truyền đúng tên tham số --}}
-            <form action="{{ route('_ban_nganh.update', ['danh_sach' => $banNganh->id]) }}" method="POST">
+            {{-- Đảm bảo truyền đúng tên tham số route: danh_sach --}}
+            @php
+                $updateRoute = route('_ban_nganh.update', ['danh_sach' => $banNganh->id]);
+            @endphp
+
+            <form action="{{ $updateRoute }}" method="POST">
                 @csrf
                 @method('PUT')
 

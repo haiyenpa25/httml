@@ -37,9 +37,9 @@
                                 <td>{{ $item->loai }}</td>
                                 <td>{{ optional($item->truongBan)->ho_ten }}</td>
                                 <td>
-                                    <a href="{{ route('_ban_nganh.show', $item->id) }}" class="btn btn-sm btn-info">Xem</a>
-                                    <a href="{{ route('_ban_nganh.edit', $item->id) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                    <form action="{{ route('_ban_nganh.destroy', $item->id) }}" method="POST" style="display:inline-block;">
+                                    <a href="{{ route('_ban_nganh.show', ['danh_sach' => $item->id]) }}" class="btn btn-sm btn-info">Xem</a>
+                                    <a href="{{ route('_ban_nganh.edit', ['danh_sach' => $item->id]) }}" class="btn btn-sm btn-warning">Sửa</a>
+                                    <form action="{{ route('_ban_nganh.destroy', ['danh_sach' => $item->id]) }}" method="POST" style="display:inline-block;">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</button>

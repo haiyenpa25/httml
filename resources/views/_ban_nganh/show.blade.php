@@ -22,7 +22,7 @@
                 </table>
             </div>
             <div class="card-footer">
-                <a href="{{ route('_ban_nganh.edit', $banNganh->id) }}" class="btn btn-primary">Sửa</a>
+                <a href="{{ route('_ban_nganh.edit', ['danh_sach' => $banNganh->id]) }}" class="btn btn-primary">Sửa</a>
                 <a href="{{ route('_ban_nganh.index') }}" class="btn btn-secondary">Quay lại</a>
             </div>
         </div>

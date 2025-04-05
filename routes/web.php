@@ -75,8 +75,11 @@ Route::prefix('quan-ly-ban-nganh')->middleware($quanTriTruongBan)->group(functio
 
 // ==== Quản lý Diễn Giả / Thân Hữu / Thiết Bị ====
 Route::prefix('quan-ly-dien-gia')->middleware($quanTri)->group(function () {
-    Route::resource('dien-gia', DienGiaController::class)->names('_dien_gia');
+    Route::resource('dien-gia', DienGiaController::class)
+        ->names('_dien_gia')
+        ->parameters(['dien-gia' => 'dienGia']);
 });
+
 Route::prefix('quan-ly-than-huu')->middleware($quanTriTruongBan)->group(function () {
     Route::resource('than-huu', ThanHuuController::class)->names('_than_huu');
 });
@@ -115,7 +118,11 @@ Route::prefix('bao-cao')->middleware($quanTri)->group(function () {
     Route::get('bao-cao-thiet-bi', [BaoCaoController::class, 'baoCaoThietBi'])->name('_bao_cao.thiet_bi');
     Route::get('bao-cao-tai-chinh', [BaoCaoController::class, 'baoCaoTaiChinh'])->name('_bao_cao.tai_chinh');
     Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('_bao_cao.ban_nganh');
+    Route::get('bao-cao-hoi-thanh', [BaoCaoController::class, 'baoCaoHoiThanh'])->name('_bao_cao.hoi_thanh');
+
 });
 
 // ==== Cài Đặt ====
 Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->middleware($quanTri)->name('_cai_dat.he_thong');
+
+
