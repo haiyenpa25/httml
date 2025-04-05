@@ -54,10 +54,12 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/trang-chu', function () {
-    return view('dashboard');
-})->middleware('auth', 'checkRole:quan_tri,truong_ban')->name('trang-chu');
 
+Route::middleware(['auth', 'checkRole:quan_tri'])->group(function () {
+    Route::get('/trang-chu', function () {
+        return view('dashboard');
+    });
+});
 
 //Route::prefix('quan-ly-tin-huu')->middleware(['auth', 'checkRole:quan_tri,truong_ban'])->group(function () : void {
     Route::resource('tin-huu', TinHuuController::class)->names([

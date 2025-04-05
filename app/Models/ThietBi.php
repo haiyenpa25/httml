@@ -2,18 +2,11 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-=======
 use Illuminate\Database\Eloquent\Factories\HasFactory;
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111
 use Illuminate\Database\Eloquent\Model;
 
 class ThietBi extends Model
 {
-<<<<<<< HEAD
-    //
-}
-=======
     use HasFactory;
 
     protected $table = 'thiet_bi';
@@ -44,4 +37,3 @@ class ThietBi extends Model
         return $this->hasMany(LichSuBaoTri::class, 'thiet_bi_id');
     }
 }
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111

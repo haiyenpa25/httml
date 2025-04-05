@@ -2,18 +2,11 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-=======
 use Illuminate\Database\Eloquent\Factories\HasFactory;
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111
 use Illuminate\Database\Eloquent\Model;
 
 class ThongBao extends Model
 {
-<<<<<<< HEAD
-    //
-}
-=======
     use HasFactory;
 
     protected $table = 'thong_bao';
@@ -32,4 +25,3 @@ class ThongBao extends Model
         return $this->belongsTo(TinHuu::class, 'nguoi_nhan_id');
     }
 }
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111
