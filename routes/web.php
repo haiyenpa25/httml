@@ -58,7 +58,8 @@ Route::get('/trang-chu', function () {
     return view('dashboard');
 })->middleware('auth', 'checkRole:quan_tri,truong_ban')->name('trang-chu');
 
-Route::prefix('quan-ly-tin-huu')->middleware('auth', 'checkRole:quan_tri,truong_ban')->group(function () {
+
+//Route::prefix('quan-ly-tin-huu')->middleware(['auth', 'checkRole:quan_tri,truong_ban'])->group(function () : void {
     Route::resource('tin-huu', TinHuuController::class)->names([
         'index' => '_tin_huu.index',
         'create' => '_tin_huu.create',
@@ -68,8 +69,9 @@ Route::prefix('quan-ly-tin-huu')->middleware('auth', 'checkRole:quan_tri,truong_
         'update' => '_tin_huu.update',
         'destroy' => '_tin_huu.destroy',
     ]);
-    Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');
-});
+    Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');    // Các tuyến đường ở đây
+//});
+
 
 
 

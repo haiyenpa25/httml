@@ -2,14 +2,6 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-use Illuminate\Database\Eloquent\Model;
-
-class NguoiDung extends Model
-{
-    //
-}
-=======
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,4 +36,3 @@ class NguoiDung extends Authenticatable
         return $this->MatKhau; // Trả về 'MatKhau' thay vì 'mat_khau'
     }
 }
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111
