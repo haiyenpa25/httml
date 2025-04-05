@@ -24,6 +24,11 @@ use App\Models\TinHuu;
 use App\Models\HoGiaDinh;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Http\Requests\TinHuuRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Middleware\CheckRole;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 
 class TinHuuController extends Controller
@@ -97,5 +102,5 @@ class TinHuuController extends Controller
     {
         $nhanSu = TinHuu::where('vai_tro', '!=', 'thanh_vien')->get(); // Ví dụ: Lấy tất cả người dùng không phải là thành viên
         return view('_tin_huu.nhan_su', compact('nhanSu'));
-    }
+    }    
 }
