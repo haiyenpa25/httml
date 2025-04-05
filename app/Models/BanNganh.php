@@ -2,18 +2,11 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-=======
 use Illuminate\Database\Eloquent\Factories\HasFactory;
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111
 use Illuminate\Database\Eloquent\Model;
 
 class BanNganh extends Model
 {
-<<<<<<< HEAD
-    //
-}
-=======
     use HasFactory;
 
     protected $table = 'ban_nganh';
@@ -55,4 +48,3 @@ class BanNganh extends Model
         return $this->hasMany(ThamVieng::class, 'id_ban');
     }
 }
->>>>>>> ec1a0f61c7ea600ec569639c73f25435caec3111
