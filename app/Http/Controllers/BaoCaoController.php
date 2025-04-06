@@ -18,4 +18,13 @@ class BaoCaoController extends Controller
     {
         return view('_bao_cao.hoi_thanh');
     }
+    public function baoCaoBanTrungLao(): View
+    {
+        return view('_bao_cao.ban_trung_lao');
+    }
+
+    public function baoCaoBanThanhNien(): View
+    {
+        return view('_bao_cao.ban_thanh_nien');
+    }
 }

@@ -183,9 +183,21 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('_bao_cao.tho_phuong') }}" class="nav-link">
+                            <a href="{{ route('_bao_cao.hoi_thanh') }}" class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Báo cáo Thờ Phượng</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('_bao_cao.ban_trung_lao') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo Ban Trung Lão</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('_bao_cao.ban_thanh_nien') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Báo cáo Ban Thanh Niên</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -200,12 +212,7 @@
                                 <p>Báo cáo Tài Chính</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('_bao_cao.ban_nganh') }}" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Báo cáo Ban Ngành</p>
-                            </a>
-                        </li>
+                        
                     </ul>
                 </li>
 
