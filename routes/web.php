@@ -10,7 +10,7 @@ use App\Http\Controllers\{
     BanThanhNienController, BanThanhTrangController, BanThieuNhiAuController, BanTrungLaoController,
     DienGiaController, ThanHuuController, ThietBiController, TaiChinhController,
     ThoPhuongController, TaiLieuController, ThongBaoController, BaoCaoController,
-    CaiDatController, BanNganhController
+    CaiDatController, BanNganhController, TinHuuBanNganhController
 };
 
 // ==== Middleware groups ====
@@ -120,9 +120,19 @@ Route::prefix('bao-cao')->middleware($quanTri)->group(function () {
     Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('_bao_cao.ban_nganh');
     Route::get('bao-cao-hoi-thanh', [BaoCaoController::class, 'baoCaoHoiThanh'])->name('_bao_cao.hoi_thanh');
     Route::get('bao-cao-ban-trung-lao', [BaoCaoController::class, 'baoCaoBanTrungLao'])->name('_bao_cao.ban_trung_lao');
-
     Route::get('bao-cao-ban-thanh-nien', [BaoCaoController::class, 'baoCaoBanThanhNien'])->name('_bao_cao.ban_thanh_nien');
+    Route::get('bao-cao-ban-co-doc-giao-duc', [BaoCaoController::class, 'baoCaoBanCoDocGiaoDuc'])->name('_bao_cao.ban_co_doc_giao_duc');
 });
+
+
+Route::get('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'index'])->name('_tin_huu_ban_nganh.index');
+Route::post('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'store'])->name('_tin_huu_ban_nganh.store');
+Route::get('/tin-huu-ban-nganh/members', [TinHuuBanNganhController::class, 'getMembers'])->name('_tin_huu_ban_nganh.members');
+Route::delete('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'destroy'])->name('_tin_huu_ban_nganh.destroy');
+
+
+
+
 
 // ==== Cài Đặt ====
 Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->middleware($quanTri)->name('_cai_dat.he_thong');

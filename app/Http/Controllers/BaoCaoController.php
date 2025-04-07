@@ -27,4 +27,8 @@ class BaoCaoController extends Controller
     {
         return view('_bao_cao.ban_thanh_nien');
     }
+    public function baoCaoBanCoDocGiaoDuc(): View
+    {
+        return view('_bao_cao.ban_co_doc_giao_duc');
+    }
 }

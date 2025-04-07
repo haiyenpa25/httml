@@ -89,6 +89,17 @@
               <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
             </div>
           </div>
+
+
+
+          <div class="card-body">
+            <div class="chart">
+              <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+          </div>
+
+
+
           <div class="card-body">
             <div class="row">
               <div class="col-md-8">
@@ -184,10 +195,26 @@
 
         </div>
       </div>
+
+
+
+      
       <div class="col-md-4">
         <div class="card">
           <div class="card-header bg-primary">
             <h3 class="card-title text-white">📌 Ban Điều Hành</h3>
+            <div class="card-tools">
+              <span title="3 New Messages" class="badge bg-light text-primary">3</span>
+              <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-tool" title="Contacts" data-widget="chat-pane-toggle">
+                <i class="fas fa-comments"></i>
+              </button>
+              <button type="button" class="btn btn-tool" data-card-widget="remove">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
           </div>
           <div class="card-body p-3">
             <table class="table table-bordered table-sm mb-0">
