@@ -9,6 +9,7 @@
           <tr>
             <th>#</th>
             <th>Họ tên</th>
+            <th>Chức vụ</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -17,6 +18,7 @@
             <tr>
               <td>{{ $index + 1 }}</td>
               <td>{{ $m->tinHuu->ho_ten }}</td>
+              <td>{{ $m->chuc_vu ?? 'Chưa xác định' }}</td>
               <td>
                 <button class="btn btn-danger btn-sm btn-delete" 
                         data-ban="{{ $m->ban_nganh_id }}" 

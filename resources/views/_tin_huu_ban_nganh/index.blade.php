@@ -17,15 +17,23 @@
     </div>
   </div>
 
-  {{-- PHẦN 2: Chọn Tín Hữu --}}
+  {{-- PHẦN 2: Chọn Tín Hữu và Chức Vụ --}}
   <div class="card border-info mt-3">
-    <div class="card-header bg-info text-white"><strong>Phần 2: Chọn Tín Hữu</strong></div>
+    <div class="card-header bg-info text-white"><strong>Phần 2: Chọn Tín Hữu và Chức Vụ</strong></div>
     <div class="card-body">
       <div class="form-group">
         <select name="tin_huu_id" id="tin_huu_id" class="form-control select2bs4">
           <option value="">-- Chọn Tín Hữu --</option>
           @foreach($tinhuus as $th)
             <option value="{{ $th->id }}">{{ $th->ho_ten }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="form-group">
+        <select name="chuc_vu" id="chuc_vu" class="form-control select2bs4">
+          <option value="">-- Chọn Chức Vụ --</option>
+          @foreach($chucVus as $cv)
+            <option value="{{ $cv }}">{{ $cv }}</option>
           @endforeach
         </select>
       </div>
@@ -46,12 +54,12 @@
 
 <!-- Modal xác nhận xóa -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class=" modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title" id="deleteLabel">Xác nhận xóa</h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+          <span aria-hidden="true">×</span>
         </button>
       </div>
       <div class="modal-body">
@@ -71,7 +79,6 @@
 <script src="{{ asset('plugins/select2/js/select2.full.min.js') }}"></script>
 
 <script>
-    
   $(function () {
     $('.select2bs4').select2({ theme: 'bootstrap4' });
 
@@ -91,24 +98,28 @@
     $('#btn-them').on('click', function () {
       let banNganhId = $('#ban_nganh_id').val();
       let tinHuuId = $('#tin_huu_id').val();
+      let chucVu = $('#chuc_vu').val();
 
       if (!banNganhId || !tinHuuId) {
-        alert("Vui lòng chọn đủ thông tin.");
+        alert("Vui lòng chọn đủ Ban Ngành và Tín Hữu.");
         return;
       }
 
       $.post("{{ route('_tin_huu_ban_nganh.store') }}", {
         _token: "{{ csrf_token() }}",
         ban_nganh_id: banNganhId,
-        tin_huu_id: tinHuuId
+        tin_huu_id: tinHuuId,
+        chuc_vu: chucVu
       }, function () {
         $('#tin_huu_id').val('').trigger('change');
+        $('#chuc_vu').val('').trigger('change');
         loadMembers();
       });
     });
 
     $('#btn-huy').on('click', function () {
       $('#tin_huu_id').val('').trigger('change');
+      $('#chuc_vu').val('').trigger('change');
     });
 
     // Delete logic
