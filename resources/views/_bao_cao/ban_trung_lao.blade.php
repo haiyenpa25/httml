@@ -68,38 +68,19 @@
     </div>
 
     <!-- Biểu đồ sinh hoạt -->
-           <!-- Biểu đồ và thành viên ban điều hành -->
+           <!-- Biểu đồ CN -->
     <div class="row">
+          <!-- Biểu đồ CN -->
       <div class="col-md-8">
         <div class="card">
           <div class="card-header">
-            <h5 class="card-title">Biểu đồ tín hữu sinh hoạt | Chúa Nhật</h5>
+            <h5 class="card-title">Biểu đồ tín hữu sinh hoạt | Chúa Nhật </h5>
             <div class="card-tools">
               <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-              <div class="btn-group">
-                <button type="button" class="btn btn-tool dropdown-toggle" data-toggle="dropdown"><i class="fas fa-wrench"></i></button>
-                <div class="dropdown-menu dropdown-menu-right" role="menu">
-                  <a href="#" class="dropdown-item">Action</a>
-                  <a href="#" class="dropdown-item">Another action</a>
-                  <a href="#" class="dropdown-item">Something else here</a>
-                  <div class="dropdown-divider"></div>
-                  <a href="#" class="dropdown-item">Separated link</a>
-                </div>
-              </div>
+            
               <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
             </div>
           </div>
-
-
-
-          <div class="card-body">
-            <div class="chart">
-              <canvas id="barChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
-            </div>
-          </div>
-
-
-
           <div class="card-body">
             <div class="row">
               <div class="col-md-8">
@@ -107,7 +88,114 @@
                   <strong>BIỂU ĐỒ TÍN HỮU SINH HOẠT TẠI NHÀ THỜ</strong>
                 </p>
                 <div class="chart">
-                  <canvas id="salesChart" height="180" style="height: 180px;"></canvas>
+                  <canvas id="barChart" height="180" style="height: 180px;"></canvas>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <p class="text-center">
+                  <strong>Chi tiết theo tuần </strong>
+                </p>
+                <div class="progress-group">
+                  Tuần 1
+                  <span class="float-right"><b>160</b>/200</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-primary" style="width: 80%"></div>
+                  </div>
+                </div>
+                <div class="progress-group">
+                  Tuần 2
+                  <span class="float-right"><b>310</b>/400</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-danger" style="width: 75%"></div>
+                  </div>
+                </div>
+                <div class="progress-group">
+                  <span class="progress-text">Tuần 3</span>
+                  <span class="float-right"><b>480</b>/800</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-success" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div class="progress-group">
+                  Tuần 4
+                  <span class="float-right"><b>250</b>/500</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-warning" style="width: 50%"></div>
+                  </div>
+                </div>
+                <div class="progress-group">
+                  Tuần 5
+                  <span class="float-right"><b>250</b>/500</span>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar bg-warning" style="width: 50%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="row">
+              <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                  <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> 17%</span>
+                  <h5 class="description-header">10</h5>
+                  <span class="description-text">Tín hữu</span><br>
+                  <small>Số người tham dự tại nhà thờ</small>
+                </div>
+                <!-- /.description-block -->
+              </div>
+              <!-- /.col -->
+              <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                  <span class="description-percentage text-success"><i class="fas fa-caret-up"></i> 17%</span>
+                  <h5 class="description-header">2</h5>
+                  <span class="description-text">Tín hữu</span><br>
+                  <small>Số người tham dự online</small>
+                </div>
+                <!-- /.description-block -->
+              </div>
+              <!-- /.col -->
+              <div class="col-sm-3 col-6">
+                <div class="description-block border-right">
+                  
+                </div>
+                <!-- /.description-block -->
+              </div>
+              <!-- /.col -->
+              <div class="col-sm-3 col-6">
+                <div class="description-block">
+                  
+                </div>
+                <!-- /.description-block -->
+              </div>
+            </div>
+            <!-- /.row -->
+          </div>
+
+
+        </div>
+
+
+
+      <!-- / Biểu đồ CN -->
+      <!-- Biểu đồ Ban Ngành -->
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title">Biểu đồ tín hữu sinh hoạt Ban Ngành | Chiều Chúa Nhật |Vào lúc 14:00 |</h5>
+            <div class="card-tools">
+              <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>              
+              <button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <p class="text-center">
+                  <strong>BIỂU ĐỒ TÍN HỮU SINH HOẠT BAN NGÀNH</strong>
+                </p>
+                <div class="chart">
+                  <canvas id="barChart1" height="180" style="height: 180px;"></canvas>
                 </div>
               </div>
               <div class="col-md-4">
@@ -195,10 +283,7 @@
 
         </div>
       </div>
-
-
-
-      
+      <!-- Ban điều hành -->      
       <div class="col-md-4">
         <div class="card">
           <div class="card-header bg-primary">
@@ -295,9 +380,9 @@
           </div>
         </div>
       </div>
-      <div class="col-md-6" id="accordion">
+      <div class="col-md-6">
         @foreach(['Tập hát cho chương trình Thương Khó Phục sinh', 'Chương trình thông công tháng 4'] as $i => $item)
-        <div class="card card-warning card-outline">
+        <div class="card card-primary shadow-none">
           <a class="d-block w-100" data-toggle="collapse" href="#collapseVanDe{{ $i + 1 }}">
             <div class="card-header">
               <h4 class="card-title w-100">{{ $i + 1 }}. {{ $item }}</h4>
@@ -309,6 +394,32 @@
         </div>
         @endforeach
       </div>
+
+
+  
+        <div class="col-md-12">
+          <div class="card card-primary shadow-none">
+            <div class="card-header">
+              <h3 class="card-title">Shadow - None</h3>
+
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+              <!-- /.card-tools -->
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              The body of the card
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+        </div>
+
+
+
     </div>
 
   </div>

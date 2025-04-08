@@ -92,3 +92,155 @@
     $('#visit-date').datetimepicker({ format: 'L' });
   });
 </script>
+
+
+
+
+<script>
+  var areaChartData = {
+    labels  : ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'],
+    datasets: [
+      {
+        label               : 'Chúa Nhật',
+        backgroundColor     : 'rgba(210, 214, 222, 1)',
+        borderColor         : 'rgba(210, 214, 222, 1)',
+        data                : [45, 48, 42, 47, 43]
+      },
+      {
+        label               : 'Ban Ngành',
+        backgroundColor     : 'rgba(60,141,188,0.9)',
+        borderColor         : 'rgba(60,141,188,0.8)',
+        data                : [25, 30, 28, 20, 24]
+      }
+    ]
+  }
+
+  var barChartCanvas = $('#barChart').get(0).getContext('2d')
+  var barChartData = $.extend(true, {}, areaChartData)
+  var temp0 = areaChartData.datasets[0]
+  var temp1 = areaChartData.datasets[1]
+  barChartData.datasets[0] = temp1
+  barChartData.datasets[1] = temp0
+
+  var barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    datasetFill: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: 50,
+        ticks: {
+          stepSize: 10
+        }
+      }
+    }
+  }
+
+  new Chart(barChartCanvas, {
+    type: 'bar',
+    data: barChartData,
+    options: barChartOptions
+  })
+</script>
+
+
+
+<script>
+  var areaChartData = {
+    labels  : ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'],
+    datasets: [
+      {
+        label               : 'Chúa Nhật',
+        backgroundColor     : 'rgba(210, 214, 222, 1)',
+        borderColor         : 'rgba(210, 214, 222, 1)',
+        data                : [45, 48, 42, 47, 43]
+      },
+      {
+        label               : 'Ban Ngành',
+        backgroundColor     : 'rgba(60,141,188,0.9)',
+        borderColor         : 'rgba(60,141,188,0.8)',
+        data                : [25, 30, 28, 20, 24]
+      }
+    ]
+  }
+
+  var barChartCanvas = $('#barChart').get(0).getContext('2d')
+  var barChartData = $.extend(true, {}, areaChartData)
+  var temp0 = areaChartData.datasets[0]
+  var temp1 = areaChartData.datasets[1]
+  barChartData.datasets[0] = temp1
+  barChartData.datasets[1] = temp0
+
+  var barChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    datasetFill: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: 50,
+        ticks: {
+          stepSize: 10
+        }
+      }
+    }
+  }
+
+  new Chart(barChartCanvas, {
+    type: 'bar',
+    data: barChartData,
+    options: barChartOptions
+  })
+</script>
+
+<script>
+  var areaChartData1 = {
+    labels  : ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'],
+    datasets: [
+      {
+        label           : 'Chúa Nhật',
+        backgroundColor : 'rgba(210, 214, 222, 1)',
+        borderColor     : 'rgba(210, 214, 222, 1)',
+        data            : [45, 48, 42, 47, 43]
+      },
+      {
+        label           : 'Ban Ngành',
+        backgroundColor : 'rgba(60,141,188,0.9)',
+        borderColor     : 'rgba(60,141,188,0.8)',
+        data            : [25, 30, 28, 20, 24]
+      }
+    ]
+  }
+
+  var barChartCanvas1 = $('#barChart1').get(0).getContext('2d')
+  var barChartData1 = $.extend(true, {}, areaChartData1)
+  var temp0_1 = areaChartData1.datasets[0]
+  var temp1_1 = areaChartData1.datasets[1]
+  barChartData1.datasets[0] = temp1_1
+  barChartData1.datasets[1] = temp0_1
+
+  var barChartOptions1 = {
+    responsive: true,
+    maintainAspectRatio: false,
+    datasetFill: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: 50,
+        ticks: {
+          stepSize: 10
+        }
+      }
+    }
+  }
+
+  new Chart(barChartCanvas1, {
+    type: 'bar',
+    data: barChartData1,
+    options: barChartOptions1
+  })
+</script>
