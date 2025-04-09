@@ -2,15 +2,41 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
-    AuthController, TinHuuController, HoGiaDinhController, NguoiDungController,
-    BanChapSuController, BanAmThucController, BanCauNguyenController, BanChungDaoController,
-    BanCoDocGiaoDucController, BanDanController, BanHauCanController, BanHatThoPhuongController,
-    BanKhanhTietController, BanKyThuatAmThanhController, BanLeTanController, BanMayChieuController,
-    BanThamViengController, BanTratTuController, BanTruyenGiangController, BanTruyenThongMayChieuController,
-    BanThanhNienController, BanThanhTrangController, BanThieuNhiAuController, BanTrungLaoController,
-    DienGiaController, ThanHuuController, ThietBiController, TaiChinhController,
-    ThoPhuongController, TaiLieuController, ThongBaoController, BaoCaoController,
-    CaiDatController, BanNganhController, TinHuuBanNganhController
+    AuthController,
+    TinHuuController,
+    HoGiaDinhController,
+    NguoiDungController,
+    BanChapSuController,
+    BanAmThucController,
+    BanCauNguyenController,
+    BanChungDaoController,
+    BanCoDocGiaoDucController,
+    BanDanController,
+    BanHauCanController,
+    BanHatThoPhuongController,
+    BanKhanhTietController,
+    BanKyThuatAmThanhController,
+    BanLeTanController,
+    BanMayChieuController,
+    BanThamViengController,
+    BanTratTuController,
+    BanTruyenGiangController,
+    BanTruyenThongMayChieuController,
+    BanThanhNienController,
+    BanThanhTrangController,
+    BanThieuNhiAuController,
+    BanTrungLaoController,
+    DienGiaController,
+    ThanHuuController,
+    ThietBiController,
+    TaiChinhController,
+    ThoPhuongController,
+    TaiLieuController,
+    ThongBaoController,
+    BaoCaoController,
+    CaiDatController,
+    BanNganhController,
+    TinHuuBanNganhController
 };
 
 // ==== Middleware groups ====
@@ -19,13 +45,13 @@ $quanTriTruongBan = ['auth', 'checkRole:quan_tri,truong_ban'];
 $fullAccess = ['auth', 'checkRole:quan_tri,truong_ban,thanh_vien'];
 
 // ==== Auth Routes ====
-Route::get('/', fn () => redirect()->route('login'));
+Route::get('/', fn() => redirect()->route('login'));
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ==== Dashboard ====
-Route::middleware($quanTri)->get('/trang-chu', fn () => view('dashboard'))->name('dashboard');
+Route::middleware($quanTri)->get('/trang-chu', fn() => view('dashboard'))->name('dashboard');
 
 // ==== Quản lý Tín Hữu ====
 Route::prefix('quan-ly-tin-huu')->middleware($quanTriTruongBan)->group(function () {
@@ -140,3 +166,13 @@ Route::put('/tin-huu-ban-nganh/update', [TinHuuBanNganhController::class, 'updat
 Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->middleware($quanTri)->name('_cai_dat.he_thong');
 
 
+
+use App\Http\Controllers\BuoiNhomController;
+
+Route::get('/buoi-nhoms', [BuoiNhomController::class, 'index'])->name('buoi_nhom.index');
+Route::get('/buoi-nhoms/create', [BuoiNhomController::class, 'create'])->name('buoi_nhom.create');
+Route::post('/buoi-nhoms', [BuoiNhomController::class, 'store'])->name('buoi_nhom.store');
+Route::get('/buoi-nhoms/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('buoi_nhom.show');
+Route::get('/buoi-nhoms/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('buoi_nhom.edit');
+Route::put('/buoi-nhoms/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('buoi_nhom.update');
+Route::delete('/buoi-nhoms/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('buoi_nhom.destroy');

@@ -3,73 +3,117 @@
 namespace App\Http\Controllers;
 
 use App\Models\BuoiNhom;
-use App\Models\LichBuoiNhom;
+use App\Models\BuoiNhomLich;
+use App\Models\BuoiNhomTo;
 use Illuminate\Http\Request;
 
 class BuoiNhomController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
-        $buoiNhoms = BuoiNhom::all();
-        return view('buoi_nhom.index', compact('buoiNhoms'));
+        $buoiNhoms = BuoiNhom::with(['lichBuoiNhom', 'to', 'tinHuuHdct', 'tinHuuDoKt', 'dienGia'])->latest()->paginate(10);
+        return view('_buoi_nhom.index', compact('buoiNhoms'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create()
     {
-        $lichBuoiNhoms = LichBuoiNhom::all();
-        return view('buoi_nhom.create', compact('lichBuoiNhoms'));
+        $lichBuoiNhoms = BuoiNhomLich::all();
+        $buoiNhomsTo = BuoiNhomTo::all();
+        // Giả định bạn có cách lấy danh sách tín hữu
+        $tinHuu = []; // Thay bằng cách lấy dữ liệu thực tế
+        return view('_buoi_nhom.create', compact('lichBuoiNhoms', 'buoiNhomsTo', 'tinHuu'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'lich_buoi_nhom_id' => 'required|exists:lich_buoi_nhom,id',
+        $request->validate([
+            'lich_buoi_nhom_id' => 'required|exists:buoi_nhom_lich,id',
             'ngay_dien_ra' => 'required|date',
-            'gio_bat_dau' => 'required|date_format:H:i',
-            'gio_ket_thuc' => 'required|date_format:H:i',
-            'dia_diem' => 'required|text',
-            'so_luong_tham_gia' => 'nullable|integer',
-            'ghi_chu' => 'nullable|text',
-            'trang_thai' => 'nullable|enum:da_dien_ra,sap_dien_ra,huy',
+            'gio_bat_dau' => 'required|date_format:H:i:s',
+            'gio_ket_thuc' => 'required|date_format:H:i:s|after:gio_bat_dau',
+            'dia_diem' => 'required|string',
+            // Các validation khác tùy theo yêu cầu
         ]);
 
-        BuoiNhom::create($validatedData);
+        BuoiNhom::create($request->all());
 
-        return redirect()->route('buoi-nhom.index')->with('success', 'Buổi nhóm đã được thêm thành công!');
+        return redirect()->route('buoi_nhom.index')->with('success', 'Buổi nhóm đã được tạo thành công.');
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\BuoiNhom  $buoiNhom
+     * @return \Illuminate\Http\Response
+     */
     public function show(BuoiNhom $buoiNhom)
     {
-        return view('buoi_nhom.show', compact('buoiNhom'));
+        return view('_buoi_nhom.show', compact('buoiNhom'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\BuoiNhom  $buoiNhom
+     * @return \Illuminate\Http\Response
+     */
     public function edit(BuoiNhom $buoiNhom)
     {
-         $lichBuoiNhoms = LichBuoiNhom::all();
-        return view('buoi_nhom.edit', compact('buoiNhom','lichBuoiNhoms'));
+        $lichBuoiNhoms = BuoiNhomLich::all();
+        $buoiNhomsTo = BuoiNhomTo::all();
+        // Giả định bạn có cách lấy danh sách tín hữu
+        $tinHuu = []; // Thay bằng cách lấy dữ liệu thực tế
+        return view('_buoi_nhom.edit', compact('buoiNhom', 'lichBuoiNhoms', 'buoiNhomsTo', 'tinHuu'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\BuoiNhom  $buoiNhom
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request, BuoiNhom $buoiNhom)
     {
-         $validatedData = $request->validate([
-            'lich_buoi_nhom_id' => 'required|exists:lich_buoi_nhom,id',
+        $request->validate([
+            'lich_buoi_nhom_id' => 'required|exists:buoi_nhom_lich,id',
             'ngay_dien_ra' => 'required|date',
-            'gio_bat_dau' => 'required|date_format:H:i',
-            'gio_ket_thuc' => 'required|date_format:H:i',
-            'dia_diem' => 'required|text',
-            'so_luong_tham_gia' => 'nullable|integer',
-            'ghi_chu' => 'nullable|text',
-            'trang_thai' => 'nullable|enum:da_dien_ra,sap_dien_ra,huy',
+            'gio_bat_dau' => 'required|date_format:H:i:s',
+            'gio_ket_thuc' => 'required|date_format:H:i:s|after:gio_bat_dau',
+            'dia_diem' => 'required|string',
+            // Các validation khác tùy theo yêu cầu
         ]);
 
-        $buoiNhom->update($validatedData);
+        $buoiNhom->update($request->all());
 
-        return redirect()->route('buoi-nhom.index')->with('success', 'Buổi nhóm đã được cập nhật thành công!');
+        return redirect()->route('buoi_nhom.index')->with('success', 'Buổi nhóm đã được cập nhật thành công.');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\BuoiNhom  $buoiNhom
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(BuoiNhom $buoiNhom)
     {
         $buoiNhom->delete();
-        return redirect()->route('buoi-nhom.index')->with('success', 'Buổi nhóm đã được xóa thành công!');
+        return redirect()->route('buoi_nhom.index')->with('success', 'Buổi nhóm đã được xóa thành công.');
     }
 }
