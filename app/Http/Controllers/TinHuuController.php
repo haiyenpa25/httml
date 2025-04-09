@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 enum LoaiTinHuu: string
 {
     case CHINH_THUC = 'tin_huu_chinh_thuc';
@@ -29,6 +30,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\Models\TinHuuBanNganh;
 
 
 class TinHuuController extends Controller
@@ -42,7 +45,7 @@ class TinHuuController extends Controller
     public function create()
     {
         $hoGiaDinhs = HoGiaDinh::all();
-        return view('_tin_huu.create',compact('hoGiaDinhs'));
+        return view('_tin_huu.create', compact('hoGiaDinhs'));
     }
 
     public function store(Request $request)
@@ -70,8 +73,8 @@ class TinHuuController extends Controller
 
     public function edit(TinHuu $tinHuu)
     {
-         $hoGiaDinhs = HoGiaDinh::all();
-        return view('_tin_huu.edit', compact('tinHuu','hoGiaDinhs'));
+        $hoGiaDinhs = HoGiaDinh::all();
+        return view('_tin_huu.edit', compact('tinHuu', 'hoGiaDinhs'));
     }
 
     public function update(Request $request, TinHuu $tinHuu)
@@ -102,5 +105,21 @@ class TinHuuController extends Controller
     {
         $nhanSu = TinHuu::where('vai_tro', '!=', 'thanh_vien')->get(); // Ví dụ: Lấy tất cả người dùng không phải là thành viên
         return view('_tin_huu.nhan_su', compact('nhanSu'));
-    }    
+    }
+
+
+    public function getByBanNganh($banNganhId)
+    {
+        $tinHuus = TinHuuBanNganh::with('tinHuu')
+            ->where('ban_nganh_id', $banNganhId)
+            ->get()
+            ->map(function ($record) {
+                return [
+                    'id' => $record->tinHuu->id,
+                    'ho_ten' => $record->tinHuu->ho_ten
+                ];
+            });
+
+        return response()->json($tinHuus);
+    }
 }

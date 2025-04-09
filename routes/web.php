@@ -169,10 +169,19 @@ Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->midd
 
 use App\Http\Controllers\BuoiNhomController;
 
-Route::get('/buoi-nhoms', [BuoiNhomController::class, 'index'])->name('buoi_nhom.index');
-Route::get('/buoi-nhoms/create', [BuoiNhomController::class, 'create'])->name('buoi_nhom.create');
-Route::post('/buoi-nhoms', [BuoiNhomController::class, 'store'])->name('buoi_nhom.store');
-Route::get('/buoi-nhoms/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('buoi_nhom.show');
-Route::get('/buoi-nhoms/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('buoi_nhom.edit');
-Route::put('/buoi-nhoms/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('buoi_nhom.update');
-Route::delete('/buoi-nhoms/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('buoi_nhom.destroy');
+
+Route::get('/buoi-nhom', [BuoiNhomController::class, 'index'])->name('buoi_nhom.index');
+Route::get('/buoi-nhom/create', [BuoiNhomController::class, 'create'])->name('buoi_nhom.create');
+Route::post('/buoi-nhom', [BuoiNhomController::class, 'store'])->name('buoi_nhom.store');
+Route::get('/buoi-nhom/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('buoi_nhom.show');
+Route::get('/buoi-nhom/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('buoi_nhom.edit');
+Route::put('/buoi-nhom/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('buoi_nhom.update');
+Route::delete('/buoi-nhom/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('buoi_nhom.destroy');
+
+Route::get('/get-tin-huu-by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::class, 'getTinHuuByBanNganh']);
+
+// Route::get('/get-buoi-nhom', [BuoiNhomController::class, 'getBuoiNhoms']); // Không cần thiết nếu có index
+// Route::get('/get-buoi-nhom/{id}', [BuoiNhomController::class, 'getBuoiNhom']); // Không cần thiết nếu có show
+// Route::delete('/delete-buoi-nhom/{id}', [BuoiNhomController::class, 'deleteBuoiNhom']); // Không cần thiết nếu có destroy
+
+// Route::get('/get-tin-huu-by-ban-nganh/{id}', [TinHuuController::class, 'getByBanNganh']); // Nếu bạn thực sự cần route này

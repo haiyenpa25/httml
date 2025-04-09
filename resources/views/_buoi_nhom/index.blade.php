@@ -1,53 +1,71 @@
 @extends('layouts.app')
+@section('title', 'Danh sách Buổi Nhóm')
 
 @section('content')
     <div class="container">
         <h2>Danh sách Buổi Nhóm</h2>
-        <a href="{{ route('buoi_nhom.create') }}" class="btn btn-primary mb-3">Thêm Buổi Nhóm</a>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Lịch Buổi Nhóm</th>
-                    <th>Ngày Diễn Ra</th>
-                    <th>Giờ Bắt Đầu</th>
-                    <th>Giờ Kết Thúc</th>
-                    <th>Địa Điểm</th>
-                    <th>Trạng Thái</th>
-                    <th>Hành Động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($buoiNhoms as $buoiNhom)
-                    <tr>
-                        <td>{{ $buoiNhom->id }}</td>
-                        <td>{{ $buoiNhom->lichBuoiNhom->ten ?? 'N/A' }}</td>
-                        <td>{{ $buoiNhom->ngay_dien_ra->format('d/m/Y') }}</td>
-                        <td>{{ $buoiNhom->gio_bat_dau->format('H:i') }}</td>
-                        <td>{{ $buoiNhom->gio_ket_thuc->format('H:i') }}</td>
-                        <td>{{ $buoiNhom->dia_diem }}</td>
-                        <td>{{ $buoiNhom->trang_thai }}</td>
-                        <td>
-                            <a href="{{ route('buoi_nhom.show', $buoiNhom->id) }}" class="btn btn-info btn-sm">Xem</a>
-                            <a href="{{ route('buoi_nhom.edit', $buoiNhom->id) }}" class="btn btn-warning btn-sm">Sửa</a>
-                            <form action="{{ route('buoi_nhom.destroy', $buoiNhom->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="8">Không có buổi nhóm nào.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        {{ $buoiNhoms->links() }}
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">Danh sách Buổi Nhóm</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-striped" id="buoi-nhom-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Chủ Đề</th>
+                            <th>Diễn Giả</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{-- Dữ liệu sẽ được tải bằng Ajax --}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            loadBuoiNhoms(); // Tải danh sách buổi nhóm khi trang tải
+
+            // Hàm tải danh sách buổi nhóm (giống như trong create.blade.php)
+            function loadBuoiNhoms() {
+                $.ajax({
+                    url: '/get-buoi-nhoms', // Route cần định nghĩa
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        let tableBody = $('#buoi-nhom-table tbody');
+                        tableBody.empty();
+                        $.each(data, function(key, value) {
+                            tableBody.append('<tr>' +
+                                '<td>' + value.ngay_dien_ra + '</td>' +
+                                '<td>' + value.chu_de + '</td>' +
+                                '<td>' + value.dien_gia.ho_ten + '</td>' +
+                                '<td>' +
+                                '<button class="btn btn-sm btn-warning edit-btn" data-id="' + value.id + '">Sửa</button> ' +
+                                '<button class="btn btn-sm btn-danger delete-btn" data-id="' + value.id + '">Xóa</button>' +
+                                '</td>' +
+                                '</tr>');
+                        });
+                    }
+                });
+            }
+
+            // Xử lý sự kiện click nút Sửa (giống như trong create.blade.php)
+            $(document).on('click', '.edit-btn', function() {
+                // ... (code xử lý nút Sửa)
+            });
+
+            // Xử lý sự kiện click nút Xóa (giống như trong create.blade.php)
+            $(document).on('click', '.delete-btn', function() {
+                // ... (code xử lý nút Xóa)
+            });
+        });
+    </script>
 @endsection
