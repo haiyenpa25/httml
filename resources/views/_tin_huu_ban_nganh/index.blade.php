@@ -43,6 +43,7 @@
   {{-- PHẦN 3: Thao Tác --}}
   <div class="text-center mt-3">
     <button class="btn btn-success" id="btn-them">Thêm vào Ban</button>
+    <button class="btn btn-warning" id="btn-sua" style="display: none;">Sửa Chức Vụ</button>
     <button class="btn btn-secondary" id="btn-huy">Hủy</button>
   </div>
 
@@ -54,7 +55,7 @@
 
 <!-- Modal xác nhận xóa -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteLabel" aria-hidden="true">
-  <div class=" modal-dialog" role="document">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title" id="deleteLabel">Xác nhận xóa</h5>
@@ -81,6 +82,10 @@
 <script>
   $(function () {
     $('.select2bs4').select2({ theme: 'bootstrap4' });
+
+    let isEditMode = false;
+    let currentBanNganhId = null;
+    let currentTinHuuId = null;
 
     function loadMembers() {
       let banNganhId = $('#ban_nganh_id').val();
@@ -111,16 +116,50 @@
         tin_huu_id: tinHuuId,
         chuc_vu: chucVu
       }, function () {
-        $('#tin_huu_id').val('').trigger('change');
-        $('#chuc_vu').val('').trigger('change');
+        resetForm();
         loadMembers();
       });
     });
 
+    $('#btn-sua').on('click', function () {
+      let banNganhId = $('#ban_nganh_id').val();
+      let tinHuuId = $('#tin_huu_id').val();
+      let chucVu = $('#chuc_vu').val();
+
+      if (!banNganhId || !tinHuuId) {
+        alert("Vui lòng chọn đủ Ban Ngành và Tín Hữu.");
+        return;
+      }
+
+      $.ajax({
+        url: "/tin-huu-ban-nganh/update", // Route tùy chỉnh
+        method: 'PUT',
+        data: {
+          _token: "{{ csrf_token() }}",
+          ban_nganh_id: banNganhId,
+          tin_huu_id: tinHuuId,
+          chuc_vu: chucVu
+        },
+        success: function () {
+          resetForm();
+          loadMembers();
+        }
+      });
+    });
+
     $('#btn-huy').on('click', function () {
+      resetForm();
+    });
+
+    function resetForm() {
       $('#tin_huu_id').val('').trigger('change');
       $('#chuc_vu').val('').trigger('change');
-    });
+      $('#btn-sua').hide();
+      $('#btn-them').show();
+      isEditMode = false;
+      currentBanNganhId = null;
+      currentTinHuuId = null;
+    }
 
     // Delete logic
     let banToDelete = null;
@@ -148,6 +187,26 @@
           }
         });
       }
+    });
+
+    // Edit logic
+    $(document).on('click', '.btn-edit', function () {
+      currentBanNganhId = $(this).data('ban');
+      currentTinHuuId = $(this).data('tinhuu');
+
+      $.get("/tin-huu-ban-nganh/edit", { // Route tùy chỉnh
+        ban_nganh_id: currentBanNganhId,
+        tin_huu_id: currentTinHuuId
+      }, function (data) {
+        if (data.success) {
+          $('#ban_nganh_id').val(data.ban_nganh_id).trigger('change');
+          $('#tin_huu_id').val(data.tin_huu_id).trigger('change');
+          $('#chuc_vu').val(data.chuc_vu).trigger('change');
+          $('#btn-them').hide();
+          $('#btn-sua').show();
+          isEditMode = true;
+        }
+      });
     });
   });
 </script>

@@ -13,7 +13,6 @@ class TinHuuBanNganhController extends Controller
     {
         $bannganhs = BanNganh::all();
         $tinhuus = TinHuu::all();
-        // Danh sách chức vụ cố định (có thể lưu vào bảng riêng nếu cần)
         $chucVus = ['Trưởng ban', 'Phó ban', 'Thành viên'];
         return view('_tin_huu_ban_nganh.index', compact('bannganhs', 'tinhuus', 'chucVus'));
     }
@@ -23,7 +22,7 @@ class TinHuuBanNganhController extends Controller
         $request->validate([
             'ban_nganh_id' => 'required|exists:ban_nganh,id',
             'tin_huu_id' => 'required|exists:tin_huu,id',
-            'chuc_vu' => 'nullable|string|max:50', // Validate trường chức vụ
+            'chuc_vu' => 'nullable|string|max:50',
         ]);
 
         TinHuuBanNganh::firstOrCreate(
@@ -32,7 +31,7 @@ class TinHuuBanNganhController extends Controller
                 'tin_huu_id' => $request->tin_huu_id,
             ],
             [
-                'chuc_vu' => $request->chuc_vu, // Lưu chức vụ nếu có
+                'chuc_vu' => $request->chuc_vu,
             ]
         );
 
@@ -57,6 +56,44 @@ class TinHuuBanNganhController extends Controller
 
         if ($record) {
             $record->delete();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false], 404);
+    }
+
+    public function edit(Request $request)
+    {
+        $record = TinHuuBanNganh::where('ban_nganh_id', $request->ban_nganh_id)
+            ->where('tin_huu_id', $request->tin_huu_id)
+            ->first();
+
+        if ($record) {
+            return response()->json([
+                'success' => true,
+                'tin_huu_id' => $record->tin_huu_id,
+                'ban_nganh_id' => $record->ban_nganh_id,
+                'chuc_vu' => $record->chuc_vu
+            ]);
+        }
+
+        return response()->json(['success' => false], 404);
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            'tin_huu_id' => 'required|exists:tin_huu,id',
+            'chuc_vu' => 'nullable|string|max:50',
+        ]);
+
+        $record = TinHuuBanNganh::where('ban_nganh_id', $request->ban_nganh_id)
+            ->where('tin_huu_id', $request->tin_huu_id)
+            ->first();
+
+        if ($record) {
+            $record->update(['chuc_vu' => $request->chuc_vu]);
             return response()->json(['success' => true]);
         }
 

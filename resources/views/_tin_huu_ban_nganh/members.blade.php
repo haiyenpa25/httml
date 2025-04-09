@@ -20,6 +20,11 @@
               <td>{{ $m->tinHuu->ho_ten }}</td>
               <td>{{ $m->chuc_vu ?? 'Chưa xác định' }}</td>
               <td>
+                <button class="btn btn-warning btn-sm btn-edit" 
+                        data-ban="{{ $m->ban_nganh_id }}" 
+                        data-tinhuu="{{ $m->tin_huu_id }}">
+                  Sửa
+                </button>
                 <button class="btn btn-danger btn-sm btn-delete" 
                         data-ban="{{ $m->ban_nganh_id }}" 
                         data-tinhuu="{{ $m->tin_huu_id }}">
