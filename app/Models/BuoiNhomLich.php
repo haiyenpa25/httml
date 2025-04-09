@@ -5,15 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LichBuoiNhom extends Model
+class BuoiNhomLich extends Model
 {
     use HasFactory;
 
-    protected $table = 'lich_buoi_nhom';
+    protected $table = 'buoi_nhom_lich';
 
     protected $fillable = [
         'ten',
-        'loai',
+        'id_buoi_nhom_loai', // cập nhật tên mới thay vì 'loai'
         'ban_nganh_id',
         'thu',
         'gio_bat_dau',
@@ -31,5 +31,10 @@ class LichBuoiNhom extends Model
     public function buoiNhoms()
     {
         return $this->hasMany(BuoiNhom::class, 'lich_buoi_nhom_id');
+    }
+
+    public function loai()
+    {
+        return $this->belongsTo(BuoiNhomLoai::class, 'id_buoi_nhom_loai');
     }
 }

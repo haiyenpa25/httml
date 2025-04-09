@@ -47,4 +47,9 @@ class BanNganh extends Model
     {
         return $this->hasMany(ThamVieng::class, 'id_ban');
     }
+
+    public function nhiemVus()
+    {
+        return $this->hasMany(NhiemVu::class, 'id_ban_nganh');
+    }
 }
