@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class BanNganh extends Model
 {
     use HasFactory;
 
     protected $table = 'ban_nganh';
+
 
     protected $fillable = [
         'ten',

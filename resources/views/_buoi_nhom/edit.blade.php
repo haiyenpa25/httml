@@ -1,140 +1,346 @@
+{{-- ====================================================================== --}}
+{{-- File: resources/views/_buoi_nhom/edit.blade.php --}}
+{{-- View để chỉnh sửa thông tin buổi nhóm --}}
+{{-- ====================================================================== --}}
 @extends('layouts.app')
-@section('title', 'Chỉnh Sửa Buổi Nhóm')
+@section('title', 'Chỉnh sửa Buổi Nhóm')
 
 @section('content')
-    <div class="container">
-        <h2>Chỉnh Sửa Buổi Nhóm</h2>
-        <form action="{{ route('buoi_nhom.update', $buoiNhom->id) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="card card-primary">
-                <div class="card-header">
-                    <h3 class="card-title">Phần 1: Nhập liệu</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>Chọn Chúa nhật ngày</label>
-                        <select class="form-control select2" id="sunday-select" name="ngay_dien_ra" style="width: 100%;" required>
-                            <option value="">-- Chọn ngày --</option>
-                            </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Đề tài</label>
-                        <input type="text" class="form-control" name="chu_de" value="{{ $buoiNhom->chu_de }}" placeholder="Nhập đề tài">
-                    </div>
-                    <div class="form-group">
-                        <label>Diễn giả</label>
-                        <select class="form-control select2" name="dien_gia_id" style="width: 100%;">
-                            <option value="">-- Chọn diễn giả --</option>
-                            @foreach ($dienGias as $dienGia)
-                                <option value="{{ $dienGia->id }}" {{ $buoiNhom->dien_gia_id == $dienGia->id ? 'selected' : '' }}>{{ $dienGia->ho_ten }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Hướng dẫn chương trình</label>
-                        <select class="form-control select2" name="id_tin_huu_hdct" style="width: 100%;">
-                            <option value="">-- Chọn người hướng dẫn --</option>
-                            @foreach ($nguoiHuongDans as $nguoiHuongDan)
-                                <option value="{{ $nguoiHuongDan->id }}" {{ $buoiNhom->id_tin_huu_hdct == $nguoiHuongDan->id ? 'selected' : '' }}>{{ $nguoiHuongDan->ho_ten }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Số lượng thành viên tham dự</label>
-                        <input type="number" class="form-control" name="so_luong_tin_huu" value="{{ $buoiNhom->so_luong_tin_huu }}" placeholder="Nhập số lượng người">
-                    </div>
-                    <div class="form-group">
-                        <label>Dâng hiến (VNĐ)</label>
-                        <input type="number" class="form-control" name="dang_hien" value="{{ $buoiNhom->dang_hien }}" placeholder="Nhập số tiền">
-                    </div>
-                </div>
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>@yield('title')</h1>
             </div>
+            <div class="col-sm-6">
+                <a href="{{ route('buoi_nhom.index') }}" class="btn btn-secondary float-sm-right"
+                    title="Quay lại Danh sách Buổi nhóm">
+                    <i class="fas fa-list"></i> Danh sách
+                </a>
+            </div>
+        </div>
 
-            <div class="card card-info">
-                <div class="card-header">
-                    <h3 class="card-title">Phần 2: Thăm viếng</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>Người thăm viếng</label>
-                        <select class="form-control select2" name="nguoi_tham_vieng_id" style="width: 100%;">
-                            <option value="">-- Chọn người thăm viếng --</option>
-                            @foreach ($nguoiThamViengs as $nguoiThamVieng)
-                                <option value="{{ $nguoiThamVieng->id }}" {{ $buoiNhom->nguoi_tham_vieng_id == $nguoiThamVieng->id ? 'selected' : '' }}>{{ $nguoiThamVieng->ho_ten }}</option>
-                            @endforeach
-                        </select>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary card-outline">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-edit"></i> Chỉnh sửa Buổi Nhóm</h3>
                     </div>
-                    <div class="form-group">
-                        <label>Lý do</label>
-                        <input type="text" class="form-control" name="ly_do_tham_vieng" value="{{ $buoiNhom->ly_do_tham_vieng }}" placeholder="Lý do thăm viếng">
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày thăm viếng</label>
-                        <div class="input-group date" id="visit-date" data-target-input="nearest">
-                            <input type="text" class="form-control datetimepicker-input" name="ngay_tham_vieng" value="{{ $buoiNhom->ngay_tham_vieng }}" data-target="#visit-date"/>
-                            <div class="input-group-append" data-target="#visit-date" data-toggle="datetimepicker">
-                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                    <div class="card-body">
+                        <form id="edit-buoi-nhom-form"
+                            action="{{ route('api.buoi_nhom.update', ['buoi_nhom' => $buoiNhom->id]) }}" method="POST"
+                            novalidate>
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" id="buoi_nhom_id" name="buoi_nhom_id" value="{{ $buoiNhom->id }}">
+                            <div class="row">
+                                {{-- Cột Trái --}}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="edit_lich_buoi_nhom_id">Lịch Buổi Nhóm</label>
+                                        <select name="lich_buoi_nhom_id" id="edit_lich_buoi_nhom_id"
+                                            class="form-control select2bs4-edit">
+                                            <option value="">-- Chọn Lịch --</option>
+                                            @foreach($lichBuoiNhoms as $lich)
+                                                <option value="{{ $lich->id }}" {{ $buoiNhom->lich_buoi_nhom_id == $lich->id ? 'selected' : '' }}>{{ htmlspecialchars($lich->ten) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_ban_nganh_id">Ban Ngành</label>
+                                        <select name="ban_nganh_id" id="edit_ban_nganh_id"
+                                            class="form-control select2bs4-edit">
+                                            <option value="">-- Chọn Ban Ngành --</option>
+                                            @foreach($banNganhs as $banNganh)
+                                                <option value="{{ $banNganh->id }}" {{ $buoiNhom->ban_nganh_id == $banNganh->id ? 'selected' : '' }}>{{ htmlspecialchars($banNganh->ten) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_ngay_dien_ra">Ngày Diễn Ra</label>
+                                        <input type="date" name="ngay_dien_ra" id="edit_ngay_dien_ra" class="form-control"
+                                            value="{{ $buoiNhom->ngay_dien_ra ? $buoiNhom->ngay_dien_ra->format('Y-m-d') : '' }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_gio_bat_dau">Giờ Bắt Đầu</label>
+                                        <input type="time" name="gio_bat_dau" id="edit_gio_bat_dau" class="form-control"
+                                            value="{{ $buoiNhom->gio_bat_dau ? \Carbon\Carbon::parse($buoiNhom->gio_bat_dau)->format('H:i') : '' }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_gio_ket_thuc">Giờ Kết Thúc</label>
+                                        <input type="time" name="gio_ket_thuc" id="edit_gio_ket_thuc" class="form-control"
+                                            value="{{ $buoiNhom->gio_ket_thuc ? \Carbon\Carbon::parse($buoiNhom->gio_ket_thuc)->format('H:i') : '' }}">
+                                    </div>
+                                </div>
+                                {{-- Cột Phải --}}
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="edit_chu_de">Chủ Đề</label>
+                                        <input type="text" name="chu_de" id="edit_chu_de" class="form-control"
+                                            value="{{ htmlspecialchars($buoiNhom->chu_de) }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_dien_gia_id">Diễn Giả</label>
+                                        <select name="dien_gia_id" id="edit_dien_gia_id"
+                                            class="form-control select2bs4-edit">
+                                            <option value="">-- Chọn Diễn Giả --</option>
+                                            @foreach($dienGias as $dienGia)
+                                                <option value="{{ $dienGia->id }}" {{ $buoiNhom->dien_gia_id == $dienGia->id ? 'selected' : '' }}>
+                                                    {{ htmlspecialchars($dienGia->chuc_danh . ' ' . $dienGia->ho_ten) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_id_tin_huu_hdct">Người Hướng Dẫn</label>
+                                        <select name="id_tin_huu_hdct" id="edit_id_tin_huu_hdct"
+                                            class="form-control select2bs4-edit">
+                                            <option value="">-- Chọn Người Hướng Dẫn --</option>
+                                            @foreach($tinHuuHdct as $tinHuu)
+                                                <option value="{{ $tinHuu->id }}" {{ $buoiNhom->id_tin_huu_hdct == $tinHuu->id ? 'selected' : '' }}>{{ htmlspecialchars($tinHuu->ho_ten) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_id_tin_huu_do_kt">Người Đọc Kinh Thánh</label>
+                                        <select name="id_tin_huu_do_kt" id="edit_id_tin_huu_do_kt"
+                                            class="form-control select2bs4-edit">
+                                            <option value="">-- Chọn Người Đọc Kinh Thánh --</option>
+                                            @foreach($tinHuuDoKt as $tinHuu)
+                                                <option value="{{ $tinHuu->id }}" {{ $buoiNhom->id_tin_huu_do_kt == $tinHuu->id ? 'selected' : '' }}>{{ htmlspecialchars($tinHuu->ho_ten) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_dia_diem">Địa Điểm</label>
+                                        <input type="text" name="dia_diem" id="edit_dia_diem" class="form-control"
+                                            value="{{ htmlspecialchars($buoiNhom->dia_diem) }}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="edit_ghi_chu">Ghi Chú</label>
+                                        <textarea name="ghi_chu" id="edit_ghi_chu"
+                                            class="form-control">{{ htmlspecialchars($buoiNhom->ghi_chu) }}</textarea>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <div class="card-footer bg-light border-top text-right">
+                                <button type="submit" class="btn btn-primary" id="edit-submit-btn"><i
+                                        class="fas fa-save"></i> Cập nhật</button>
+                                <a href="{{ route('buoi_nhom.index') }}" class="btn btn-secondary"><i
+                                        class="fas fa-list"></i> Xem Danh sách</a>
+                                <button type="reset" class="btn btn-default" id="edit-reset-btn"><i
+                                        class="fas fa-sync-alt"></i> Làm mới Form</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-
-            <div class="card card-secondary">
-                <div class="card-header">
-                    <h3 class="card-title">Phần 3: Ý kiến</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>Hiện trạng</label>
-                        <textarea class="form-control" rows="3" name="hien_trang" value="{{ $buoiNhom->hien_trang }}" placeholder="Ghi chú hiện trạng..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Đề xuất</label>
-                        <textarea class="form-control" rows="3" name="de_xuat" value="{{ $buoiNhom->de_xuat }}" placeholder="Ghi chú đề xuất..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Lưu ý</label>
-                        <textarea class="form-control" rows="2" name="luu_y" value="{{ $buoiNhom->luu_y }}" placeholder="Ghi chú lưu ý..."></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Cập Nhật Báo Cáo</button>
-            <a href="{{ route('buoi_nhom.index') }}" class="btn btn-secondary">Hủy</a>
-        </form>
+        </div>
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
-        $(document).ready(function() {
-            //Initialize Select2 Elements
-            $('.select2').select2();
+        $(function () {
+            console.log('Script for _buoi_nhom/edit.blade.php executing independently.');
 
-            //Date picker
-            $('#visit-date').datetimepicker({
-                format: 'YYYY-MM-DD'
-            });
-
-            // Logic để thêm các ngày Chúa Nhật vào select (cần điều chỉnh theo logic của bạn)
-            function populateSundays() {
-                let sundaySelect = $('#sunday-select');
-                let today = new Date();
-                let currentDay = today.getDay();
-                let diff = today.getDate() - currentDay + (currentDay == 0 ? 0 : 7); // Calculate the previous Sunday
-                let previousSunday = new Date(today.setDate(diff));
-
-                for (let i = 0; i < 5; i++) { // Lấy 5 Chúa Nhật gần nhất
-                    let dateString = previousSunday.toISOString().split('T')[0];
-                    sundaySelect.append(`<option value="${dateString}">${dateString}</option>`);
-                    previousSunday.setDate(previousSunday.getDate() - 7);
-                }
-                sundaySelect.val("{{ old('ngay_dien_ra', $buoiNhom->ngay_dien_ra) }}"); // Set selected value if old input exists or from the model
+            // Kiểm tra các thư viện cần thiết
+            if (typeof $ === 'undefined') {
+                console.error('jQuery is not loaded.');
+                return;
+            }
+            if (typeof $.fn.select2 === 'undefined') {
+                console.error('Select2 is not loaded.');
+                return;
+            }
+            if (typeof moment === 'undefined') {
+                console.error('Moment.js is not loaded.');
+                return;
             }
 
-            populateSundays();
+            // Thiết lập CSRF token cho Ajax
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            // ----- Helper Functions -----
+            const debounce = (func, wait) => {
+                let timeout;
+                return function (...args) {
+                    const later = () => { clearTimeout(timeout); func.apply(this, args); };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            };
+
+            const escapeHtml = (unsafe) => {
+                if (unsafe === null || unsafe === undefined) return '';
+                return unsafe.toString()
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            };
+
+            const loadTinHuuOptionsLocal = (banNganhId, selectElement, placeholder) => {
+                const defaultPlaceholder = '-- Vui lòng chọn --';
+                const targetPlaceholder = placeholder || selectElement.data('placeholder') || defaultPlaceholder;
+                if (!selectElement || !selectElement.length) {
+                    console.error("Target select element missing.");
+                    return Promise.reject("Target select missing.");
+                }
+                if (!banNganhId) {
+                    selectElement.empty().append('<option value=""></option>').val(null).trigger('change');
+                    selectElement.select2({ placeholder: '-- Chọn Ban Ngành trước --', theme: 'bootstrap4', width: '100%', allowClear: true });
+                    return Promise.resolve();
+                }
+                let url;
+                try {
+                    url = '{{ route("api.tin_huu.by_ban_nganh", ["ban_nganh_id" => "__ID__"]) }}'.replace('__ID__', encodeURIComponent(banNganhId));
+                } catch (e) {
+                    console.error("Route error:", e);
+                    url = `/api/tin-huu/by-ban-nganh/${encodeURIComponent(banNganhId)}`;
+                }
+                console.log(`Loading Tin Huu: ${url} for #${selectElement.attr('id')}`);
+                selectElement.prop('disabled', true).empty().append('<option value="">Đang tải...</option>').trigger('change.select2');
+                selectElement.select2({ placeholder: 'Đang tải...', theme: 'bootstrap4', width: '100%' });
+                return $.ajax({
+                    url: url,
+                    method: 'GET',
+                    dataType: 'json'
+                }).done(data => {
+                    selectElement.empty().append(`<option value=""></option>`);
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.forEach(item => {
+                            if (item && item.id && item.ho_ten) {
+                                selectElement.append(new Option(escapeHtml(item.ho_ten), item.id));
+                            }
+                        });
+                    } else {
+                        selectElement.append('<option value="" disabled>Không có tín hữu</option>');
+                    }
+                }).fail(error => {
+                    console.error(`Load Tin Huu Fail #${selectElement.attr('id')}:`, error.status, error.statusText, error.responseText);
+                    selectElement.empty().append('<option value="" disabled>Lỗi tải dữ liệu tín hữu</option>');
+                }).always(() => {
+                    selectElement.prop('disabled', false).val(null).trigger('change');
+                    selectElement.select2({ placeholder: targetPlaceholder, theme: 'bootstrap4', width: '100%', allowClear: true });
+                });
+            };
+
+            const getNextSunday = () => {
+                const d = new Date();
+                let daysUntilSunday = (7 - d.getDay()) % 7;
+                if (daysUntilSunday === 0) daysUntilSunday = 7;
+                d.setDate(d.getDate() + daysUntilSunday);
+                return d.toISOString().split('T')[0];
+            };
+
+            const showAlert = (message, type = 'info') => {
+                alert(`[${type.toUpperCase()}] ${message}`);
+            };
+
+            // ----- Cache Selectors -----
+            const editForm = $('#edit-buoi-nhom-form');
+            const editBanNganhSelect = $('#edit_ban_nganh_id');
+            const editTinHuuHdctSelect = $('#edit_id_tin_huu_hdct');
+            const editTinHuuDoKtSelect = $('#edit_id_tin_huu_do_kt');
+            const editSubmitBtn = $('#edit-submit-btn');
+            const editDateInput = $('#edit_ngay_dien_ra');
+            const editResetBtn = $('#edit-reset-btn');
+            const editSelects = $('.select2bs4-edit', editForm);
+
+            // ----- Initialize Plugins -----
+            $('.select2bs4-edit').select2({ theme: 'bootstrap4', width: '100%', allowClear: true });
+
+            // ----- Edit Buoi Nhom -----
+            const resetEditTinHuuSelects = () => {
+                const placeholder = '-- Chọn Ban Ngành trước --';
+                editTinHuuHdctSelect.empty().append(`<option value=""></option>`).val(null).trigger('change');
+                editTinHuuDoKtSelect.empty().append(`<option value=""></option>`).val(null).trigger('change');
+                editTinHuuHdctSelect.select2({ placeholder: placeholder, theme: 'bootstrap4', width: '100%' });
+                editTinHuuDoKtSelect.select2({ placeholder: placeholder, theme: 'bootstrap4', width: '100%' });
+            };
+
+            editBanNganhSelect.on('change', debounce(function () {
+                const banNganhId = $(this).val();
+                resetEditTinHuuSelects();
+                if (banNganhId) {
+                    loadTinHuuOptionsLocal(banNganhId, editTinHuuHdctSelect, '-- Chọn Người Hướng Dẫn --').then(() => {
+                        const initialHdctId = '{{ $buoiNhom->id_tin_huu_hdct ?? '' }}';
+                        if (initialHdctId) {
+                            editTinHuuHdctSelect.val(initialHdctId).trigger('change');
+                        }
+                    });
+                    loadTinHuuOptionsLocal(banNganhId, editTinHuuDoKtSelect, '-- Chọn Người Đọc KT --').then(() => {
+                        const initialDoKtId = '{{ $buoiNhom->id_tin_huu_do_kt ?? '' }}';
+                        if (initialDoKtId) {
+                            editTinHuuDoKtSelect.val(initialDoKtId).trigger('change');
+                        }
+                    });
+                }
+            }, 350));
+
+            editResetBtn.on('click', function () {
+                setTimeout(() => {
+                    editForm[0].reset();
+                    editSelects.val(null).trigger('change');
+                    resetEditTinHuuSelects();
+                    $('#edit_lich_buoi_nhom_id').select2({ placeholder: '-- Chọn Lịch Buổi Nhóm --', theme: 'bootstrap4', width: '100%', allowClear: true });
+                    $('#edit_ban_nganh_id').select2({ placeholder: '-- Chọn Ban Ngành --', theme: 'bootstrap4', width: '100%', allowClear: true });
+                    $('#edit_dien_gia_id').select2({ placeholder: '-- Chọn Diễn Giả (nếu có) --', theme: 'bootstrap4', width: '100%', allowClear: true });
+                    console.log('Edit form reset.');
+                }, 0);
+            });
+
+            editForm.on('submit', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                const url = form.attr('action');
+                const method = form.attr('method');
+                const data = form.serialize();
+                editSubmitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...');
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: data,
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert(response.message || 'Cập nhật buổi nhóm thành công!', 'success');
+                            window.location.href = '{{ route("buoi_nhom.index") }}';
+                        } else {
+                            showAlert(response.message || 'Không thể cập nhật buổi nhóm.');
+                        }
+                    },
+                    error: function (jqXHR) {
+                        console.error("Ajax Error (Edit Form):", jqXHR.status, jqXHR.statusText, jqXHR.responseText);
+                        let errorMsg = `Lỗi ${jqXHR.status}. Không thể cập nhật buổi nhóm.`;
+                        if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                            errorMsg = `Lỗi: ${jqXHR.responseJSON.message}`;
+                        } else if (jqXHR.responseJSON && jqXHR.responseJSON.errors) {
+                            errorMsg += "\nLỗi dữ liệu:";
+                            $.each(jqXHR.responseJSON.errors, function (key, value) {
+                                errorMsg += `\n- ${value.join(', ')}`;
+                            });
+                        }
+                        showAlert(errorMsg);
+                    },
+                    complete: function () {
+                        editSubmitBtn.prop('disabled', false).html('<i class="fas fa-save"></i> Cập nhật');
+                    }
+                });
+            });
+
+            // Trigger change ban đầu để load danh sách tín hữu nếu ban ngành đã được chọn
+            const initialBanNganhId = editBanNganhSelect.val();
+            if (initialBanNganhId) {
+                editBanNganhSelect.trigger('change');
+            }
+
+            console.log('Scripts chính đã khởi tạo xong.');
         });
     </script>
-@endsection
+@endpush

@@ -35,14 +35,29 @@ class BuoiNhom extends Model
         'dien_gia_id',
         'trang_thai',
         'ghi_chu',
+        'ban_nganh_id', // Xóa nếu bảng không có cột này
     ];
 
     protected $casts = [
         'ngay_dien_ra' => 'date',
-        'gio_bat_dau' => 'time',
-        'gio_ket_thuc' => 'time',
+        'lich_buoi_nhom_id' => 'integer',
+        'id_to' => 'integer',
+        'id_tin_huu_hdct' => 'integer',
+        'id_tin_huu_do_kt' => 'integer',
+        'dien_gia_id' => 'integer',
+        'ban_nganh_id' => 'integer', // Xóa nếu bảng không có cột này
+        'so_luong_trung_lao' => 'integer',
+        'so_luong_thanh_trang' => 'integer',
+        'so_luong_thanh_nien' => 'integer',
+        'so_luong_thieu_nhi_au' => 'integer',
+        'so_luong_tin_huu_khac' => 'integer',
+        'so_luong_tin_huu' => 'integer',
+        'so_luong_than_huu' => 'integer',
+        'so_nguoi_tin_chua' => 'integer',
+        'trang_thai' => 'boolean',
     ];
 
+    // --- Relationships ---
     public function lichBuoiNhom(): BelongsTo
     {
         return $this->belongsTo(BuoiNhomLich::class, 'lich_buoi_nhom_id');
@@ -55,16 +70,21 @@ class BuoiNhom extends Model
 
     public function tinHuuHdct(): BelongsTo
     {
-        return $this->belongsTo(TinHuu::class, 'id_tin_huu_hdct'); // Giả định có model TinHuu
+        return $this->belongsTo(TinHuu::class, 'id_tin_huu_hdct');
     }
 
     public function tinHuuDoKt(): BelongsTo
     {
-        return $this->belongsTo(TinHuu::class, 'id_tin_huu_do_kt'); // Giả định có model TinHuu
+        return $this->belongsTo(TinHuu::class, 'id_tin_huu_do_kt');
     }
 
     public function dienGia(): BelongsTo
     {
-        return $this->belongsTo(TinHuu::class, 'dien_gia_id'); // Giả định có model TinHuu
+        return $this->belongsTo(DienGia::class, 'dien_gia_id');
+    }
+
+    public function banNganh(): BelongsTo
+    {
+        return $this->belongsTo(BanNganh::class, 'ban_nganh_id');
     }
 }

@@ -168,20 +168,53 @@ Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->midd
 
 
 use App\Http\Controllers\BuoiNhomController;
+// --- Buổi Nhóm Routes ---
+// ===== Các Route trả về VIEW (dùng cho tải trang lần đầu) =====
+Route::prefix('buoi-nhom')->name('buoi_nhom.')->group(function () {
+    // GET /buoi-nhom -> Hiển thị trang danh sách buổi nhóm
+    Route::get('/', [BuoiNhomController::class, 'index'])->name('index');
+
+    // GET /buoi-nhom/create -> Hiển thị form tạo mới buổi nhóm
+    Route::get('/create', [BuoiNhomController::class, 'create'])->name('create');
+
+    // GET /buoi-nhom/{buoi_nhom}/edit -> Hiển thị form sửa buổi nhóm
+    Route::get('/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('edit');
+
+    // Route::get('/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('show'); // Nếu có trang show
+});
 
 
-Route::get('/buoi-nhom', [BuoiNhomController::class, 'index'])->name('buoi_nhom.index');
-Route::get('/buoi-nhom/create', [BuoiNhomController::class, 'create'])->name('buoi_nhom.create');
-Route::post('/buoi-nhom', [BuoiNhomController::class, 'store'])->name('buoi_nhom.store');
-Route::get('/buoi-nhom/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('buoi_nhom.show');
+// ===== Các Route API trả về JSON (dùng cho các request AJAX) =====
+
+// API liên quan đến Buổi Nhóm
+Route::prefix('api/buoi-nhom')->name('api.buoi_nhom.')->group(function () {
+    // GET /api/buoi-nhom -> Lấy danh sách buổi nhóm (JSON) cho bảng
+    Route::get('/', [BuoiNhomController::class, 'getBuoiNhoms'])->name('list'); // <--- Tên khớp với JS: api.buoi_nhom.list
+
+    // GET /api/buoi-nhom/{buoi_nhom} -> Lấy thông tin chi tiết 1 buổi nhóm (JSON) cho form edit
+    Route::get('/{buoi_nhom}', [BuoiNhomController::class, 'getBuoiNhomJson'])->name('details'); // <--- Tên khớp với JS: api.buoi_nhom.details (Nếu JS dùng tên này)
+
+    // POST /api/buoi-nhom -> Lưu buổi nhóm mới (trả về JSON)
+    Route::post('/', [BuoiNhomController::class, 'store'])->name('store'); // <--- Tên khớp với JS: api.buoi_nhom.store
+
+    // PUT/PATCH /api/buoi-nhom/{buoi_nhom} -> Cập nhật buổi nhóm (trả về JSON)
+    Route::put('/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('update'); // <--- Tên khớp với JS: api.buoi_nhom.update
+    // Route::patch('/{buoi_nhom}', [BuoiNhomController::class, 'update']);
+
+    // DELETE /api/buoi-nhom/{buoi_nhom} -> Xóa buổi nhóm (trả về JSON)
+    Route::delete('/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('destroy'); // <--- Tên khớp với JS: api.buoi_nhom.destroy
+
+
+});
+
+// API lấy Tín hữu theo Ban ngành
+Route::get('/api/tin-huu/by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::class, 'getTinHuuByBanNganh'])
+    ->name('api.tin_huu.by_ban_nganh'); // <--- Tên khớp với JS: api.tin_huu.by_ban_nganh
+
+// API cập nhật số lượng cho Buổi Nhóm
+
+
+Route::put('/api/buoi-nhom/{buoi_nhom}/update-counts', [App\Http\Controllers\BuoiNhomController::class, 'updateCounts'])
+    ->name('api.buoi_nhom.update_counts');
+
 Route::get('/buoi-nhom/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('buoi_nhom.edit');
-Route::put('/buoi-nhom/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('buoi_nhom.update');
-Route::delete('/buoi-nhom/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('buoi_nhom.destroy');
-
-Route::get('/get-tin-huu-by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::class, 'getTinHuuByBanNganh']);
-
-// Route::get('/get-buoi-nhom', [BuoiNhomController::class, 'getBuoiNhoms']); // Không cần thiết nếu có index
-// Route::get('/get-buoi-nhom/{id}', [BuoiNhomController::class, 'getBuoiNhom']); // Không cần thiết nếu có show
-// Route::delete('/delete-buoi-nhom/{id}', [BuoiNhomController::class, 'deleteBuoiNhom']); // Không cần thiết nếu có destroy
-
-// Route::get('/get-tin-huu-by-ban-nganh/{id}', [TinHuuController::class, 'getByBanNganh']); // Nếu bạn thực sự cần route này
