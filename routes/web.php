@@ -36,7 +36,8 @@ use App\Http\Controllers\{
     BaoCaoController,
     CaiDatController,
     BanNganhController,
-    TinHuuBanNganhController
+    TinHuuBanNganhController,
+    BuoiNhomController
 };
 
 // ==== Middleware groups ====
@@ -56,8 +57,10 @@ Route::middleware($quanTri)->get('/trang-chu', fn() => view('dashboard'))->name(
 // ==== Quản lý Tín Hữu ====
 Route::prefix('quan-ly-tin-huu')->middleware($quanTriTruongBan)->group(function () {
     Route::resource('tin-huu', TinHuuController::class)->names('_tin_huu');
+    Route::get('/api/tin-huu', [TinHuuController::class, 'getTinHuus'])->name('api.tin_huu.list');
     Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');
 });
+
 
 // ==== Quản lý Người Dùng & Hộ Gia Đình ====
 Route::resource('nguoi-dung', NguoiDungController::class)->names('nguoi_dung');
@@ -95,17 +98,47 @@ Route::prefix('quan-ly-ban-nganh')->middleware($quanTriTruongBan)->group(functio
         Route::resource('ban-thanh-nien', BanThanhNienController::class)->names('_ban_thanh_nien');
         Route::resource('ban-thanh-trang', BanThanhTrangController::class)->names('_ban_thanh_trang');
         Route::resource('ban-thieu-nhi-au', BanThieuNhiAuController::class)->names('_ban_thieu_nhi_au');
-        Route::resource('ban-trung-lao', BanTrungLaoController::class)->names('_ban_trung_lao');
     });
 });
 
-// ==== Quản lý Diễn Giả / Thân Hữu / Thiết Bị ====
-Route::prefix('quan-ly-dien-gia')->middleware($quanTri)->group(function () {
-    Route::resource('dien-gia', DienGiaController::class)
-        ->names('_dien_gia')
-        ->parameters(['dien-gia' => 'dienGia']);
+// ==== Quản lý Diễn Giả ====
+// --- Diễn Giả Routes ---
+// ===== Các Route trả về VIEW (dùng cho tải trang lần đầu) =====
+Route::prefix('dien-gia')->name('_dien_gia.')->group(function () {
+    // GET /dien-gia -> Hiển thị trang danh sách diễn giả
+    Route::get('/', [DienGiaController::class, 'index'])->name('index');
+
+    // GET /dien-gia/create -> Hiển thị form tạo mới diễn giả
+    Route::get('/create', [DienGiaController::class, 'create'])->name('create');
+
+    // GET /dien-gia/{dienGia}/edit -> Hiển thị form sửa diễn giả
+    Route::get('/{dienGia}/edit', [DienGiaController::class, 'edit'])->name('edit');
+
+    // GET /dien-gia/{dienGia} -> Xem chi tiết diễn giả
+    Route::get('/{dienGia}', [DienGiaController::class, 'show'])->name('show');
 });
 
+// ===== Các Route API trả về JSON (dùng cho các request AJAX) =====
+Route::prefix('api/dien-gia')->name('api.dien_gia.')->group(function () {
+    // GET /api/dien-gia -> Lấy danh sách diễn giả (JSON)
+    Route::get('/', [DienGiaController::class, 'getDienGias'])->name('list');
+
+    // GET /api/dien-gia/{dienGia} -> Lấy thông tin chi tiết 1 diễn giả (JSON)
+    Route::get('/{dienGia}', [DienGiaController::class, 'getDienGiaJson'])->name('details');
+
+    // POST /api/dien-gia -> Lưu diễn giả mới
+    Route::post('/', [DienGiaController::class, 'store'])->name('store');
+
+    // PUT /api/dien-gia/{dienGia} -> Cập nhật diễn giả
+    Route::put('/{dienGia}', [DienGiaController::class, 'update'])->name('update');
+
+    // DELETE /api/dien-gia/{dienGia} -> Xóa diễn giả
+    Route::delete('/{dienGia}', [DienGiaController::class, 'destroy'])->name('destroy');
+});
+
+
+
+// ==== Quản lý / Thân Hữu / Thiết Bị ====
 Route::prefix('quan-ly-than-huu')->middleware($quanTriTruongBan)->group(function () {
     Route::resource('than-huu', ThanHuuController::class)->names('_than_huu');
 });
@@ -166,8 +199,6 @@ Route::put('/tin-huu-ban-nganh/update', [TinHuuBanNganhController::class, 'updat
 Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->middleware($quanTri)->name('_cai_dat.he_thong');
 
 
-
-use App\Http\Controllers\BuoiNhomController;
 // --- Buổi Nhóm Routes ---
 // ===== Các Route trả về VIEW (dùng cho tải trang lần đầu) =====
 Route::prefix('buoi-nhom')->name('buoi_nhom.')->group(function () {
@@ -179,6 +210,10 @@ Route::prefix('buoi-nhom')->name('buoi_nhom.')->group(function () {
 
     // GET /buoi-nhom/{buoi_nhom}/edit -> Hiển thị form sửa buổi nhóm
     Route::get('/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('edit');
+
+    // Add a new route for filtering
+    Route::get('/filter', [BuoiNhomController::class, 'filter'])
+        ->name('filter');
 
     // Route::get('/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('show'); // Nếu có trang show
 });
@@ -204,17 +239,41 @@ Route::prefix('api/buoi-nhom')->name('api.buoi_nhom.')->group(function () {
     // DELETE /api/buoi-nhom/{buoi_nhom} -> Xóa buổi nhóm (trả về JSON)
     Route::delete('/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('destroy'); // <--- Tên khớp với JS: api.buoi_nhom.destroy
 
-
+    // PUT /api/buoi-nhom/{buoi_nhom}/update-counts -> Cập nhật số lượng (trả về JSON)
+    Route::put('/{buoi_nhom}/update-counts', [BuoiNhomController::class, 'updateCounts'])->name('update_counts');
 });
 
 // API lấy Tín hữu theo Ban ngành
 Route::get('/api/tin-huu/by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::class, 'getTinHuuByBanNganh'])
     ->name('api.tin_huu.by_ban_nganh'); // <--- Tên khớp với JS: api.tin_huu.by_ban_nganh
 
-// API cập nhật số lượng cho Buổi Nhóm
 
+// --- Ban Trung Lão Routes ---
+// ===== Các Route trả về VIEW (dùng cho tải trang lần đầu) =====
+Route::prefix('ban-trung-lao')->name('_ban_trung_lao.')->group(function () {
+    // GET /ban-trung-lao -> Hiển thị trang quản lý Ban Trung Lão
+    Route::get('/', [BanTrungLaoController::class, 'index'])->name('index');
 
-Route::put('/api/buoi-nhom/{buoi_nhom}/update-counts', [App\Http\Controllers\BuoiNhomController::class, 'updateCounts'])
-    ->name('api.buoi_nhom.update_counts');
+    // GET /ban-trung-lao/diem-danh -> Hiển thị trang điểm danh
+    Route::get('/diem-danh', [BanTrungLaoController::class, 'diemDanh'])->name('diem_danh');
 
-Route::get('/buoi-nhom/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('buoi_nhom.edit');
+    // GET /ban-trung-lao/tham-vieng -> Hiển thị trang thăm viếng
+    Route::get('/tham-vieng', [BanTrungLaoController::class, 'thamVieng'])->name('tham_vieng');
+
+    // GET /ban-trung-lao/phan-cong -> Hiển thị trang phân công
+    Route::get('/phan-cong', [BanTrungLaoController::class, 'phanCong'])->name('phan_cong');
+});
+
+// ===== Các Route API trả về JSON (dùng cho các request AJAX) =====
+Route::prefix('api/ban-trung-lao')->name('api.ban_trung_lao.')->group(function () {
+    // POST /api/ban-trung-lao/them-thanh-vien -> Thêm thành viên mới
+    Route::post('/them-thanh-vien', [BanTrungLaoController::class, 'themThanhVien'])->name('them_thanh_vien');
+
+    // PUT /api/ban-trung-lao/cap-nhat-chuc-vu -> Cập nhật chức vụ
+    Route::put('/cap-nhat-chuc-vu', [BanTrungLaoController::class, 'capNhatChucVu'])->name('cap_nhat_chuc_vu');
+
+    // DELETE /api/ban-trung-lao/xoa-thanh-vien -> Xóa thành viên
+    Route::delete('/xoa-thanh-vien', [BanTrungLaoController::class, 'xoaThanhVien'])->name('xoa_thanh_vien');
+    // PUT /api/ban-trung-lao/update-buoi-nhom/{buoiNhom} -> Cập nhật buổi nhóm
+    Route::put('/update-buoi-nhom/{buoiNhom}', [BanTrungLaoController::class, 'updateBuoiNhom'])->name('update_buoi_nhom');
+});

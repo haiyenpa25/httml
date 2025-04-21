@@ -378,4 +378,29 @@ class BuoiNhomController extends Controller
             return response()->json(['success' => false, 'message' => 'Đã xảy ra lỗi khi cập nhật số lượng.'], 500);
         }
     }
+    public function filter(Request $request)
+    {
+        // Validate input
+        $validatedData = $request->validate([
+            'month' => 'nullable|integer|between:1,12',
+            'year' => 'nullable|integer|between:2020,2030'
+        ]);
+
+        // Default to current month and year if not provided
+        $month = $validatedData['month'] ?? date('m');
+        $year = $validatedData['year'] ?? date('Y');
+
+        // Query buổi nhóm with filtering
+        $buoiNhoms = BuoiNhom::with(['dienGia', 'nguoiHuongDan', 'nguoiDocKinhThanh'])
+            ->whereYear('ngay_dien_ra', $year)
+            ->whereMonth('ngay_dien_ra', $month)
+            ->get();
+
+        // Return view with filtered data
+        return view('_buoi_nhom.phan_cong', [
+            'buoiNhoms' => $buoiNhoms,
+            'selectedMonth' => $month,
+            'selectedYear' => $year
+        ]);
+    }
 }

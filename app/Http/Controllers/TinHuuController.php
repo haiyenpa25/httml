@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+
 enum LoaiTinHuu: string
 {
     case CHINH_THUC = 'tin_huu_chinh_thuc';
@@ -31,7 +32,9 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\TinHuuBanNganh;
+
 
 
 class TinHuuController extends Controller
@@ -39,7 +42,8 @@ class TinHuuController extends Controller
     public function index()
     {
         $tinHuuS = TinHuu::all();
-        return view('_tin_huu.index', compact('tinHuuS'));
+        $hoGiaDinhs = HoGiaDinh::all(); // Thêm dòng này
+        return view('_tin_huu.index', compact('tinHuuS', 'hoGiaDinhs'));
     }
 
     public function create()
@@ -50,55 +54,105 @@ class TinHuuController extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'ho_ten' => 'required|max:255',
-            'ngay_sinh' => 'required|date',
-            'dia_chi' => 'required|string',
-            'so_dien_thoai' => 'required|max:20',
-            'loai_tin_huu' => ['required', Rule::enum(LoaiTinHuu::class)], // Sửa lại như này
-            'gioi_tinh' => ['required', Rule::enum(GioiTinh::class)], // Sửa lại như này
-            'tinh_trang_hon_nhan' => ['required', Rule::enum(TinhTrangHonNhan::class)], // Sửa lại như này
-            'ho_gia_dinh_id' => 'nullable|exists:ho_gia_dinh,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'ho_ten' => 'required|string|max:255',
+                'ngay_sinh' => 'required|date',
+                'so_dien_thoai' => 'required|string|max:20',
+                'dia_chi' => 'required|string|max:255',
+                'loai_tin_huu' => 'required|in:tin_huu_chinh_thuc,tan_tin_huu,tin_huu_ht_khac',
+                'gioi_tinh' => 'required|in:nam,nu',
+                'tinh_trang_hon_nhan' => 'required|in:doc_than,ket_hon',
+                'ho_gia_dinh_id' => 'nullable|exists:ho_gia_dinh,id',
+                'ngay_tin_chua' => 'nullable|date'
+            ]);
 
-        TinHuu::create($validatedData);
+            $tinHuu = TinHuu::create($validated);
 
-        return redirect()->route('_tin_huu.index')->with('success', 'Tín hữu đã được thêm thành công!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Thêm tín hữu thành công',
+                'data' => $tinHuu
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Lỗi thêm tín hữu: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể thêm tín hữu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function show(TinHuu $tinHuu)
-    {
-        return view('_tin_huu.show', compact('tinHuu'));
-    }
+    // public function show(TinHuu $tinHuu)
+    // {
+    //     return view('_tin_huu.show', compact('tinHuu'));
+    // }
 
-    public function edit(TinHuu $tinHuu)
-    {
-        $hoGiaDinhs = HoGiaDinh::all();
-        return view('_tin_huu.edit', compact('tinHuu', 'hoGiaDinhs'));
-    }
+    // public function edit(TinHuu $tinHuu)
+    // {
+    //     $hoGiaDinhs = HoGiaDinh::all();
+    //     return view('_tin_huu.edit', compact('tinHuu', 'hoGiaDinhs'));
+    // }
 
     public function update(Request $request, TinHuu $tinHuu)
     {
-        $validatedData = $request->validate([
-            'ho_ten' => 'required|max:255',
-            'ngay_sinh' => 'required|date',
-            'dia_chi' => 'required|string',
-            'so_dien_thoai' => 'required|max:20',
-            'loai_tin_huu' => ['required', Rule::enum(LoaiTinHuu::class)], // Sửa lại như này
-            'gioi_tinh' => ['required', Rule::enum(GioiTinh::class)], // Sửa lại như này
-            'tinh_trang_hon_nhan' => ['required', Rule::enum(TinhTrangHonNhan::class)], // Sửa lại như này
-            'ho_gia_dinh_id' => 'nullable|exists:ho_gia_dinh,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'ho_ten' => 'required|string|max:255',
+                'ngay_sinh' => 'required|date',
+                'so_dien_thoai' => 'required|string|max:20',
+                'dia_chi' => 'required|string|max:255',
+                'loai_tin_huu' => 'required|in:tin_huu_chinh_thuc,tan_tin_huu,tin_huu_ht_khac',
+                'gioi_tinh' => 'required|in:nam,nu',
+                'tinh_trang_hon_nhan' => 'required|in:doc_than,ket_hon',
+                'ho_gia_dinh_id' => 'nullable|exists:ho_gia_dinh,id',
+                'ngay_tin_chua' => 'nullable|date'
+            ]);
 
-        $tinHuu->update($validatedData);
+            $tinHuu->update($validated);
 
-        return redirect()->route('_tin_huu.index')->with('success', 'Tín hữu đã được cập nhật thành công!');
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật tín hữu thành công',
+                'data' => $tinHuu
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Lỗi cập nhật tín hữu: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể cập nhật tín hữu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(TinHuu $tinHuu)
     {
-        $tinHuu->delete();
-        return redirect()->route('_tin_huu.index')->with('success', 'Tín hữu đã được xóa thành công!');
+        try {
+            $tinHuu->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa tín hữu thành công'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi xóa tín hữu: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể xóa tín hữu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function danhSachNhanSu()
@@ -121,5 +175,39 @@ class TinHuuController extends Controller
             });
 
         return response()->json($tinHuus);
+    }
+
+    public function getTinHuus()
+    {
+        try {
+            $tinHuus = TinHuu::with('hoGiaDinh') // Nếu có quan hệ
+                ->select([
+                    'id',
+                    'ho_ten',
+                    'ngay_sinh',
+                    'so_dien_thoai',
+                    'dia_chi',
+                    'loai_tin_huu',
+                    'gioi_tinh',
+                    'tinh_trang_hon_nhan',
+                    'ho_gia_dinh_id',
+                    'ngay_tin_chua'
+                ])
+                ->get();
+
+            return response()->json($tinHuus);
+        } catch (\Exception $e) {
+            Log::error('Lỗi lấy danh sách tín hữu: ' . $e->getMessage());
+            return response()->json(['error' => 'Không thể lấy danh sách tín hữu'], 500);
+        }
+    }
+    public function edit(TinHuu $tinHuu)
+    {
+        return response()->json($tinHuu);
+    }
+
+    public function show(TinHuu $tinHuu)
+    {
+        return response()->json($tinHuu);
     }
 }

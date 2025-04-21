@@ -35,17 +35,48 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('nguoi_dung.index') }}" class="nav-link">
+                    <a href="{{ route('nguoi_dung.index') }}" class="nav-link {{ request()->routeIs('nguoi_dung.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-user-cog"></i>
                         <p>Người Dùng</p>
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a href="{{ route('_ho_gia_dinh.index') }}" class="nav-link">
-                        <i class="nav-icon fas fa-home"></i>
-                        <p>Hộ Gia Đình</p>
+                <!-- Quản lý Tín Hữu - Menu đã được cập nhật -->
+                <li class="nav-item has-treeview {{ request()->is('quan-ly-tin-huu*') || request()->routeIs('_tin_huu.*') || request()->routeIs('_ho_gia_dinh.*') || request()->routeIs('_than_huu.*') || request()->routeIs('_dien_gia.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->is('quan-ly-tin-huu*') || request()->routeIs('_tin_huu.*') || request()->routeIs('_ho_gia_dinh.*') || request()->routeIs('_than_huu.*') || request()->routeIs('_dien_gia.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Quản lý Tín Hữu
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('_tin_huu.index') }}" class="nav-link {{ request()->routeIs('_tin_huu.index') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Danh sách Tín Hữu</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('_tin_huu.create') }}" class="nav-link {{ request()->routeIs('_tin_huu.create') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Thêm Tín Hữu mới</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('_tin_huu.nhan_su') }}" class="nav-link {{ request()->routeIs('_tin_huu.nhan_su') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Nhân sự</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('_ho_gia_dinh.index') }}" class="nav-link {{ request()->routeIs('_ho_gia_dinh.*') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Hộ Gia Đình</p>
+                            </a>
+                        </li>
+                        
+                    </ul>
                 </li>
 
                 <li class="nav-item">
@@ -121,23 +152,15 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('_tin_huu.index') }}" class="nav-link">
-                        <i class="nav-icon fas fa-id-card"></i>
-                        <p>Tín Hữu</p>
+                    <a href="{{ route('_than_huu.index') }}" class="nav-link {{ request()->routeIs('_than_huu.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Thân Hữu</p>
                     </a>
                 </li>
-
                 <li class="nav-item">
-                    <a href="{{ route('_dien_gia.index') }}" class="nav-link">
+                    <a href="{{ route('_dien_gia.index') }}" class="nav-link {{ request()->routeIs('_dien_gia.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-microphone"></i>
                         <p>Diễn Giả</p>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="{{ route('_than_huu.index') }}" class="nav-link">
-                        <i class="nav-icon fas fa-handshake"></i>
-                        <p>Thân Hữu</p>
                     </a>
                 </li>
 
