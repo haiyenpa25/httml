@@ -34,15 +34,26 @@
 
 <!-- Scripts chính (có thể đặt trong file js riêng hoặc ở đây) -->
 <script>
-  $(function () {
+   // Chuyển PHP $item sang JS object
+    const ngayDienRa = formatDate(item.ngay_dien_ra);
+    function formatDate(dateString) {
+      
+        return dateString ? moment(dateString).format('DD/MM/YYYY') : 'N/A';
+      }
+
+// Trong hàm loadBuoiNhoms(), thay đổi dòng ngayDienRa
+
     // ----- Khởi tạo các biến toàn cục -----
     const banNganhSelect = $('#ban_nganh_id');
     const tinHuuHdctSelect = $('#id_tin_huu_hdct');
     const tinHuuDoKtSelect = $('#id_tin_huu_do_kt');
     const buoiNhomForm = $('#buoi-nhom-form');
     const buoiNhomTableBody = $('#buoi-nhom-table tbody');
+
     // const sundaySelect = $('#sunday-select'); // Bỏ đi nếu không dùng hoặc sửa hàm populateSundays
 
+
+      
     // ----- Khởi tạo các plugin -----
     // Đảm bảo các selector này tồn tại trên trang hiện tại trước khi khởi tạo
     if ($('.select2bs4').length) {
@@ -415,7 +426,7 @@
     }
     // ------------------------------------------
 
-  });
+
 </script>
 
 {{-- Đảm bảo @stack('scripts') được đặt ở cuối layout nếu các view con cần thêm script riêng --}}

@@ -2,29 +2,6 @@
 @section('title', 'Báo Cáo Ban Trung Lão')
 
 @section('content')
-@php
-    // nếu controller chưa truyền sẽ rớt về giá trị mặc định
-    $month       = $month       ?? request()->get('month', date('m'));
-    $year        = $year        ?? request()->get('year',  date('Y'));
-    $buoiNhomHT  = $buoiNhomHT  ?? collect();
-    $buoiNhomBN  = $buoiNhomBN  ?? collect();
-    $thamVieng   = $thamVieng   ?? collect();
-    $banDieuHanh = $banDieuHanh ?? collect();
-    $keHoach = $keHoach ?? collect();
-    $taiChinh    = $taiChinh    ?? [
-        'tongThu' => 0,
-        'tongChi' => 0,
-        'tongTon' => 0,
-        'giaoDich' => collect(),
-    ];
-    $summary     = $summary     ?? [
-        'totalMeetings' => 0,
-        'avgAttendance' => 0,
-        'totalOffering' => 0,
-        'totalVisits'   => 0,
-    ];
-    
-@endphp
 <section class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">

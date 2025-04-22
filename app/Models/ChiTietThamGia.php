@@ -15,7 +15,7 @@ class ChiTietThamGia extends Model
         'buoi_nhom_id',
         'tin_huu_id',
         'trang_thai',
-        'ghi_chu',
+        'ghi_chu'
     ];
 
     public function buoiNhom()

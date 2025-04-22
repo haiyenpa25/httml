@@ -59,6 +59,9 @@
                             <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="btn btn-warning">
                                 <i class="fas fa-tasks"></i> Phân công
                             </a>
+                            <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="btn btn-warning">
+                                <i class="fas fa-tasks"></i> Phân công chi tiết
+                            </a>
                         </div>
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-them-thanh-vien">
                             <i class="fas fa-user-plus"></i> Thêm thành viên
