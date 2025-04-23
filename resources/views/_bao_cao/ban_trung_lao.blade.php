@@ -195,7 +195,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-6">
                                 <p class="text-center">
                                     <strong>BIỂU ĐỒ TÍN HỮU SINH HOẠT TẠI NHÀ THỜ</strong>
                                 </p>
@@ -203,16 +203,17 @@
                                     <canvas id="barChartHT" height="180" style="height: 180px;"></canvas>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <p class="text-center">
                                     <strong>Chi tiết theo tuần</strong>
                                 </p>
                                 @forelse($buoiNhomHT as $index => $buoiNhom)
                                 <div class="progress-group">
+                                    
                                     Tuần {{ $index + 1 }} - {{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}
-                                    <span class="float-right"><b>{{ $buoiNhom->so_luong_tin_huu }}</b> tín hữu</span>
+                                    <span class="float-right"><b>{{ $buoiNhom->so_luong_trung_lao }}</b> tín hữu</span>
                                     <div class="progress progress-sm">
-                                        <div class="progress-bar bg-primary" style="width: {{ min(($buoiNhom->so_luong_tin_huu / 40) * 100, 100) }}%"></div>
+                                        <div class="progress-bar bg-primary" style="width: {{ min(($buoiNhom->so_luong_trung_lao / 40) * 100, 100) }}%"></div>
                                     </div>
                                 </div>
                                 @empty
@@ -247,7 +248,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-6">
                                 <p class="text-center">
                                     <strong>BIỂU ĐỒ TÍN HỮU SINH HOẠT BAN NGÀNH</strong>
                                 </p>
@@ -255,16 +256,16 @@
                                     <canvas id="barChartBN" height="180" style="height: 180px;"></canvas>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <p class="text-center">
                                     <strong>Chi tiết theo tuần</strong>
                                 </p>
                                 @forelse($buoiNhomBN as $index => $buoiNhom)
                                 <div class="progress-group">
                                     Tuần {{ $index + 1 }} - {{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}
-                                    <span class="float-right"><b>{{ $buoiNhom->so_luong_tin_huu }}</b> tín hữu</span>
+                                    <span class="float-right"><b>{{ $buoiNhom->so_luong_trung_lao }}</b> tín hữu</span>
                                     <div class="progress progress-sm">
-                                        <div class="progress-bar bg-info" style="width: {{ min(($buoiNhom->so_luong_tin_huu / 30) * 100, 100) }}%"></div>
+                                        <div class="progress-bar bg-info" style="width: {{ min(($buoiNhom->so_luong_trung_lao / 30) * 100, 100) }}%"></div>
                                     </div>
                                 </div>
                                 @empty
@@ -316,7 +317,7 @@
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>{{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}</td>
-                                        <td>{{ $buoiNhom->so_luong_tin_huu }}</td>
+                                        <td>{{ $buoiNhom->so_luong_trung_lao }}</td>
                                         <td>{{ $buoiNhom->chu_de ?? 'N/A' }}</td>
                                         <td>{{ $buoiNhom->kinh_thanh ?? 'N/A' }}</td>
                                         <td>{{ $buoiNhom->dienGia->ho_ten ?? 'N/A' }}</td>
@@ -365,7 +366,7 @@
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
                                         <td>{{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}</td>
-                                        <td>{{ $buoiNhom->so_luong_tin_huu }}</td>
+                                        <td>{{ $buoiNhom->so_luong_trung_lao }}</td>
                                         <td>{{ $buoiNhom->chu_de ?? 'N/A' }}</td>
                                         <td>{{ $buoiNhom->kinh_thanh ?? 'N/A' }}</td>
                                         <td class="text-right">{{ number_format(rand(400000, 700000), 0, ',', '.') }}</td>
@@ -560,11 +561,14 @@
                                     </div>
                                     <div class="card-body">
                                         <ul class="fa-ul">
-                                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>Số lượng tín hữu trung lão tham dự tăng đều qua các tuần</li>
-                                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>Các đề tài nghiên cứu được chuẩn bị kỹ và phù hợp với đối tượng</li>
-                                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>Công tác thăm viếng được thực hiện tốt, đặc biệt các trường hợp ốm đau, già yếu</li>
-                                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>Tình hình tài chính ổn định, thu chi rõ ràng</li>
-                                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>Sự kiện Lễ Phục Sinh được tổ chức thành công với số lượng tham dự cao</li>
+                                            @forelse($diemManh as $danhGia)
+                                            <li>
+                                                <span class="fa-li"><i class="fas fa-check-circle text-success"></i></span>
+                                                {{ $danhGia->noi_dung }}
+                                            </li>
+                                            @empty
+                                            <li><span class="fa-li"><i class="fas fa-info-circle text-info"></i></span>Chưa có đánh giá điểm mạnh</li>
+                                            @endforelse
                                         </ul>
                                     </div>
                                 </div>
@@ -576,10 +580,14 @@
                                     </div>
                                     <div class="card-body">
                                         <ul class="fa-ul">
-                                            <li><span class="fa-li"><i class="fas fa-exclamation-circle text-danger"></i></span>Cần thêm các hoạt động kết nối giữa các thành viên trong ban</li>
-                                            <li><span class="fa-li"><i class="fas fa-exclamation-circle text-danger"></i></span>Vẫn còn một số tín hữu trung lão vắng mặt thường xuyên</li>
-                                            <li><span class="fa-li"><i class="fas fa-exclamation-circle text-danger"></i></span>Chưa có kế hoạch cụ thể để tiếp cận và mời gọi các cụ cao tuổi mới</li>
-                                            <li><span class="fa-li"><i class="fas fa-exclamation-circle text-danger"></i></span>Cần tăng cường đào tạo các thành viên có khả năng hướng dẫn nhóm nhỏ</li>
+                                            @forelse($diemYeu as $danhGia)
+                                            <li>
+                                                <span class="fa-li"><i class="fas fa-exclamation-circle text-danger"></i></span>
+                                                {{ $danhGia->noi_dung }}
+                                            </li>
+                                            @empty
+                                            <li><span class="fa-li"><i class="fas fa-info-circle text-info"></i></span>Chưa có đánh giá điểm cần cải thiện</li>
+                                            @endforelse
                                         </ul>
                                     </div>
                                 </div>
@@ -608,10 +616,10 @@
                                                     @forelse($keHoach as $index => $item)
                                                     <tr>
                                                         <td class="text-center">{{ $index + 1 }}</td>
-                                                        <td>{{ $item['hoat_dong'] }}</td>
-                                                        <td>{{ $item['thoi_gian'] }}</td>
-                                                        <td>{{ $item['nguoi_phu_trach'] }}</td>
-                                                        <td>{{ $item['ghi_chu'] }}</td>
+                                                        <td>{{ $item->hoat_dong }}</td>
+                                                        <td>{{ $item->thoi_gian }}</td>
+                                                        <td>{{ $item->nguoiPhuTrach->ho_ten ?? 'Chưa phân công' }}</td>
+                                                        <td>{{ $item->ghi_chu }}</td>
                                                     </tr>
                                                     @empty
                                                     <tr>
@@ -642,48 +650,33 @@
                     </div>
                     <div class="card-body">
                         <div class="accordion" id="accordionVanDe">
+                            @forelse($kienNghi as $index => $item)
                             <div class="card card-primary shadow-none">
                                 <div class="card-header">
                                     <h4 class="card-title w-100">
-                                        <a class="d-block w-100" data-toggle="collapse" href="#collapseVanDe1">
-                                            1. Kiến nghị về nâng cao chất lượng sinh hoạt ban
+                                        <a class="d-block w-100" data-toggle="collapse" href="#collapseVanDe{{ $index + 1 }}">
+                                            {{ $index + 1 }}. {{ $item->tieu_de }}
                                         </a>
                                     </h4>
                                 </div>
-                                <div id="collapseVanDe1" class="collapse show" data-parent="#accordionVanDe">
+                                <div id="collapseVanDe{{ $index + 1 }}" class="collapse {{ $index === 0 ? 'show' : '' }}" data-parent="#accordionVanDe">
                                     <div class="card-body">
-                                        <p>Kính thưa Mục sư,</p>
-                                        <p>Ban Trung Lão kính đề xuất một số kiến nghị sau để nâng cao chất lượng sinh hoạt:</p>
-                                        <ol>
-                                            <li>Xây dựng kho tài liệu Kinh Thánh phù hợp với lứa tuổi trung lão</li>
-                                            <li>Tổ chức các buổi chia sẻ chứng đạo từ các cụ lớn tuổi để khích lệ tín hữu</li>
-                                            <li>Tạo thêm các hoạt động giao lưu giữa Ban Trung Lão và các ban khác</li>
-                                        </ol>
+                                        {!! nl2br(e($item->noi_dung)) !!}
+                                        
+                                        @if($item->phan_hoi)
+                                        <div class="mt-3 pt-3 border-top">
+                                            <p class="font-weight-bold">Phản hồi:</p>
+                                            <p class="font-italic">{{ $item->phan_hoi }}</p>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-                            <div class="card card-primary shadow-none">
-                                <div class="card-header">
-                                    <h4 class="card-title w-100">
-                                        <a class="d-block w-100" data-toggle="collapse" href="#collapseVanDe2">
-                                            2. Đề xuất về chương trình đặc biệt trong tháng tới
-                                        </a>
-                                    </h4>
-                                </div>
-                                <div id="collapseVanDe2" class="collapse" data-parent="#accordionVanDe">
-                                    <div class="card-body">
-                                        <p>Ban Trung Lão kính đề xuất tổ chức một sự kiện đặc biệt trong tháng tới:</p>
-                                        <p><strong>"Ngày Tôn Vinh Người Cao Tuổi"</strong> - một chương trình đặc biệt nhằm tôn vinh các cụ lớn tuổi trong hội thánh, với các hoạt động:</p>
-                                        <ul>
-                                            <li>Tổ chức vào ngày {{ Carbon\Carbon::now()->addMonth()->day(20)->format('d/m/Y') }}</li>
-                                            <li>Mời các cụ cao tuổi trong và ngoài hội thánh tham dự</li>
-                                            <li>Tổ chức bữa tiệc thông công và tặng quà lưu niệm</li>
-                                            <li>Dự trù kinh phí: 2,000,000 VNĐ</li>
-                                        </ul>
-                                        <p>Kính mong Mục sư xem xét và phê duyệt.</p>
-                                    </div>
-                                </div>
+                            @empty
+                            <div class="alert alert-info">
+                                Chưa có kiến nghị nào cho tháng này
                             </div>
+                            @endforelse
                         </div>
                     </div>
                     <div class="card-footer">
@@ -713,169 +706,5 @@
 </section>
 @endsection
 
-@section('scripts')
-<script>
-    $(function() {
-        // Xử lý nút in báo cáo
-        $('#print-report').click(function() {
-            window.print();
-        });
 
-        // Xử lý nút xuất Excel
-        $('#export-excel').click(function() {
-            alert('Chức năng xuất Excel đang được phát triển');
-        });
-
-        // ChartJS - Biểu đồ tín hữu sinh hoạt với Hội Thánh
-        var barChartCanvasHT = $('#barChartHT').get(0).getContext('2d');
-
-        // Chuẩn bị dữ liệu cho biểu đồ Hội Thánh
-        var htLabels = [];
-        var htData = [];
-
-        @foreach($buoiNhomHT as $index => $buoiNhom)
-        htLabels.push('Tuần {{ $index + 1 }} ({{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('
-            d / m ') }})');
-        htData.push({
-            {
-                $buoiNhom - > so_luong_tin_huu
-            }
-        });
-        @endforeach
-
-        // Nếu không có dữ liệu, tạo dữ liệu mẫu
-        if (htLabels.length === 0) {
-            htLabels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'];
-            htData = [30, 32, 28, 35, 40];
-        }
-
-        var barDataHT = {
-            labels: htLabels,
-            datasets: [{
-                label: 'Số lượng tín hữu',
-                backgroundColor: 'rgba(60,141,188,0.9)',
-                borderColor: 'rgba(60,141,188,0.8)',
-                pointRadius: false,
-                pointColor: '#3b8bba',
-                pointStrokeColor: 'rgba(60,141,188,1)',
-                pointHighlightFill: '#fff',
-                pointHighlightStroke: 'rgba(60,141,188,1)',
-                data: htData
-            }]
-        };
-
-        var barOptionsHT = {
-            responsive: true,
-            maintainAspectRatio: false,
-            datasetFill: false,
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            }
-        };
-
-        new Chart(barChartCanvasHT, {
-            type: 'bar',
-            data: barDataHT,
-            options: barOptionsHT
-        });
-
-        // ChartJS - Biểu đồ tín hữu sinh hoạt Ban Ngành
-        var barChartCanvasBN = $('#barChartBN').get(0).getContext('2d');
-
-        // Chuẩn bị dữ liệu cho biểu đồ Ban Ngành
-        var bnLabels = [];
-        var bnData = [];
-
-        @foreach($buoiNhomBN as $index => $buoiNhom)
-        bnLabels.push('Tuần {{ $index + 1 }} ({{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('
-            d / m ') }})');
-        bnData.push({
-            {
-                $buoiNhom - > so_luong_tin_huu
-            }
-        });
-        @endforeach
-
-        // Nếu không có dữ liệu, tạo dữ liệu mẫu
-        if (bnLabels.length === 0) {
-            bnLabels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'];
-            bnData = [25, 22, 20, 24, 27];
-        }
-
-        var barDataBN = {
-            labels: bnLabels,
-            datasets: [{
-                label: 'Số lượng tín hữu',
-                backgroundColor: 'rgba(40, 167, 69, 0.9)',
-                borderColor: 'rgba(40, 167, 69, 0.8)',
-                pointRadius: false,
-                pointColor: '#28a745',
-                pointStrokeColor: 'rgba(40, 167, 69, 1)',
-                pointHighlightFill: '#fff',
-                pointHighlightStroke: 'rgba(40, 167, 69, 1)',
-                data: bnData
-            }]
-        };
-
-        var barOptionsBN = {
-            responsive: true,
-            maintainAspectRatio: false,
-            datasetFill: false,
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
-            }
-        };
-
-        new Chart(barChartCanvasBN, {
-            type: 'bar',
-            data: barDataBN,
-            options: barOptionsBN
-        });
-    });
-</script>
-
-<style>
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-
-        .card-header {
-            background-color: #4b545c !important;
-            color: #fff !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .main-header,
-        .main-sidebar,
-        .main-footer,
-        .card-tools,
-        .breadcrumb,
-        .btn {
-            display: none !important;
-        }
-
-        .content-wrapper {
-            margin-left: 0 !important;
-            padding-top: 0 !important;
-        }
-
-        .card {
-            break-inside: avoid;
-        }
-
-        .chart {
-            page-break-inside: avoid;
-        }
-    }
-</style>
-@endsection
+@include('scripts.bao_cao_ban_trung_lao')

@@ -31,6 +31,12 @@
     <link rel="stylesheet" href="{{ asset('plugins/daterangepicker/daterangepicker.css') }}">
     <!-- summernote -->
     <link rel="stylesheet" href="{{ asset('plugins/summernote/summernote-bs4.min.css') }}">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"/>
+
+    <!-- CSS riêng của trang -->
+    @yield('page-styles')
+
+
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -59,8 +65,10 @@
     </aside>
 </div>
 
-<!-- Scripts -->
+<!-- Scripts chung -->
 @include('scripts')
 
+<!-- Scripts riêng của trang -->
+@yield('page-scripts')
 </body>
 </html>

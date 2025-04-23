@@ -87,4 +87,10 @@ class BuoiNhom extends Model
     {
         return $this->belongsTo(BanNganh::class, 'ban_nganh_id');
     }
+    public function giaoDichTaiChinh()
+    {
+        return $this->hasOne(GiaoDichTaiChinh::class, 'buoi_nhom_id')
+            ->where('loai', 'thu')
+            ->where('ban_nganh_id', 1);
+    }
 }

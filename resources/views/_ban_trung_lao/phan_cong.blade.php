@@ -6,51 +6,54 @@
 <section class="content">
     <div class="container-fluid">
         <!-- Thông báo thành công hoặc lỗi -->
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-check"></i> Thành công!</h5>
-                    {{ session('success') }}
-                </div>
-            @endif
-    
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-ban"></i> Lỗi!</h5>
-                    {{ session('error') }}
-                </div>
-            @endif
-    
-            <!-- Các nút chức năng -->
-            <div class="row mb-3">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body d-flex justify-content-between">
-                            <div class="btn-group">
-                                <a href="{{ route('_ban_trung_lao.index') }}" class="btn btn-primary">
-                                    <i class="fas fa-home"></i> Trang chính
-                                </a>
-                                <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="btn btn-success">
-                                    <i class="fas fa-clipboard-check"></i> Điểm danh
-                                </a>
-                                <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="btn btn-info">
-                                    <i class="fas fa-user-friends"></i> Thăm viếng
-                                </a>
-                                <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="btn btn-warning">
-                                    <i class="fas fa-tasks"></i> Phân công
-                                </a>
-                                <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="btn btn-warning">
-                                    <i class="fas fa-tasks"></i> Phân công chi tiết
-                                </a>
-                            </div>
-                            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-them-thanh-vien">
-                                <i class="fas fa-user-plus"></i> Thêm thành viên
-                            </button>
-                        </div>
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-check"></i> Thành công!</h5>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <h5><i class="icon fas fa-ban"></i> Lỗi!</h5>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Các nút chức năng -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body d-flex justify-content-between">
+                    <div class="btn-group">
+                        <a href="{{ route('_ban_trung_lao.index') }}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Trang chính
+                        </a>
+                        <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="btn btn-success">
+                            <i class="fas fa-clipboard-check"></i> Điểm danh
+                        </a>
+                        <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="btn btn-info">
+                            <i class="fas fa-user-friends"></i> Thăm viếng
+                        </a>
+                        <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="btn btn-warning">
+                            <i class="fas fa-tasks"></i> Phân công
+                        </a>
+                        <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="btn btn-info">
+                            <i class="fas fa-tasks"></i> Phân công chi tiết
+                        </a>
+                        <a href="{{ route('_bao_cao.form_ban_trung_lao') }}" class="btn btn-success">
+                            <i class="fas fa-tasks"></i> Nhập liệu báo cáo
+                        </a>
                     </div>
+                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-them-thanh-vien">
+                        <i class="fas fa-user-plus"></i> Thêm thành viên
+                    </button>
                 </div>
             </div>
+        </div>
+    </div>
             
         <!-- Thêm thành viên modal -->
         <div class="card card-primary card-outline">

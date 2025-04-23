@@ -251,56 +251,81 @@ Route::get('/api/tin-huu/by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::clas
 
 // routes/web.php
 
-// Thêm vào file routes/web.php hoặc routes/api.php
+/*
+|--------------------------------------------------------------------------
+| API routes cho Ban Trung Lão
+|--------------------------------------------------------------------------
+*/
+Route::prefix('api/ban-trung-lao')
+    ->name('api.ban_trung_lao.')
+    ->group(function () {
+        // Quản lý thành viên
+        Route::post('/them-thanh-vien',    [BanTrungLaoController::class, 'themThanhVien'])->name('them_thanh_vien');
+        Route::delete('/xoa-thanh-vien',   [BanTrungLaoController::class, 'xoaThanhVien'])->name('xoa_thanh_vien');
+        Route::put('/cap-nhat-chuc-vu',    [BanTrungLaoController::class, 'capNhatChucVu'])->name('cap_nhat_chuc_vu');
 
-// API routes cho Ban Trung Lão
-Route::prefix('api/ban-trung-lao')->name('api.ban_trung_lao.')->group(function () {
-    // Quản lý thành viên
-    Route::post('/them-thanh-vien', [BanTrungLaoController::class, 'themThanhVien'])->name('them_thanh_vien');
-    Route::delete('/xoa-thanh-vien', [BanTrungLaoController::class, 'xoaThanhVien'])->name('xoa_thanh_vien');
-    Route::put('/cap-nhat-chuc-vu', [BanTrungLaoController::class, 'capNhatChucVu'])->name('cap_nhat_chuc_vu');
+        // Quản lý buổi nhóm
+        Route::post('/buoi-nhom',          [BanTrungLaoController::class, 'themBuoiNhom'])->name('them_buoi_nhom');
+        Route::put('/buoi-nhom/{buoiNhom}',    [BanTrungLaoController::class, 'updateBuoiNhom'])->name('update_buoi_nhom');
+        Route::delete('/buoi-nhom/{buoiNhom}', [BanTrungLaoController::class, 'deleteBuoiNhom'])->name('delete_buoi_nhom');
 
-    // Quản lý buổi nhóm
-    Route::put('/buoi-nhom/{buoiNhom}', [BanTrungLaoController::class, 'updateBuoiNhom'])->name('update_buoi_nhom');
-    Route::delete('/buoi-nhom/{buoiNhom}', [BanTrungLaoController::class, 'deleteBuoiNhom'])->name('delete_buoi_nhom');
-    Route::post('/buoi-nhom', [BanTrungLaoController::class, 'themBuoiNhom'])->name('them_buoi_nhom');
+        // Điểm danh
+        Route::post('/luu-diem-danh',      [BanTrungLaoController::class, 'luuDiemDanh'])->name('luu_diem_danh');
 
-    // Điểm danh
-    Route::post('/luu-diem-danh', [BanTrungLaoController::class, 'luuDiemDanh'])->name('luu_diem_danh');
+        // Thăm viếng
+        Route::post('/them-tham-vieng',    [BanTrungLaoController::class, 'themThamVieng'])->name('them_tham_vieng');
+        Route::get('/chi-tiet-tham-vieng/{id}', [BanTrungLaoController::class, 'chiTietThamVieng'])->name('chi_tiet_tham_vieng');
+        Route::get('/filter-de-xuat-tham-vieng', [BanTrungLaoController::class, 'filterDeXuatThamVieng'])->name('filter_de_xuat_tham_vieng');
+        Route::get('/filter-tham-vieng',   [BanTrungLaoController::class, 'filterThamVieng'])->name('filter_tham_vieng');
 
-    // Thêm mới thăm viếng
-    Route::post('/them-tham-vieng', [BanTrungLaoController::class, 'themThamVieng'])->name('them_tham_vieng');
-
-    // Lấy chi tiết thăm viếng
-    Route::get('/chi-tiet-tham-vieng/{id}', [BanTrungLaoController::class, 'chiTietThamVieng'])->name('chi_tiet_tham_vieng');
-
-    // Lọc đề xuất thăm viếng
-    Route::get('/filter-de-xuat-tham-vieng', [BanTrungLaoController::class, 'filterDeXuatThamVieng'])->name('filter_de_xuat_tham_vieng');
-
-    // Lọc lịch sử thăm viếng
-    Route::get('/filter-tham-vieng', [BanTrungLaoController::class, 'filterThamVieng'])->name('filter_tham_vieng');
-
-    // Thêm API route cho phân công chi tiết
-    Route::post('/phan-cong-nhiem-vu', [BanTrungLaoController::class, 'phanCongNhiemVu'])
-        ->name('phan_cong_nhiem_vu');
-    Route::delete('/xoa-phan-cong/{id}', [BanTrungLaoController::class, 'xoaPhanCong'])
-        ->name('xoa_phan_cong');
-});
-
-// Web routes cho Ban Trung Lão
-Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])->group(function () {
-    Route::prefix('ban-trung-lao')->name('_ban_trung_lao.')->group(function () {
-        Route::get('/', [BanTrungLaoController::class, 'index'])->name('index');
-        Route::get('/diem-danh', [BanTrungLaoController::class, 'diemDanh'])->name('diem_danh');
-        Route::get('/tham-vieng', [BanTrungLaoController::class, 'thamVieng'])->name('tham_vieng');
-        Route::get('/phan-cong', [BanTrungLaoController::class, 'phanCong'])->name('phan_cong');
+        // Phân công
+        Route::post('/phan-cong-nhiem-vu',  [BanTrungLaoController::class, 'phanCongNhiemVu'])->name('phan_cong_nhiem_vu');
+        Route::delete('/xoa-phan-cong/{id}', [BanTrungLaoController::class, 'xoaPhanCong'])->name('xoa_phan_cong');
     });
-    Route::get('/ban-trung-lao/phan-cong-chi-tiet', [BanTrungLaoController::class, 'phanCongChiTiet'])
-        ->name('_ban_trung_lao.phan_cong_chi_tiet');
-});
-Route::get('/bao-cao/ban-trung-lao', [BanTrungLaoController::class, 'baoCaoBanTrungLao'])
-    ->name('_bao_cao.ban_trung_lao');
 
-Route::get('/bao-cao/ban-trung-lao', [BanTrungLaoController::class, 'baoCaoBanTrungLao'])
-    ->name('_bao_cao.ban_trung_lao')
-    ->middleware(['auth', 'checkRole:quan_tri,truong_ban']);
+
+/*
+|--------------------------------------------------------------------------
+| Web routes cho Ban Trung Lão (giao diện quản lý)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])
+    ->prefix('ban-trung-lao')
+    ->name('_ban_trung_lao.')
+    ->group(function () {
+        Route::get('/',                   [BanTrungLaoController::class, 'index'])->name('index');
+        Route::get('diem-danh',           [BanTrungLaoController::class, 'diemDanh'])->name('diem_danh');
+        Route::get('tham-vieng',          [BanTrungLaoController::class, 'thamVieng'])->name('tham_vieng');
+        Route::get('phan-cong',           [BanTrungLaoController::class, 'phanCong'])->name('phan_cong');
+        Route::get('phan-cong-chi-tiet',  [BanTrungLaoController::class, 'phanCongChiTiet'])->name('phan_cong_chi_tiet');
+    });
+
+
+/*
+|--------------------------------------------------------------------------
+| Web routes cho Báo Cáo Ban Trung Lão
+|--------------------------------------------------------------------------
+*/
+Route::prefix('bao-cao')
+    ->middleware(['auth']) // Thêm middleware nếu cần
+    ->name('_bao_cao.')
+    ->group(function () {
+        // Form nhập liệu báo cáo Ban Trung Lão
+        Route::get('nhap-lieu-ban-trung-lao', [BaoCaoController::class, 'formBaoCaoBanTrungLao'])
+            ->name('form_ban_trung_lao');
+
+        // Routes cho các chức năng lưu dữ liệu
+        Route::post('save-thamdu-trung-lao', [BaoCaoController::class, 'saveThamDuTrungLao'])
+            ->name('save_thamdu_trung_lao');
+        Route::post('save-danhgia-trung-lao', [BaoCaoController::class, 'saveDanhGiaTrungLao'])
+            ->name('save_danhgia_trung_lao');
+        Route::post('save-kehoach-trung-lao', [BaoCaoController::class, 'saveKeHoachTrungLao'])
+            ->name('save_kehoach_trung_lao');
+        Route::post('save-kiennghi-trung-lao', [BaoCaoController::class, 'saveKienNghiTrungLao'])
+            ->name('save_kiennghi_trung_lao');
+
+        // API cập nhật nhanh từng dòng
+        // Thay đổi thành capNhatSoLuongThamDu
+        Route::post('update-thamdu-trung-lao', [BaoCaoController::class, 'updateThamDuTrungLao'])
+            ->name('update_thamdu_trung_lao');
+    });
