@@ -78,16 +78,10 @@ class BanTrungLaoController extends Controller
             ->orderBy('ho_ten', 'asc')
             ->get();
 
+        // dd($tinHuuList);
+
         return view('_ban_trung_lao.index', compact('banTrungLao', 'banDieuHanh', 'banVien', 'tinHuuList'));
     }
-
-    /**
-     * Hiển thị báo cáo Ban Trung Lão
-     */
-    /**
-     * Hiển thị báo cáo Ban Trung Lão
-     */
-
 
 
     /**
@@ -219,8 +213,13 @@ class BanTrungLaoController extends Controller
             'chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên'
         ]);
 
-        return redirect()->route('_ban_trung_lao.index')
-            ->with('success', 'Đã thêm thành viên vào ban Trung Lão thành công!');
+        // return redirect()->route('_ban_trung_lao.index')
+        //     ->with('success', 'Đã thêm thành viên vào ban Trung Lão thành công!');
+        // Trả về phản hồi JSON thay vì redirect
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật chức vụ thành công!'
+        ]);
     }
 
     /**
@@ -228,18 +227,47 @@ class BanTrungLaoController extends Controller
      */
     public function xoaThanhVien(Request $request)
     {
-        $validatedData = $request->validate([
-            'tin_huu_id' => 'required|exists:tin_huu,id',
-            'ban_nganh_id' => 'required|exists:ban_nganh,id',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'tin_huu_id' => 'required|exists:tin_huu,id',
+                'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            ]);
 
-        // Xóa thành viên khỏi bảng tin_huu_ban_nganh
-        TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
-            ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
-            ->delete();
+            // Kiểm tra xem bản ghi có tồn tại không
+            $recordExists = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
+                ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
+                ->exists();
 
-        return redirect()->route('_ban_trung_lao.index')
-            ->with('success', 'Đã xóa thành viên khỏi ban Trung Lão thành công!');
+            if (!$recordExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy thành viên trong Ban Trung Lão để xóa.'
+                ], 404);
+            }
+
+            // Xóa thành viên khỏi bảng tin_huu_ban_nganh
+            $deletedRows = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
+                ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
+                ->delete();
+
+            if ($deletedRows === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xóa thành viên. Vui lòng thử lại.'
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa thành viên khỏi ban Trung Lão thành công!'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi xóa thành viên khỏi Ban Trung Lão: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi xóa thành viên: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -261,8 +289,10 @@ class BanTrungLaoController extends Controller
                 ->first();
 
             if ($existingTruongBan) {
-                return redirect()->route('_ban_trung_lao.index')
-                    ->with('error', 'Ban Trung Lão đã có Trưởng Ban! Vui lòng thay đổi chức vụ của người hiện tại trước.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ban Trung Lão đã có Trưởng Ban! Vui lòng thay đổi chức vụ của người hiện tại trước.'
+                ], 422);
             }
 
             // Cập nhật trưởng ban cho bảng ban_nganh
@@ -275,8 +305,11 @@ class BanTrungLaoController extends Controller
             ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
             ->update(['chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên']);
 
-        return redirect()->route('_ban_trung_lao.index')
-            ->with('success', 'Đã cập nhật chức vụ thành công!');
+        // Trả về phản hồi JSON thay vì redirect
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật chức vụ thành công!'
+        ]);
     }
 
     /**
@@ -303,7 +336,7 @@ class BanTrungLaoController extends Controller
         }
 
         // Tạo danh sách các năm (2 năm trước đến 1 năm sau)
-        $currentYear = (int)date('Y');
+        $currentYear = (int) date('Y');
         $years = range($currentYear - 2, $currentYear + 1);
 
         // Lấy danh sách các buổi nhóm trong tháng và năm đã chọn
@@ -539,7 +572,7 @@ class BanTrungLaoController extends Controller
 
         // Chuẩn bị dữ liệu cho select box năm
         $years = [];
-        $currentYear = (int)date('Y');
+        $currentYear = (int) date('Y');
         for ($i = $currentYear - 2; $i <= $currentYear + 2; $i++) {
             $years[$i] = $i;
         }
@@ -681,17 +714,14 @@ class BanTrungLaoController extends Controller
         // Đề xuất thăm viếng - những tín hữu chưa thăm lâu nhất
         $now = Carbon::now();
         $deXuatThamVieng = TinHuu::select('*')
-            ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
-            ->whereNotNull('ngay_tham_vieng_gan_nhat')
-            ->orderBy('ngay_tham_vieng_gan_nhat', 'asc')
-            ->limit(10)
-            ->get()
-            ->merge(
-                TinHuu::whereNull('ngay_tham_vieng_gan_nhat')
-                    ->orderBy('created_at', 'asc')
-                    ->limit(5)
-                    ->get()
-            );
+            ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [Carbon::now()])
+            ->where(function ($query) {
+                $query->whereNotNull('ngay_tham_vieng_gan_nhat')
+                    ->orWhereNull('ngay_tham_vieng_gan_nhat');
+            })
+            ->orderByRaw('ngay_tham_vieng_gan_nhat IS NULL DESC, ngay_tham_vieng_gan_nhat ASC')
+            ->limit(20)
+            ->get();
 
         // Lấy danh sách tín hữu có tọa độ cho bản đồ
         $tinHuuWithLocations = TinHuu::whereNotNull('vi_do')
@@ -702,9 +732,9 @@ class BanTrungLaoController extends Controller
         $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
             ->where('id_ban', $banTrungLao->id)
             ->where('trang_thai', 'da_tham')
-            ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(30))
+            ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60)) // Tăng lên 60 ngày
             ->orderBy('ngay_tham', 'desc')
-            ->limit(20)
+            ->limit(50) // Tăng giới hạn
             ->get();
 
         // Thống kê thăm viếng
@@ -766,6 +796,8 @@ class BanTrungLaoController extends Controller
      */
     public function themThamVieng(Request $request)
     {
+        Log::info('Thêm thăm viếng request:', $request->all());
+
         $validator = Validator::make($request->all(), [
             'tin_huu_id' => 'required|exists:tin_huu,id',
             'nguoi_tham_id' => 'required|exists:tin_huu,id',
@@ -777,6 +809,7 @@ class BanTrungLaoController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Validation failed for themThamVieng:', $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu không hợp lệ',
@@ -787,7 +820,6 @@ class BanTrungLaoController extends Controller
         try {
             DB::beginTransaction();
 
-            // Tạo bản ghi thăm viếng mới
             $thamVieng = ThamVieng::create([
                 'tin_huu_id' => $request->tin_huu_id,
                 'nguoi_tham_id' => $request->nguoi_tham_id,
@@ -798,7 +830,6 @@ class BanTrungLaoController extends Controller
                 'trang_thai' => $request->trang_thai,
             ]);
 
-            // Nếu trạng thái là "đã thăm", cập nhật ngày thăm viếng gần nhất cho tín hữu
             if ($request->trang_thai == 'da_tham') {
                 TinHuu::where('id', $request->tin_huu_id)->update([
                     'ngay_tham_vieng_gan_nhat' => $request->ngay_tham
@@ -806,6 +837,7 @@ class BanTrungLaoController extends Controller
             }
 
             DB::commit();
+            Log::info('Thêm thăm viếng thành công, ID:', ['tham_vieng_id' => $thamVieng->id]);
 
             return response()->json([
                 'success' => true,
@@ -815,7 +847,6 @@ class BanTrungLaoController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Lỗi thêm thăm viếng: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi thêm lần thăm: ' . $e->getMessage()
@@ -829,22 +860,19 @@ class BanTrungLaoController extends Controller
     public function filterDeXuatThamVieng(Request $request)
     {
         $days = $request->input('days', 60);
-
         $cutoffDate = Carbon::now()->subDays($days);
         $now = Carbon::now();
 
         $tinHuuList = TinHuu::select('*')
             ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
             ->where(function ($query) use ($cutoffDate) {
-                $query->whereNull('ngay_tham_vieng_gan_nhat')
-                    ->orWhere('ngay_tham_vieng_gan_nhat', '<=', $cutoffDate);
+                $query->where('ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
+                    ->orWhereNull('ngay_tham_vieng_gan_nhat');
             })
-            ->orderBy('ngay_tham_vieng_gan_nhat', 'asc')
-            ->orderBy('created_at', 'asc')
+            ->orderByRaw('ngay_tham_vieng_gan_nhat IS NULL DESC, ngay_tham_vieng_gan_nhat ASC')
             ->limit(20)
             ->get();
 
-        // Format dates
         $tinHuuList->transform(function ($tinHuu) {
             $tinHuu->ngay_tham_vieng_gan_nhat_formatted = $tinHuu->ngay_tham_vieng_gan_nhat
                 ? Carbon::parse($tinHuu->ngay_tham_vieng_gan_nhat)->format('d/m/Y')
@@ -903,24 +931,31 @@ class BanTrungLaoController extends Controller
      */
     public function chiTietThamVieng($id)
     {
-        $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham', 'banNganh'])
-            ->findOrFail($id);
+        try {
+            $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham', 'banNganh'])->findOrFail($id);
 
-        $data = [
-            'id' => $thamVieng->id,
-            'tin_huu_name' => $thamVieng->tinHuu ? $thamVieng->tinHuu->ho_ten : null,
-            'nguoi_tham_name' => $thamVieng->nguoiTham ? $thamVieng->nguoiTham->ho_ten : null,
-            'ngay_tham_formatted' => Carbon::parse($thamVieng->ngay_tham)->format('d/m/Y'),
-            'noi_dung' => $thamVieng->noi_dung,
-            'ket_qua' => $thamVieng->ket_qua,
-            'trang_thai' => $thamVieng->trang_thai,
-            'ban_name' => $thamVieng->banNganh ? $thamVieng->banNganh->ten : null
-        ];
+            $data = [
+                'id' => $thamVieng->id,
+                'tin_huu_name' => $thamVieng->tinHuu ? $thamVieng->tinHuu->ho_ten : null,
+                'nguoi_tham_name' => $thamVieng->nguoiTham ? $thamVieng->nguoiTham->ho_ten : null,
+                'ngay_tham_formatted' => Carbon::parse($thamVieng->ngay_tham)->format('d/m/Y'),
+                'noi_dung' => $thamVieng->noi_dung,
+                'ket_qua' => $thamVieng->ket_qua,
+                'trang_thai' => $thamVieng->trang_thai,
+                'ban_name' => $thamVieng->banNganh ? $thamVieng->banNganh->ten : null
+            ];
 
-        return response()->json([
-            'success' => true,
-            'data' => $data
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi lấy chi tiết thăm viếng ID ' . $id . ': ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy bản ghi thăm viếng hoặc lỗi hệ thống'
+            ], 404);
+        }
     }
 
 
@@ -1403,7 +1438,7 @@ class BanTrungLaoController extends Controller
         }
 
         // Tạo danh sách các năm (2 năm trước đến 1 năm sau)
-        $currentYear = (int)date('Y');
+        $currentYear = (int) date('Y');
         $years = range($currentYear - 2, $currentYear + 1);
 
         // Lấy danh sách các buổi nhóm trong tháng và năm đã chọn
@@ -1624,7 +1659,14 @@ class BanTrungLaoController extends Controller
     public function dieuHanhList(Request $request)
     {
         try {
-            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->firstOrFail();
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+            if (!$banTrungLao) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy Ban Trung Lão'
+                ], 404);
+            }
+
             $query = TinHuuBanNganh::with('tinHuu')
                 ->where('ban_nganh_id', $banTrungLao->id)
                 ->whereNotNull('chuc_vu')
@@ -1637,7 +1679,6 @@ class BanTrungLaoController extends Controller
                     'Ủy Viên'
                 ]);
 
-            // Áp dụng bộ lọc
             if ($hoTen = $request->input('ho_ten')) {
                 $query->whereHas('tinHuu', function ($q) use ($hoTen) {
                     $q->where('ho_ten', 'like', '%' . $hoTen . '%');
@@ -1652,28 +1693,40 @@ class BanTrungLaoController extends Controller
                 return [
                     'id' => $item->id,
                     'tin_huu_id' => $item->tin_huu_id,
-                    'ho_ten' => $item->tinHuu->ho_ten,
+                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
                     'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
                 ];
             });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Không có thành viên Ban Điều Hành',
+                    'data' => []
+                ]);
+            }
 
             return response()->json($data);
         } catch (\Exception $e) {
             Log::error('Lỗi lấy danh sách Ban Điều Hành: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi lấy danh sách Ban Điều Hành'
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Lấy danh sách Ban viên (JSON cho DataTables)
-     */
     public function banVienList(Request $request)
     {
         try {
-            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->firstOrFail();
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+            if (!$banTrungLao) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy Ban Trung Lão'
+                ], 404);
+            }
+
             $query = TinHuuBanNganh::with('tinHuu')
                 ->where('ban_nganh_id', $banTrungLao->id)
                 ->where(function ($q) {
@@ -1682,7 +1735,6 @@ class BanTrungLaoController extends Controller
                         ->orWhere('chuc_vu', '');
                 });
 
-            // Áp dụng bộ lọc
             if ($hoTen = $request->input('ho_ten')) {
                 $query->whereHas('tinHuu', function ($q) use ($hoTen) {
                     $q->where('ho_ten', 'like', '%' . $hoTen . '%');
@@ -1705,19 +1757,27 @@ class BanTrungLaoController extends Controller
                 return [
                     'id' => $item->id,
                     'tin_huu_id' => $item->tin_huu_id,
-                    'ho_ten' => $item->tinHuu->ho_ten,
-                    'so_dien_thoai' => $item->tinHuu->so_dien_thoai,
-                    'dia_chi' => $item->tinHuu->dia_chi,
+                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
+                    'so_dien_thoai' => $item->tinHuu->so_dien_thoai ?? 'N/A',
+                    'dia_chi' => $item->tinHuu->dia_chi ?? 'N/A',
                     'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
                 ];
             });
 
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Không có Ban Viên',
+                    'data' => []
+                ]);
+            }
+
             return response()->json($data);
         } catch (\Exception $e) {
-            Log::error('Lỗi lấy danh sách Ban viên: ' . $e->getMessage());
+            Log::error('Lỗi lấy danh sách Ban Viên: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi lấy danh sách Ban viên'
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
             ], 500);
         }
     }
