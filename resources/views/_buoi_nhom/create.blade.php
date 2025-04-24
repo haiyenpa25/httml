@@ -884,3 +884,4 @@
         });
     </script>
 @endpush
+@include('scripts.buoi_nhom')

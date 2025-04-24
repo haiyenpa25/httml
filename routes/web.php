@@ -264,21 +264,19 @@ Route::prefix('api/ban-trung-lao')
         Route::delete('/xoa-thanh-vien',   [BanTrungLaoController::class, 'xoaThanhVien'])->name('xoa_thanh_vien');
         Route::put('/cap-nhat-chuc-vu',    [BanTrungLaoController::class, 'capNhatChucVu'])->name('cap_nhat_chuc_vu');
 
-        // Quản lý buổi nhóm
+        // Thêm các route mới
+        Route::get('/dieu-hanh-list', [BanTrungLaoController::class, 'dieuHanhList'])->name('dieu_hanh_list');
+        Route::get('/ban-vien-list', [BanTrungLaoController::class, 'banVienList'])->name('ban_vien_list');
+
+        // Các route khác (giữ nguyên)
         Route::post('/buoi-nhom',          [BanTrungLaoController::class, 'themBuoiNhom'])->name('them_buoi_nhom');
         Route::put('/buoi-nhom/{buoiNhom}',    [BanTrungLaoController::class, 'updateBuoiNhom'])->name('update_buoi_nhom');
         Route::delete('/buoi-nhom/{buoiNhom}', [BanTrungLaoController::class, 'deleteBuoiNhom'])->name('delete_buoi_nhom');
-
-        // Điểm danh
         Route::post('/luu-diem-danh',      [BanTrungLaoController::class, 'luuDiemDanh'])->name('luu_diem_danh');
-
-        // Thăm viếng
         Route::post('/them-tham-vieng',    [BanTrungLaoController::class, 'themThamVieng'])->name('them_tham_vieng');
         Route::get('/chi-tiet-tham-vieng/{id}', [BanTrungLaoController::class, 'chiTietThamVieng'])->name('chi_tiet_tham_vieng');
         Route::get('/filter-de-xuat-tham-vieng', [BanTrungLaoController::class, 'filterDeXuatThamVieng'])->name('filter_de_xuat_tham_vieng');
         Route::get('/filter-tham-vieng',   [BanTrungLaoController::class, 'filterThamVieng'])->name('filter_tham_vieng');
-
-        // Phân công
         Route::post('/phan-cong-nhiem-vu',  [BanTrungLaoController::class, 'phanCongNhiemVu'])->name('phan_cong_nhiem_vu');
         Route::delete('/xoa-phan-cong/{id}', [BanTrungLaoController::class, 'xoaPhanCong'])->name('xoa_phan_cong');
     });

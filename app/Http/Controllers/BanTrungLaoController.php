@@ -1617,4 +1617,108 @@ class BanTrungLaoController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Lấy danh sách Ban Điều Hành (JSON cho DataTables)
+     */
+    public function dieuHanhList(Request $request)
+    {
+        try {
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->firstOrFail();
+            $query = TinHuuBanNganh::with('tinHuu')
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->whereNotNull('chuc_vu')
+                ->whereIn('chuc_vu', [
+                    'Cố Vấn',
+                    'Cố Vấn Linh Vụ',
+                    'Trưởng Ban',
+                    'Thư Ký',
+                    'Thủ Quỹ',
+                    'Ủy Viên'
+                ]);
+
+            // Áp dụng bộ lọc
+            if ($hoTen = $request->input('ho_ten')) {
+                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
+                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
+                });
+            }
+
+            if ($chucVu = $request->input('chuc_vu')) {
+                $query->where('chuc_vu', $chucVu);
+            }
+
+            $data = $query->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'tin_huu_id' => $item->tin_huu_id,
+                    'ho_ten' => $item->tinHuu->ho_ten,
+                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
+                ];
+            });
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Lỗi lấy danh sách Ban Điều Hành: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi lấy danh sách Ban Điều Hành'
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách Ban viên (JSON cho DataTables)
+     */
+    public function banVienList(Request $request)
+    {
+        try {
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->firstOrFail();
+            $query = TinHuuBanNganh::with('tinHuu')
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->where(function ($q) {
+                    $q->whereNull('chuc_vu')
+                        ->orWhere('chuc_vu', 'Thành viên')
+                        ->orWhere('chuc_vu', '');
+                });
+
+            // Áp dụng bộ lọc
+            if ($hoTen = $request->input('ho_ten')) {
+                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
+                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
+                });
+            }
+
+            if ($soDienThoai = $request->input('so_dien_thoai')) {
+                $query->whereHas('tinHuu', function ($q) use ($soDienThoai) {
+                    $q->where('so_dien_thoai', 'like', '%' . $soDienThoai . '%');
+                });
+            }
+
+            if ($diaChi = $request->input('dia_chi')) {
+                $query->whereHas('tinHuu', function ($q) use ($diaChi) {
+                    $q->where('dia_chi', 'like', '%' . $diaChi . '%');
+                });
+            }
+
+            $data = $query->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'tin_huu_id' => $item->tin_huu_id,
+                    'ho_ten' => $item->tinHuu->ho_ten,
+                    'so_dien_thoai' => $item->tinHuu->so_dien_thoai,
+                    'dia_chi' => $item->tinHuu->dia_chi,
+                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
+                ];
+            });
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Lỗi lấy danh sách Ban viên: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi lấy danh sách Ban viên'
+            ], 500);
+        }
+    }
 }

@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\BanNganh;
 use App\Models\TinHuu;
 use App\Models\TinHuuBanNganh;
 use Illuminate\Http\Request;
+use App\Enums\LoaiTinHuu; // Import enum
+use App\Enums\GioiTinh; // Import enum
+use App\Enums\TinhTrangHonNhan; // Import enum
 
 class TinHuuBanNganhController extends Controller
 {
