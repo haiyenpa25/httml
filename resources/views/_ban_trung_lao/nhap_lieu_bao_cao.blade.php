@@ -2,7 +2,6 @@
 
 @section('title', 'Nhập liệu Báo Cáo Ban Trung Lão')
 
-
 @section('content')
     <section class="content-header">
         <div class="container-fluid">
@@ -96,7 +95,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="filter-form" method="GET" action="{{ route('_bao_cao.form_ban_trung_lao') }}">
+                    <form id="filter-form" method="GET" action="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -173,7 +172,7 @@
                         <!-- Tab: Số lượng tham dự -->
                         <div class="tab-pane fade show active" id="buoinhom" role="tabpanel">
                             <!-- Form cho số lượng tham dự -->
-                            <form id="thamdu-form" method="POST" action="{{ route('_bao_cao.save_thamdu_trung_lao') }}">
+                            <form id="thamdu-form" method="POST" action="{{ route('_ban_trung_lao.save_thamdu_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
@@ -302,7 +301,7 @@
 
                         <!-- Tab: Đánh giá & Nhận xét -->
                         <div class="tab-pane fade" id="danhgia" role="tabpanel">
-                            <form id="danhgia-form" method="POST" action="{{ route('_bao_cao.save_danhgia_trung_lao') }}">
+                            <form id="danhgia-form" method="POST" action="{{ route('_ban_trung_lao.save_danhgia_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
@@ -402,7 +401,7 @@
 
                         <!-- Tab: Kế hoạch tháng tới -->
                         <div class="tab-pane fade" id="kehoach" role="tabpanel">
-                            <form id="kehoach-form" method="POST" action="{{ route('_bao_cao.save_kehoach_trung_lao') }}">
+                            <form id="kehoach-form" method="POST" action="{{ route('_ban_trung_lao.save_kehoach_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $nextMonth }}">
                                 <input type="hidden" name="year" value="{{ $nextYear }}">
@@ -443,12 +442,18 @@
                                                             <td>
                                                                 <select class="form-control" name="kehoach[{{ $index }}][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
-                                                                    @foreach ($thanhVienBan as $tinHuu)
-                                                                        <option value="{{ $tinHuu->tinHuu->id }}"
-                                                                                {{ $item->nguoi_phu_trach_id == $tinHuu->tinHuu->id ? 'selected' : '' }}>
-                                                                            {{ $tinHuu->tinHuu->ho_ten }}
-                                                                        </option>
-                                                                    @endforeach
+                                                                    @if ($tinHuuTrungLao->isEmpty())
+                                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                    @else
+                                                                        @foreach ($tinHuuTrungLao as $tinHuu)
+                                                                            @if ($tinHuu)
+                                                                                <option value="{{ $tinHuu->id }}"
+                                                                                        {{ $item->nguoi_phu_trach_id == $tinHuu->id ? 'selected' : '' }}>
+                                                                                    {{ $tinHuu->ho_ten }}
+                                                                                </option>
+                                                                            @endif
+                                                                        @endforeach
+                                                                    @endif
                                                                 </select>
                                                             </td>
                                                             <td>
@@ -475,9 +480,15 @@
                                                             <td>
                                                                 <select class="form-control" name="kehoach[0][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
-                                                                    @foreach ($thanhVienBan as $tinHuu)
-                                                                        <option value="{{ $tinHuu->tinHuu->id }}">{{ $tinHuu->tinHuu->ho_ten }}</option>
-                                                                    @endforeach
+                                                                    @if ($tinHuuTrungLao->isEmpty())
+                                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                    @else
+                                                                        @foreach ($tinHuuTrungLao as $tinHuu)
+                                                                            @if ($tinHuu)
+                                                                                <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                            @endif
+                                                                        @endforeach
+                                                                    @endif
                                                                 </select>
                                                             </td>
                                                             <td>
@@ -506,7 +517,7 @@
 
                         <!-- Tab: Ý kiến & Kiến nghị -->
                         <div class="tab-pane fade" id="kiennghi" role="tabpanel">
-                            <form id="kiennghi-form" method="POST" action="{{ route('_bao_cao.save_kiennghi_trung_lao') }}">
+                            <form id="kiennghi-form" method="POST" action="{{ route('_ban_trung_lao.save_kiennghi_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
@@ -550,12 +561,18 @@
                                                             <label>Người đề xuất:</label>
                                                             <select class="form-control" name="kiennghi[{{ $index }}][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
-                                                                @foreach ($thanhVienBan as $tinHuu)
-                                                                    <option value="{{ $tinHuu->tinHuu->id }}"
-                                                                            {{ $item->nguoi_de_xuat_id == $tinHuu->tinHuu->id ? 'selected' : '' }}>
-                                                                        {{ $tinHuu->tinHuu->ho_ten }}
-                                                                    </option>
-                                                                @endforeach
+                                                                @if ($tinHuuTrungLao->isEmpty())
+                                                                    <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                @else
+                                                                    @foreach ($tinHuuTrungLao as $tinHuu)
+                                                                        @if ($tinHuu)
+                                                                            <option value="{{ $tinHuu->id }}"
+                                                                                    {{ $item->nguoi_de_xuat_id == $tinHuu->id ? 'selected' : '' }}>
+                                                                                {{ $tinHuu->ho_ten }}
+                                                                            </option>
+                                                                        @endif
+                                                                    @endforeach
+                                                                @endif
                                                             </select>
                                                         </div>
                                                     </div>
@@ -590,9 +607,15 @@
                                                             <label>Người đề xuất:</label>
                                                             <select class="form-control" name="kiennghi[0][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
-                                                                @foreach ($thanhVienBan as $tinHuu)
-                                                                    <option value="{{ $tinHuu->tinHuu->id }}">{{ $tinHuu->tinHuu->ho_ten }}</option>
-                                                                @endforeach
+                                                                @if ($tinHuuTrungLao->isEmpty())
+                                                                    <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                @else
+                                                                    @foreach ($tinHuuTrungLao as $tinHuu)
+                                                                        @if ($tinHuu)
+                                                                            <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                        @endif
+                                                                    @endforeach
+                                                                @endif
                                                             </select>
                                                         </div>
                                                     </div>

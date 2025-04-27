@@ -47,7 +47,7 @@
                     <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
                         <i class="fas fa-clipboard-list"></i> Chi tiết PC
                     </a>
-                    <a href="{{ route('_bao_cao.form_ban_trung_lao') }}" class="action-btn btn-success-custom">
+                    <a href="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
                         <i class="fas fa-file-alt"></i> Nhập báo cáo
                     </a>
                 </div>
