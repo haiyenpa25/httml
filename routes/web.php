@@ -346,7 +346,7 @@ Route::prefix('bao-cao')
 
 
 
-Route::get('/nha-cung-cap/get-nha-cung-caps', [App\Http\Controllers\NhaCungCapController::class, 'getNhaCungCaps'])->name('nha-cung-cap.get-nha-cung-caps');
+
 
 
 // Routes cho Thiết Bị

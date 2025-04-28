@@ -95,13 +95,18 @@
                         return { search: params.term };
                     },
                     processResults: function (data) {
+                        console.log('Dữ liệu tín hữu trả về:', data);
                         return {
                             results: data.map(function (item) {
                                 return { id: item.id, text: item.ho_ten };
                             })
                         };
                     },
-                    cache: true
+                    cache: true,
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải danh sách tín hữu:', xhr.status, xhr.responseText);
+                        toastr.error('Không thể tải danh sách tín hữu. Mã lỗi: ' + xhr.status);
+                    }
                 },
                 placeholder: '-- Chọn Người Quản Lý --',
                 minimumInputLength: 0,
@@ -123,13 +128,29 @@
                         return { search: params.term };
                     },
                     processResults: function (data) {
-                        return {
-                            results: data.map(function (item) {
-                                return { id: item.id, text: item.ten_nha_cung_cap };
-                            })
-                        };
+                        console.log('Dữ liệu nhà cung cấp trả về:', data);
+                        if (data && data.data) {
+                            return {
+                                results: data.data.map(function (item) {
+                                    return { id: item.id, text: item.ten_nha_cung_cap };
+                                })
+                            };
+                        } else if (Array.isArray(data)) {
+                            return {
+                                results: data.map(function (item) {
+                                    return { id: item.id, text: item.ten_nha_cung_cap };
+                                })
+                            };
+                        } else {
+                            console.error('Dữ liệu nhà cung cấp không đúng định dạng:', data);
+                            return { results: [] };
+                        }
                     },
-                    cache: true
+                    cache: true,
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải danh sách nhà cung cấp:', xhr.status, xhr.responseText);
+                        toastr.error('Không thể tải danh sách nhà cung cấp. Mã lỗi: ' + xhr.status);
+                    }
                 },
                 placeholder: '-- Chọn Nhà Cung Cấp --',
                 minimumInputLength: 0,
@@ -207,6 +228,7 @@
                 var thietBiTable = $('#thiet-bi-table').DataTable({
                     processing: true,
                     serverSide: false,
+                    responsive: true, // Bật responsive cho DataTable
                     ajax: {
                         url: "{{ route('thiet-bi.get-thiet-bis') }}",
                         data: function (d) {
@@ -216,13 +238,13 @@
                             d.vi_tri = $('#filter-vi-tri').val();
                         },
                         dataSrc: function (json) {
-                            console.log('Dữ liệu trả về từ server:', json);
+                            console.log('Dữ liệu thiết bị trả về từ server:', json);
                             if (json && json.data) {
                                 return json.data; // Lấy dữ liệu từ key 'data' nếu tồn tại
                             } else if (Array.isArray(json)) {
                                 return json; // Nếu là mảng trực tiếp, trả về luôn
                             } else {
-                                console.error('Dữ liệu không đúng định dạng:', json);
+                                console.error('Dữ liệu thiết bị không đúng định dạng:', json);
                                 return [];
                             }
                         },
@@ -283,7 +305,7 @@
                         }
                     ],
                     language: {
-                        url: '{{ asset("dist/js/Vietnamese.json") }}'
+                        url: '{{ asset("i18n/Vietnamese.json") }}'
                     }
                 });
 
@@ -325,13 +347,19 @@
                             }
                         },
                         error: function (xhr) {
+                            console.error('Lỗi khi thêm thiết bị:', xhr.status, xhr.responseText);
                             if (xhr.status === 422) {
                                 var errors = xhr.responseJSON.errors;
                                 $.each(errors, function (key, value) {
                                     toastr.error(value[0]);
                                 });
+                            } else if (xhr.status === 401 || xhr.status === 403) {
+                                toastr.error('Bạn cần đăng nhập để thêm thiết bị.');
+                                setTimeout(function() {
+                                    window.location.href = '/login';
+                                }, 2000);
                             } else {
-                                toastr.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                                toastr.error('Không thể thêm thiết bị. Mã lỗi: ' + xhr.status);
                             }
                         },
                         complete: function () {
@@ -398,13 +426,19 @@
                             }
                         },
                         error: function (xhr) {
+                            console.error('Lỗi khi cập nhật thiết bị:', xhr.status, xhr.responseText);
                             if (xhr.status === 422) {
                                 var errors = xhr.responseJSON.errors;
                                 $.each(errors, function (key, value) {
                                     toastr.error(value[0]);
                                 });
+                            } else if (xhr.status === 401 || xhr.status === 403) {
+                                toastr.error('Bạn cần đăng nhập để cập nhật thiết bị.');
+                                setTimeout(function() {
+                                    window.location.href = '/login';
+                                }, 2000);
                             } else {
-                                toastr.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                                toastr.error('Không thể cập nhật thiết bị. Mã lỗi: ' + xhr.status);
                             }
                         },
                         complete: function () {
@@ -536,13 +570,19 @@
                             }
                         },
                         error: function (xhr) {
+                            console.error('Lỗi khi lưu lịch sử bảo trì:', xhr.status, xhr.responseText);
                             if (xhr.status === 422) {
                                 var errors = xhr.responseJSON.errors;
                                 $.each(errors, function (key, value) {
                                     toastr.error(value[0]);
                                 });
+                            } else if (xhr.status === 401 || xhr.status === 403) {
+                                toastr.error('Bạn cần đăng nhập để lưu lịch sử bảo trì.');
+                                setTimeout(function() {
+                                    window.location.href = '/login';
+                                }, 2000);
                             } else {
-                                toastr.error('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                                toastr.error('Không thể lưu lịch sử bảo trì. Mã lỗi: ' + xhr.status);
                             }
                         }
                     });

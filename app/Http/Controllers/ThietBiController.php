@@ -73,6 +73,7 @@ class ThietBiController extends Controller
         $nhaCungCaps = NhaCungCap::all();
         $loaiThietBis = ThietBi::LOAI_THIET_BI;
         $tinhTrangs = ThietBi::TINH_TRANG;
+        dd($banNganhs, $tinHuus, $nhaCungCaps, $loaiThietBis, $tinhTrangs);
 
         return view('_thiet_bi.create', compact('banNganhs', 'tinHuus', 'nhaCungCaps', 'loaiThietBis', 'tinhTrangs'));
     }
@@ -82,6 +83,8 @@ class ThietBiController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Bắt đầu xử lý yêu cầu thêm thiết bị', ['request' => $request->all()]);
+
         try {
             $validated = $request->validate([
                 'ten' => 'required|string|max:255',
@@ -101,13 +104,18 @@ class ThietBiController extends Controller
                 'mo_ta' => 'nullable|string'
             ]);
 
+            Log::info('Dữ liệu sau khi validate:', ['validated' => $validated]);
+
             // Xử lý upload hình ảnh
             if ($request->hasFile('hinh_anh')) {
                 $path = $request->file('hinh_anh')->store('thiet_bi', 'public');
                 $validated['hinh_anh'] = $path;
+                Log::info('Hình ảnh đã được upload:', ['path' => $path]);
             }
 
             $thietBi = ThietBi::create($validated);
+
+            Log::info('Thiết bị đã được tạo:', ['thietBi' => $thietBi->toArray()]);
 
             // Tạo giao dịch tài chính nếu có giá trị
             if ($thietBi->gia_tri && $thietBi->ngay_mua) {
@@ -118,6 +126,7 @@ class ThietBiController extends Controller
                     'ngay_giao_dich' => $thietBi->ngay_mua,
                     'ban_nganh_id' => $thietBi->id_ban
                 ]);
+                Log::info('Giao dịch tài chính đã được tạo:', ['thietBi' => $thietBi->id]);
             }
 
             return response()->json([
@@ -126,13 +135,14 @@ class ThietBiController extends Controller
                 'data' => $thietBi
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Lỗi validation khi thêm thiết bị:', ['errors' => $e->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu không hợp lệ',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Lỗi thêm thiết bị: ' . $e->getMessage());
+            Log::error('Lỗi khi thêm thiết bị: ' . $e->getMessage(), ['exception' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể thêm thiết bị: ' . $e->getMessage()
