@@ -4,18 +4,16 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 class RouteServiceProvider extends ServiceProvider
 {
     /**
      * The path to your application's "home" route.
      *
-     * Typically, users are redirected here after authentication.
-     * You can define your own home route using this constant.
-     *
      * @var string
      */
-    public const HOME = '/home'; // Thay đổi thành '/dashboard' nếu cần
+    public const HOME = '/trang-chu'; // Đổi thành đường dẫn trang chủ của bạn
 
     /**
      * Define your route model bindings, pattern filters, etc.
@@ -31,16 +29,14 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/web.php'));
         });
 
-        // Đăng ký middleware 'checkRole' ở đây
+        // Đăng ký tất cả middleware cần thiết
+        // Đăng ký các middleware cần thiết
+        $this->app->router->aliasMiddleware('auth', \Illuminate\Auth\Middleware\Authenticate::class);
         $this->app->router->aliasMiddleware('checkRole', \App\Http\Middleware\CheckRole::class);
     }
 
     /**
      * Define the "web" routes for the application.
-     *
-     * These routes all receive session state, CSRF protection, etc.
-     *
-     * @return void
      */
     protected function mapWebRoutes(): void
     {
@@ -50,10 +46,6 @@ class RouteServiceProvider extends ServiceProvider
 
     /**
      * Define the "api" routes for the application.
-     *
-     * These routes are typically stateless.
-     *
-     * @return void
      */
     protected function mapApiRoutes(): void
     {

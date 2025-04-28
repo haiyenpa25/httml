@@ -16,6 +16,7 @@ class NhaCungCap extends Model
      */
     protected $table = 'nha_cung_cap';
 
+
     /**
      * Các trường có thể gán giá trị hàng loạt
      *

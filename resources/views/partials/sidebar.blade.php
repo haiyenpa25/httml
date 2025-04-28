@@ -250,12 +250,62 @@
                 </li>
 
                 <!-- Quản lý Thông Báo -->
-                <li class="nav-item">
-                    <a href="{{ route('_thong_bao.index') }}"
-                        class="nav-link {{ request()->routeIs('_thong_bao.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-bell"></i>
-                        <p>Thông Báo</p>
+                <!-- Thêm vào phần menu chính trong sidebar.blade.php -->
+
+                <li class="nav-item {{ Request::is('thong-bao*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ Request::is('thong-bao*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-envelope"></i>
+                        <p>
+                            Thông báo
+                            @php
+                            $thongBaoChuaDoc = Auth::check() ? 
+                                \App\Models\ThongBao::where('nguoi_nhan_id', Auth::id())
+                                ->where('da_doc', false)
+                                ->count() : 0;
+                            @endphp
+                            @if($thongBaoChuaDoc > 0)
+                                <span class="badge badge-warning right">{{ $thongBaoChuaDoc }}</span>
+                            @endif
+                            <i class="fas fa-angle-left right"></i>
+                        </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('thong-bao.index') }}" class="nav-link {{ Request::is('thong-bao') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Tổng quan</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thong-bao.inbox') }}" class="nav-link {{ Request::is('thong-bao/inbox') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>
+                                    Hộp thư đến
+                                    @if($thongBaoChuaDoc > 0)
+                                        <span class="badge badge-warning right">{{ $thongBaoChuaDoc }}</span>
+                                    @endif
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thong-bao.sent') }}" class="nav-link {{ Request::is('thong-bao/sent') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Đã gửi</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thong-bao.archived') }}" class="nav-link {{ Request::is('thong-bao/archived') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Lưu trữ</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('thong-bao.create') }}" class="nav-link {{ Request::is('thong-bao/create') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Soạn thông báo</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <!-- Báo Cáo -->

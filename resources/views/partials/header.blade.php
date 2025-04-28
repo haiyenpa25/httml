@@ -64,24 +64,40 @@
             </div>
         </li>
 
+        <!-- Thêm vào phần navbar-nav trong header.blade.php -->
         <!-- Notifications Dropdown Menu -->
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown" id="notification-dropdown">
             <a class="nav-link" data-toggle="dropdown" href="#">
                 <i class="far fa-bell"></i>
-                <span class="badge badge-warning navbar-badge">15</span>
+                @php
+                $thongBaoChuaDoc = Auth::check() ? 
+                    \App\Models\ThongBao::where('nguoi_nhan_id', Auth::id())
+                    ->where('da_doc', false)
+                    ->count() : 0;
+                @endphp
+                @if($thongBaoChuaDoc > 0)
+                    <span class="badge badge-warning navbar-badge notification-count">{{ $thongBaoChuaDoc }}</span>
+                @endif
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                <span class="dropdown-item dropdown-header">15 Notifications</span>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notification-menu">
+                <span class="dropdown-header">Thông báo</span>
                 <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item">
-                    <i class="fas fa-envelope mr-2"></i> 4 new messages
-                    <span class="float-right text-muted text-sm">3 mins</span>
-                </a>
-                <!-- Thêm các thông báo khác nếu cần -->
+                <div class="notification-items">
+                    <div class="text-center p-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+                <a href="{{ route('thong-bao.inbox') }}" class="dropdown-item dropdown-footer">Xem tất cả thông báo</a>
             </div>
         </li>
+
+
+
+
+        
         <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" href="#" role="button">
                 <i class="fas fa-expand-arrows-alt"></i>

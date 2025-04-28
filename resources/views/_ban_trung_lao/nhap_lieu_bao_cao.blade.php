@@ -177,26 +177,32 @@
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
                                 <input type="hidden" name="buoi_nhom_type" value="{{ $buoiNhomType }}">
+                                <input type="hidden" name="ban_nganh_id" value="1">
 
                                 <!-- Nhóm Chúa Nhật (nếu đang ở tab Hội Thánh) -->
                                 @if ($buoiNhomType == 13)
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-secondary">
-                                            <h5 class="card-title text-white">
+                                    <div class="card card-primary card-outline">
+                                        <div class="card-header">
+                                            <h3 class="card-title">
                                                 <i class="fas fa-church"></i> Nhóm Chúa Nhật (Hội Thánh)
-                                            </h5>
+                                            </h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="card-body p-0">
+                                        <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered table-hover mb-0">
-                                                    <thead class="thead-light">
+                                                <table id="buoi-nhom-ht-table" class="table table-bordered table-striped">
+                                                    <thead>
                                                         <tr>
-                                                            <th width="5%">STT</th>
-                                                            <th width="15%">Ngày</th>
-                                                            <th width="20%">Đề tài</th>
-                                                            <th width="20%">Diễn giả</th>
-                                                            <th width="20%">Số lượng Trung Lão</th>
-                                                            <th width="20%">Cập nhật</th>
+                                                            <th style="width: 50px">STT</th>
+                                                            <th>Ngày</th>
+                                                            <th>Đề tài</th>
+                                                            <th>Diễn giả</th>
+                                                            <th>Số lượng Trung Lão</th>
+                                                            <th style="width: 120px">Thao tác</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -222,36 +228,47 @@
                                                             </tr>
                                                         @empty
                                                             <tr>
-                                                                <td colspan="6" class="text-center">Không có dữ liệu buổi nhóm trong tháng này</td>
+                                                                <td></td>
+                                                                <td colspan="5" class="text-center">Không có dữ liệu buổi nhóm trong tháng này</td>
                                                             </tr>
                                                         @endforelse
                                                     </tbody>
                                                 </table>
                                             </div>
                                         </div>
+                                        <div class="card-footer">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> Lưu tất cả thay đổi
+                                            </button>
+                                        </div>
                                     </div>
                                 @endif
 
                                 <!-- Nhóm tối thứ 7 (nếu đang ở tab Ban Trung Lão) -->
                                 @if ($buoiNhomType == 1)
-                                    <div class="card mb-4">
-                                        <div class="card-header bg-secondary">
-                                            <h5 class="card-title text-white">
+                                    <div class="card card-primary card-outline">
+                                        <div class="card-header">
+                                            <h3 class="card-title">
                                                 <i class="fas fa-users"></i> Nhóm tối thứ 7 (Ban Trung Lão)
-                                            </h5>
+                                            </h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="card-body p-0">
+                                        <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered table-hover mb-0">
-                                                    <thead class="thead-light">
+                                                <table id="buoi-nhom-btl-table" class="table table-bordered table-striped">
+                                                    <thead>
                                                         <tr>
-                                                            <th width="5%">STT</th>
-                                                            <th width="15%">Ngày</th>
-                                                            <th width="20%">Đề tài</th>
-                                                            <th width="20%">Diễn giả</th>
-                                                            <th width="20%">Số lượng Trung Lão</th>
-                                                            <th width="20%">Dâng hiến (VNĐ)</th>
-                                                            <th width="20%">Cập nhật</th>
+                                                            <th style="width: 50px">STT</th>
+                                                            <th>Ngày</th>
+                                                            <th>Đề tài</th>
+                                                            <th>Diễn giả</th>
+                                                            <th>Số lượng Trung Lão</th>
+                                                            <th>Dâng hiến (VNĐ)</th>
+                                                            <th style="width: 120px">Thao tác</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -261,7 +278,7 @@
                                                                 <td>{{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}</td>
                                                                 <td>{{ $buoiNhom->chu_de ?? 'N/A' }}</td>
                                                                 <td>{{ $buoiNhom->dienGia->ho_ten ?? 'N/A' }}</td>
-                                                                <td>
+                                                                 <td>
                                                                     <input type="number" class="form-control"
                                                                            name="buoi_nhom[{{ $buoiNhom->id }}][so_luong_trung_lao]"
                                                                            min="0" value="{{ $buoiNhom->so_luong_trung_lao ?? 0 }}">
@@ -269,7 +286,7 @@
                                                                 <td>
                                                                     <input type="text" class="form-control money-format"
                                                                            name="buoi_nhom[{{ $buoiNhom->id }}][dang_hien]"
-                                                                           value="{{ number_format($buoiNhom->dang_hien ?? 0, 0, ',', '.') }}">
+                                                                           value="{{ number_format($buoiNhom->giaoDichTaiChinh->so_tien ?? 0, 0, ',', '.') }}">
                                                                     <input type="hidden" name="buoi_nhom[{{ $buoiNhom->id }}][id]" value="{{ $buoiNhom->id }}">
                                                                 </td>
                                                                 <td>
@@ -282,7 +299,8 @@
                                                             </tr>
                                                         @empty
                                                             <tr>
-                                                                <td colspan="7" class="text-center">Không có dữ liệu buổi nhóm trong tháng này</td>
+                                                                <td></td>
+                                                                <td colspan="6" class="text-center">Không có dữ liệu buổi nhóm trong tháng này</td>
                                                             </tr>
                                                         @endforelse
                                                     </tbody>
@@ -301,102 +319,124 @@
 
                         <!-- Tab: Đánh giá & Nhận xét -->
                         <div class="tab-pane fade" id="danhgia" role="tabpanel">
-                            <form id="danhgia-form" method="POST" action="{{ route('_ban_trung_lao.save_danhgia_trung_lao') }}">
-                                @csrf
-                                <input type="hidden" name="month" value="{{ $month }}">
-                                <input type="hidden" name="year" value="{{ $year }}">
-                                <input type="hidden" name="ban_nganh_id" value="1">
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="card card-outline card-success">
-                                            <div class="card-header">
-                                                <h3 class="card-title"><i class="fas fa-thumbs-up"></i> Điểm mạnh</h3>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="diem-manh-container">
-                                                    @forelse ($diemManh as $index => $danhGia)
-                                                        <div class="form-group diem-manh-item">
-                                                            <div class="input-group">
-                                                                <textarea class="form-control" name="diem_manh[]" rows="2"
-                                                                          placeholder="Nhập điểm mạnh...">{{ $danhGia->noi_dung }}</textarea>
-                                                                <div class="input-group-append">
-                                                                    <button type="button" class="btn btn-danger remove-diem-manh">
-                                                                        <i class="fas fa-times"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <input type="hidden" name="diem_manh_id[]" value="{{ $danhGia->id }}">
-                                                        </div>
-                                                    @empty
-                                                        <div class="form-group diem-manh-item">
-                                                            <div class="input-group">
-                                                                <textarea class="form-control" name="diem_manh[]" rows="2"
-                                                                          placeholder="Nhập điểm mạnh..."></textarea>
-                                                                <div class="input-group-append">
-                                                                    <button type="button" class="btn btn-danger remove-diem-manh">
-                                                                        <i class="fas fa-times"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <input type="hidden" name="diem_manh_id[]" value="0">
-                                                        </div>
-                                                    @endforelse
-                                                </div>
-                                                <button type="button" class="btn btn-outline-success btn-sm mt-2" id="add-diem-manh">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card card-outline card-success">
+                                        <div class="card-header">
+                                            <h3 class="card-title"><i class="fas fa-thumbs-up"></i> Điểm mạnh</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#modal-add-diem-manh">
                                                     <i class="fas fa-plus"></i> Thêm điểm mạnh
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card card-outline card-danger">
-                                            <div class="card-header">
-                                                <h3 class="card-title"><i class="fas fa-thumbs-down"></i> Điểm cần cải thiện</h3>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="diem-yeu-container">
-                                                    @forelse ($diemYeu as $index => $danhGia)
-                                                        <div class="form-group diem-yeu-item">
-                                                            <div class="input-group">
-                                                                <textarea class="form-control" name="diem_yeu[]" rows="2"
-                                                                          placeholder="Nhập điểm cần cải thiện...">{{ $danhGia->noi_dung }}</textarea>
-                                                                <div class="input-group-append">
-                                                                    <button type="button" class="btn btn-danger remove-diem-yeu">
-                                                                        <i class="fas fa-times"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <input type="hidden" name="diem_yeu_id[]" value="{{ $danhGia->id }}">
-                                                        </div>
-                                                    @empty
-                                                        <div class="form-group diem-yeu-item">
-                                                            <div class="input-group">
-                                                                <textarea class="form-control" name="diem_yeu[]" rows="2"
-                                                                          placeholder="Nhập điểm cần cải thiện..."></textarea>
-                                                                <div class="input-group-append">
-                                                                    <button type="button" class="btn btn-danger remove-diem-yeu">
-                                                                        <i class="fas fa-times"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <input type="hidden" name="diem_yeu_id[]" value="0">
-                                                        </div>
-                                                    @endforelse
-                                                </div>
-                                                <button type="button" class="btn btn-outline-danger btn-sm mt-2" id="add-diem-yeu">
-                                                    <i class="fas fa-plus"></i> Thêm điểm cần cải thiện
-                                                </button>
-                                            </div>
+                                        <div class="card-body">
+                                            <table id="diem-manh-table" class="table table-bordered table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="5%">STT</th>
+                                                        <th width="60%">Nội dung</th>
+                                                        <th width="25%">Người đánh giá</th>
+                                                        <th width="10%">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Dữ liệu sẽ được tải bằng DataTable -->
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="text-right mt-3">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i> Lưu đánh giá
-                                    </button>
+                                <div class="col-md-6">
+                                    <div class="card card-outline card-danger">
+                                        <div class="card-header">
+                                            <h3 class="card-title"><i class="fas fa-thumbs-down"></i> Điểm cần cải thiện</h3>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modal-add-diem-yeu">
+                                                    <i class="fas fa-plus"></i> Thêm điểm yếu
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <table id="diem-yeu-table" class="table table-bordered table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="5%">STT</th>
+                                                        <th width="60%">Nội dung</th>
+                                                        <th width="25%">Người đánh giá</th>
+                                                        <th width="10%">Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Dữ liệu sẽ được tải bằng DataTable -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
-                            </form>
+                            </div>
+
+                            <!-- Modal Thêm điểm mạnh -->
+                            <div class="modal fade" id="modal-add-diem-manh" tabindex="-1" role="dialog">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Thêm điểm mạnh</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">×</span>
+                                            </button>
+                                        </div>
+                                        <form id="add-diem-manh-form">
+                                            <div class="modal-body">
+                                                @csrf
+                                                <input type="hidden" name="month" value="{{ $month }}">
+                                                <input type="hidden" name="year" value="{{ $year }}">
+                                                <input type="hidden" name="ban_nganh_id" value="1">
+                                                <input type="hidden" name="loai" value="diem_manh">
+                                                <div class="form-group">
+                                                    <label>Nội dung:</label>
+                                                    <textarea class="form-control" name="noi_dung" rows="4" required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                                                <button type="submit" class="btn btn-primary">Lưu</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Thêm điểm yếu -->
+                            <div class="modal fade" id="modal-add-diem-yeu" tabindex="-1" role="dialog">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Thêm điểm cần cải thiện</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">×</span>
+                                            </button>
+                                        </div>
+                                        <form id="add-diem-yeu-form">
+                                            <div class="modal-body">
+                                                @csrf
+                                                <input type="hidden" name="month" value="{{ $month }}">
+                                                <input type="hidden" name="year" value="{{ $year }}">
+                                                <input type="hidden" name="ban_nganh_id" value="1">
+                                                <input type="hidden" name="loai" value="diem_yeu">
+                                                <div class="form-group">
+                                                    <label>Nội dung:</label>
+                                                    <textarea class="form-control" name="noi_dung" rows="4" required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                                                <button type="submit" class="btn btn-primary">Lưu</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Tab: Kế hoạch tháng tới -->
@@ -640,4 +680,4 @@
     </section>
 @endsection
 
-@include('scripts.ban_trung_lao.nhap_lieu_bao_cao')
+@include('scripts.ban_trung_lao.nhap_lieu_bao_cao_scripts')

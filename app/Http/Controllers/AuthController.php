@@ -41,4 +41,39 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/login');
     }
+
+
+    public function apiLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        $nguoiDung = NguoiDung::where('email', $request->email)->with('tinHuu')->first();
+
+        if (!$nguoiDung || !Hash::check($request->password, $nguoiDung->mat_khau)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thông tin đăng nhập không hợp lệ.'
+            ], 401);
+        }
+
+        // Tạo token nếu đăng nhập thành công
+        $token = md5(uniqid() . $nguoiDung->id . time());
+        $nguoiDung->api_token = $token;
+        $nguoiDung->save();
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $nguoiDung->id,
+                'tin_huu_id' => $nguoiDung->tin_huu_id,
+                'ho_ten' => $nguoiDung->tinHuu->ho_ten,
+                'email' => $nguoiDung->email,
+                'vai_tro' => $nguoiDung->vai_tro
+            ],
+            'token' => $token
+        ]);
+    }
 }

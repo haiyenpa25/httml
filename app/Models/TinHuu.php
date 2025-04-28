@@ -107,4 +107,12 @@ class TinHuu extends Model
         // Giả sử có cột 'trang_thai' (1 = active)
         return $query->where('trang_thai', 1);
     }
+
+    /**
+     * Lấy các ban ngành mà tín hữu làm trưởng ban.
+     */
+    public function banNganhLamTruongBan()
+    {
+        return $this->hasMany(BanNganh::class, 'truong_ban_id');
+    }
 }

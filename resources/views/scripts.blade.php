@@ -23,7 +23,7 @@
 <script src="{{ asset('plugins/datatables-responsive/js/responsive.bootstrap4.min.js') }}"></script>
 
 <!-- Toastr notifications -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="{{ asset('plugins/toastr/toastr.min.js') }}"></script>
 
 <!-- CSRF setup cho Ajax -->
 <script>

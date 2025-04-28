@@ -19,13 +19,47 @@ class NhaCungCapController extends Controller
     /**
      * Lấy danh sách nhà cung cấp dạng JSON
      */
-    public function getNhaCungCaps()
+    public function getNhaCungCaps(Request $request)
     {
+        Log::info('Bắt đầu xử lý yêu cầu getNhaCungCaps', ['request' => $request->all()]);
+
         try {
-            $nhaCungCaps = NhaCungCap::withCount('thietBis')->get();
+            $query = NhaCungCap::withCount('thietBis');
+
+            // Tìm kiếm phía server
+            if ($request->has('search') && !empty($request->search['value'])) {
+                $search = $request->search['value'];
+                Log::info('Tìm kiếm với từ khóa:', ['search' => $search]);
+                $query->where(function ($q) use ($search) {
+                    $q->where('ten_nha_cung_cap', 'like', '%' . $search . '%')
+                        ->orWhere('dia_chi', 'like', '%' . $search . '%')
+                        ->orWhere('so_dien_thoai', 'like', '%' . $search . '%')
+                        ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            }
+
+            $nhaCungCaps = $query->get()->map(function ($item) {
+                // Đảm bảo các trường không chứa ký tự không hợp lệ
+                $item->ten_nha_cung_cap = mb_convert_encoding($item->ten_nha_cung_cap, 'UTF-8', 'UTF-8');
+                $item->dia_chi = $item->dia_chi ? mb_convert_encoding($item->dia_chi, 'UTF-8', 'UTF-8') : null;
+                $item->so_dien_thoai = $item->so_dien_thoai ? mb_convert_encoding($item->so_dien_thoai, 'UTF-8', 'UTF-8') : null;
+                $item->email = $item->email ? mb_convert_encoding($item->email, 'UTF-8', 'UTF-8') : null;
+                $item->ghi_chu = $item->ghi_chu ? mb_convert_encoding($item->ghi_chu, 'UTF-8', 'UTF-8') : null;
+                return $item;
+            });
+
+            Log::info('Dữ liệu nhà cung cấp sau khi xử lý:', ['data' => $nhaCungCaps->toArray()]);
+
+            // Thử encode JSON thủ công để kiểm tra lỗi
+            $json = json_encode($nhaCungCaps);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('Lỗi encode JSON: ' . json_last_error_msg());
+                return response()->json(['error' => 'Lỗi encode JSON: ' . json_last_error_msg()], 500);
+            }
+
             return response()->json($nhaCungCaps);
         } catch (\Exception $e) {
-            Log::error('Lỗi lấy danh sách nhà cung cấp: ' . $e->getMessage());
+            Log::error('Lỗi lấy danh sách nhà cung cấp: ' . $e->getMessage(), ['exception' => $e->getTraceAsString()]);
             return response()->json(['error' => 'Không thể lấy danh sách nhà cung cấp'], 500);
         }
     }
