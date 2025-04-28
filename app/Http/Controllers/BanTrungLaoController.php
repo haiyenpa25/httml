@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\BanNganh;
 use App\Models\TinHuu;
 use App\Models\TinHuuBanNganh;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\BuoiNhom;
 use App\Models\DienGia;
 use App\Models\ChiTietThamGia;
@@ -14,40 +12,37 @@ use App\Models\NhiemVu;
 use App\Models\GiaoDichTaiChinh;
 use App\Models\ThamVieng;
 use App\Models\BuoiNhomNhiemVu;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 use App\Models\KeHoach;
 use App\Models\KienNghi;
 use App\Models\DanhGia;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\View\View;
 
 class BanTrungLaoController extends Controller
 {
+    // ID của Ban Trung Lão và Hội Thánh
+    private const BAN_TRUNG_LAO_ID = 1;
+    private const HOI_THANH_ID = 13;
+
     /**
      * Hiển thị trang chính của Ban Trung Lão
      */
     public function index()
     {
-        // Lấy thông tin ban Trung Lão
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
             return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
         }
 
-        // Lấy danh sách ban điều hành (có chức vụ cụ thể)
         $banDieuHanh = TinHuuBanNganh::with('tinHuu')
             ->where('ban_nganh_id', $banTrungLao->id)
             ->whereNotNull('chuc_vu')
-            ->whereIn('chuc_vu', [
-                'Cố Vấn',
-                'Cố Vấn Linh Vụ',
-                'Trưởng Ban',
-                'Thư Ký',
-                'Thủ Quỹ',
-                'Ủy Viên'
-            ])
+            ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên'])
             ->orderByRaw("CASE 
                 WHEN chuc_vu = 'Cố Vấn' OR chuc_vu = 'Cố Vấn Linh Vụ' THEN 1 
                 WHEN chuc_vu = 'Trưởng Ban' THEN 2 
@@ -57,7 +52,6 @@ class BanTrungLaoController extends Controller
                 ELSE 6 END")
             ->get();
 
-        // Lấy danh sách tất cả thành viên trong ban Trung Lão (không thuộc ban điều hành)
         $banVien = TinHuuBanNganh::with('tinHuu')
             ->where('ban_nganh_id', $banTrungLao->id)
             ->where(function ($query) {
@@ -68,8 +62,6 @@ class BanTrungLaoController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Lấy danh sách tất cả tín hữu (cho chức năng thêm thành viên)
-        // Loại bỏ những người đã là thành viên của ban
         $existingMemberIds = TinHuuBanNganh::where('ban_nganh_id', $banTrungLao->id)
             ->pluck('tin_huu_id')
             ->toArray();
@@ -78,111 +70,7 @@ class BanTrungLaoController extends Controller
             ->orderBy('ho_ten', 'asc')
             ->get();
 
-        // dd($tinHuuList);
-
         return view('_ban_trung_lao.index', compact('banTrungLao', 'banDieuHanh', 'banVien', 'tinHuuList'));
-    }
-
-
-    /**
-     * Lấy dữ liệu tóm tắt cho báo cáo
-     */
-    private function getSummaryData($month, $year, $banId)
-    {
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-
-        // Đếm tổng số buổi nhóm
-        $totalMeetings = BuoiNhom::where(function ($query) use ($banId) {
-            $query->where('ban_nganh_id', $banId)
-                ->orWhereNull('ban_nganh_id');
-        })
-            ->whereMonth('ngay_dien_ra', $month)
-            ->whereYear('ngay_dien_ra', $year)
-            ->count();
-
-        // Tính trung bình người tham dự
-        $avgAttendance = BuoiNhom::where(function ($query) use ($banId) {
-            $query->where('ban_nganh_id', $banId)
-                ->orWhereNull('ban_nganh_id');
-        })
-            ->whereMonth('ngay_dien_ra', $month)
-            ->whereYear('ngay_dien_ra', $year)
-            ->avg('so_luong_tin_huu');
-
-        if (is_null($avgAttendance)) {
-            $avgAttendance = 0;
-        }
-
-        // Đếm số lần thăm viếng
-        $totalVisits = ThamVieng::where('id_ban', $banId)
-            ->whereMonth('ngay_tham', $month)
-            ->whereYear('ngay_tham', $year)
-            ->count();
-
-        // Lấy tổng dâng hiến
-        $totalOffering = $this->getFinancialData($month, $year, $banId)['tongTon'] ?? 0;
-
-        return [
-            'totalMeetings' => $totalMeetings,
-            'avgAttendance' => round($avgAttendance),
-            'totalVisits' => $totalVisits,
-            'totalOffering' => $totalOffering
-        ];
-    }
-
-    /**
-     * Lấy dữ liệu tài chính
-     */
-    private function getFinancialData($month, $year, $banId)
-    {
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-
-        // Kiểm tra xem có giao dịch nào không
-        $hasTransactions = GiaoDichTaiChinh::where('ban_nganh_id', $banId)
-            ->whereMonth('ngay_giao_dich', $month)
-            ->whereYear('ngay_giao_dich', $year)
-            ->exists();
-
-        // Nếu không có giao dịch, tạo mẫu dữ liệu
-        if (!$hasTransactions) {
-            // Tạo dữ liệu mẫu - bạn có thể điều chỉnh hoặc xóa phần này trong môi trường sản xuất
-            $giaoDich = collect([]);
-            $tongThu = 5400000; // Giá trị mẫu
-            $tongChi = 1500000; // Giá trị mẫu
-            $tongTon = $tongThu - $tongChi;
-
-            return [
-                'giaoDich' => $giaoDich,
-                'tongThu' => $tongThu,
-                'tongChi' => $tongChi,
-                'tongTon' => $tongTon
-            ];
-        }
-
-        // Lấy tất cả giao dịch tài chính trong tháng
-        $giaoDich = GiaoDichTaiChinh::where('ban_nganh_id', $banId)
-            ->whereMonth('ngay_giao_dich', $month)
-            ->whereYear('ngay_giao_dich', $year)
-            ->orderBy('ngay_giao_dich')
-            ->get();
-
-        // Tính tổng thu
-        $tongThu = $giaoDich->where('loai', 'thu')->sum('so_tien');
-
-        // Tính tổng chi
-        $tongChi = $giaoDich->where('loai', 'chi')->sum('so_tien');
-
-        // Tính tổng tồn
-        $tongTon = $tongThu - $tongChi;
-
-        return [
-            'giaoDich' => $giaoDich,
-            'tongThu' => $tongThu,
-            'tongChi' => $tongChi,
-            'tongTon' => $tongTon
-        ];
     }
 
     /**
@@ -196,29 +84,26 @@ class BanTrungLaoController extends Controller
             'chuc_vu' => 'nullable|string|max:50',
         ]);
 
-        // Kiểm tra xem thành viên đã có trong ban chưa
         $exists = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
             ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
             ->exists();
 
         if ($exists) {
-            return redirect()->route('_ban_trung_lao.index')
-                ->with('error', 'Thành viên này đã thuộc ban Trung Lão!');
+            return response()->json([
+                'success' => false,
+                'message' => 'Thành viên này đã thuộc ban Trung Lão!'
+            ], 422);
         }
 
-        // Thêm thành viên mới vào bảng tin_huu_ban_nganh
         TinHuuBanNganh::create([
             'tin_huu_id' => $validatedData['tin_huu_id'],
             'ban_nganh_id' => $validatedData['ban_nganh_id'],
             'chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên'
         ]);
 
-        // return redirect()->route('_ban_trung_lao.index')
-        //     ->with('success', 'Đã thêm thành viên vào ban Trung Lão thành công!');
-        // Trả về phản hồi JSON thay vì redirect
         return response()->json([
             'success' => true,
-            'message' => 'Đã cập nhật chức vụ thành công!'
+            'message' => 'Đã thêm thành viên vào ban Trung Lão thành công!'
         ]);
     }
 
@@ -233,7 +118,6 @@ class BanTrungLaoController extends Controller
                 'ban_nganh_id' => 'required|exists:ban_nganh,id',
             ]);
 
-            // Kiểm tra xem bản ghi có tồn tại không
             $recordExists = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
                 ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
                 ->exists();
@@ -245,17 +129,9 @@ class BanTrungLaoController extends Controller
                 ], 404);
             }
 
-            // Xóa thành viên khỏi bảng tin_huu_ban_nganh
-            $deletedRows = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
+            TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
                 ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
                 ->delete();
-
-            if ($deletedRows === 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không thể xóa thành viên. Vui lòng thử lại.'
-                ], 500);
-            }
 
             return response()->json([
                 'success' => true,
@@ -281,7 +157,6 @@ class BanTrungLaoController extends Controller
             'chuc_vu' => 'nullable|string|max:50',
         ]);
 
-        // Nếu là thiết lập Trưởng Ban, kiểm tra xem đã có Trưởng Ban chưa
         if ($validatedData['chuc_vu'] == 'Trưởng Ban') {
             $existingTruongBan = TinHuuBanNganh::where('ban_nganh_id', $validatedData['ban_nganh_id'])
                 ->where('chuc_vu', 'Trưởng Ban')
@@ -295,17 +170,14 @@ class BanTrungLaoController extends Controller
                 ], 422);
             }
 
-            // Cập nhật trưởng ban cho bảng ban_nganh
             BanNganh::where('id', $validatedData['ban_nganh_id'])
                 ->update(['truong_ban_id' => $validatedData['tin_huu_id']]);
         }
 
-        // Cập nhật chức vụ trong bảng tin_huu_ban_nganh
         TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
             ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
             ->update(['chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên']);
 
-        // Trả về phản hồi JSON thay vì redirect
         return response()->json([
             'success' => true,
             'message' => 'Đã cập nhật chức vụ thành công!'
@@ -317,57 +189,38 @@ class BanTrungLaoController extends Controller
      */
     public function diemDanh(Request $request)
     {
-        // Lấy thông tin ban Trung Lão
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
             return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
         }
 
-        // Lấy tháng và năm từ request, nếu không có thì lấy tháng và năm hiện tại
-        $month = $request->input('month', date('m')); // Tháng hiện tại
-        $year = $request->input('year', date('Y')); // Năm hiện tại
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
         $selectedBuoiNhom = $request->input('buoi_nhom_id');
 
-        // Tạo danh sách các tháng
         $months = [];
         for ($i = 1; $i <= 12; $i++) {
             $monthName = Carbon::create()->month($i)->translatedFormat('F');
             $months[$i] = $monthName;
         }
 
-        // Tạo danh sách các năm (2 năm trước đến 1 năm sau)
         $currentYear = (int) date('Y');
         $years = range($currentYear - 2, $currentYear + 1);
 
-        // Lấy danh sách các buổi nhóm trong tháng và năm đã chọn
         $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banTrungLao->id)
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->orderBy('ngay_dien_ra', 'desc')
             ->get();
 
-        // Thông tin buổi nhóm đang được chọn
-        $currentBuoiNhom = null;
-        if ($selectedBuoiNhom) {
-            $currentBuoiNhom = BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])
-                ->find($selectedBuoiNhom);
-        }
+        $currentBuoiNhom = $selectedBuoiNhom ? BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])->find($selectedBuoiNhom) : null;
 
-        // Danh sách tín hữu trong Ban Trung Lão
         $danhSachTinHuu = TinHuu::whereHas('banNganhs', function ($query) use ($banTrungLao) {
             $query->where('ban_nganh_id', $banTrungLao->id);
-        })
-            ->orderBy('ho_ten')
-            ->get();
+        })->orderBy('ho_ten')->get();
 
-        // Lấy dữ liệu điểm danh của buổi nhóm đã chọn
         $diemDanhData = [];
-        $stats = [
-            'co_mat' => 0,
-            'vang_mat' => 0,
-            'vang_co_phep' => 0,
-            'ti_le_tham_du' => 0
-        ];
+        $stats = ['co_mat' => 0, 'vang_mat' => 0, 'vang_co_phep' => 0, 'ti_le_tham_du' => 0];
 
         if ($selectedBuoiNhom) {
             $chiTietThamGia = ChiTietThamGia::where('buoi_nhom_id', $selectedBuoiNhom)
@@ -380,7 +233,6 @@ class BanTrungLaoController extends Controller
                     'note' => $chiTiet->ghi_chu
                 ];
 
-                // Cập nhật thống kê
                 if ($chiTiet->trang_thai == 'co_mat') {
                     $stats['co_mat']++;
                 } elseif ($chiTiet->trang_thai == 'vang_mat') {
@@ -390,14 +242,10 @@ class BanTrungLaoController extends Controller
                 }
             }
 
-            // Tính tỷ lệ tham dự
             $totalMembers = $danhSachTinHuu->count();
-            $stats['ti_le_tham_du'] = $totalMembers > 0
-                ? round(($stats['co_mat'] / $totalMembers) * 100)
-                : 0;
+            $stats['ti_le_tham_du'] = $totalMembers > 0 ? round(($stats['co_mat'] / $totalMembers) * 100) : 0;
         }
 
-        // Lấy danh sách diễn giả cho form thêm buổi nhóm
         $dienGias = DienGia::orderBy('ho_ten')->get();
 
         return view('_ban_trung_lao.diem_danh', compact(
@@ -421,8 +269,6 @@ class BanTrungLaoController extends Controller
      */
     public function luuDiemDanh(Request $request)
     {
-        Log::info('Lưu điểm danh request:', $request->all());
-
         $validator = Validator::make($request->all(), [
             'buoi_nhom_id' => 'required|exists:buoi_nhom,id',
             'attendance' => 'required|array',
@@ -443,10 +289,8 @@ class BanTrungLaoController extends Controller
             $buoiNhomId = $request->buoi_nhom_id;
             $attendanceData = $request->attendance;
 
-            // Xóa dữ liệu điểm danh cũ của buổi nhóm này
             ChiTietThamGia::where('buoi_nhom_id', $buoiNhomId)->delete();
 
-            // Thêm dữ liệu điểm danh mới
             foreach ($attendanceData as $tinHuuId => $data) {
                 ChiTietThamGia::create([
                     'buoi_nhom_id' => $buoiNhomId,
@@ -456,16 +300,13 @@ class BanTrungLaoController extends Controller
                 ]);
             }
 
-            // Cập nhật thống kê trong bảng buổi nhóm
             $buoiNhom = BuoiNhom::find($buoiNhomId);
             $buoiNhom->so_luong_tin_huu = collect($attendanceData)->filter(function ($item) {
                 return $item['status'] === 'co_mat' || $item['status'] === 'vang_co_phep';
             })->count();
-
             $buoiNhom->save();
 
             DB::commit();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu điểm danh thành công'
@@ -473,7 +314,6 @@ class BanTrungLaoController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Lỗi lưu điểm danh: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi lưu điểm danh: ' . $e->getMessage()
@@ -486,8 +326,6 @@ class BanTrungLaoController extends Controller
      */
     public function themBuoiNhom(Request $request)
     {
-        Log::info('Thêm buổi nhóm request:', $request->all());
-
         $validator = Validator::make($request->all(), [
             'ban_nganh_id' => 'required|exists:ban_nganh,id',
             'ngay_dien_ra' => 'required|date',
@@ -508,7 +346,6 @@ class BanTrungLaoController extends Controller
         }
 
         try {
-            // Tạo buổi nhóm mới
             $buoiNhom = BuoiNhom::create([
                 'ban_nganh_id' => $request->ban_nganh_id,
                 'ngay_dien_ra' => $request->ngay_dien_ra,
@@ -527,7 +364,6 @@ class BanTrungLaoController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Lỗi thêm buổi nhóm: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi tạo buổi nhóm: ' . $e->getMessage()
@@ -540,17 +376,14 @@ class BanTrungLaoController extends Controller
      */
     public function phanCong(Request $request)
     {
-        // Lấy thông tin ban Trung Lão
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
             return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
         }
 
-        // Lấy tháng và năm từ request, nếu không có thì lấy tháng và năm hiện tại
-        $month = $request->input('month', date('m')); // Tháng hiện tại
-        $year = $request->input('year', date('Y')); // Năm hiện tại
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
 
-        // Lấy danh sách buổi nhóm của Ban Trung Lão theo tháng và năm
         $buoiNhoms = BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])
             ->where('ban_nganh_id', $banTrungLao->id)
             ->whereMonth('ngay_dien_ra', $month)
@@ -558,19 +391,14 @@ class BanTrungLaoController extends Controller
             ->orderBy('ngay_dien_ra', 'asc')
             ->get();
 
-        // Lấy danh sách diễn giả
         $dienGias = DienGia::orderBy('ho_ten')->get();
-
-        // Lấy danh sách tín hữu
         $tinHuus = TinHuu::orderBy('ho_ten')->get();
 
-        // Chuẩn bị dữ liệu cho select box tháng
         $months = [];
         for ($i = 1; $i <= 12; $i++) {
             $months[$i] = date('F', mktime(0, 0, 0, $i, 1));
         }
 
-        // Chuẩn bị dữ liệu cho select box năm
         $years = [];
         $currentYear = (int) date('Y');
         for ($i = $currentYear - 2; $i <= $currentYear + 2; $i++) {
@@ -594,8 +422,6 @@ class BanTrungLaoController extends Controller
      */
     public function updateBuoiNhom(Request $request, BuoiNhom $buoiNhom)
     {
-        Log::info('Attempting to update BuoiNhom ID for Ban Trung Lao: ' . $buoiNhom->id, $request->all());
-
         $validator = Validator::make($request->all(), [
             'ngay_dien_ra' => 'required|date',
             'chu_de' => 'nullable|string|max:255',
@@ -609,7 +435,6 @@ class BanTrungLaoController extends Controller
             'date' => ':attribute phải là ngày hợp lệ.',
             'string' => ':attribute phải là chuỗi.',
             'max' => ':attribute không được vượt quá :max ký tự.',
-        ], [
             'ngay_dien_ra' => 'Ngày diễn ra',
             'chu_de' => 'Chủ đề',
             'dien_gia_id' => 'Diễn giả',
@@ -619,7 +444,6 @@ class BanTrungLaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('BuoiNhom update validation failed for ID: ' . $buoiNhom->id, $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu không hợp lệ.',
@@ -628,21 +452,16 @@ class BanTrungLaoController extends Controller
         }
 
         try {
-            // Kiểm tra xem buổi nhóm có thuộc Ban Trung Lão không
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-
             if (!$banTrungLao || $buoiNhom->ban_nganh_id !== $banTrungLao->id) {
-                Log::warning('Attempted to update BuoiNhom not belonging to Ban Trung Lão');
                 return response()->json([
                     'success' => false,
                     'message' => 'Buổi nhóm không thuộc Ban Trung Lão.'
                 ], 403);
             }
 
-            // Cập nhật thông tin buổi nhóm
             $buoiNhom->update($validator->validated());
 
-            Log::info('BuoiNhom updated successfully for ID: ' . $buoiNhom->id);
             return response()->json([
                 'success' => true,
                 'message' => 'Buổi nhóm đã được cập nhật thành công.',
@@ -662,14 +481,9 @@ class BanTrungLaoController extends Controller
      */
     public function deleteBuoiNhom(BuoiNhom $buoiNhom)
     {
-        Log::info('Attempting to delete BuoiNhom ID: ' . $buoiNhom->id);
-
         try {
-            // Kiểm tra xem buổi nhóm có thuộc Ban Trung Lão không
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-
             if (!$banTrungLao || $buoiNhom->ban_nganh_id !== $banTrungLao->id) {
-                Log::warning('Attempted to delete BuoiNhom not belonging to Ban Trung Lão');
                 return response()->json([
                     'success' => false,
                     'message' => 'Buổi nhóm không thuộc Ban Trung Lão.'
@@ -678,7 +492,6 @@ class BanTrungLaoController extends Controller
 
             $buoiNhom->delete();
 
-            Log::info('BuoiNhom deleted successfully ID: ' . $buoiNhom->id);
             return response()->json([
                 'success' => true,
                 'message' => 'Buổi nhóm đã được xóa thành công.'
@@ -697,22 +510,17 @@ class BanTrungLaoController extends Controller
      */
     public function thamVieng()
     {
-        // Lấy thông tin ban Trung Lão
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
             return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
         }
 
-        // Lấy danh sách thành viên trong Ban Trung Lão
         $thanhVienBanTrungLao = TinHuuBanNganh::with('tinHuu')
             ->where('ban_nganh_id', $banTrungLao->id)
             ->get();
 
-        // Lấy danh sách tất cả tín hữu
         $danhSachTinHuu = TinHuu::orderBy('ho_ten')->get();
 
-        // Đề xuất thăm viếng - những tín hữu chưa thăm lâu nhất
-        $now = Carbon::now();
         $deXuatThamVieng = TinHuu::select('*')
             ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [Carbon::now()])
             ->where(function ($query) {
@@ -723,21 +531,18 @@ class BanTrungLaoController extends Controller
             ->limit(20)
             ->get();
 
-        // Lấy danh sách tín hữu có tọa độ cho bản đồ
         $tinHuuWithLocations = TinHuu::whereNotNull('vi_do')
             ->whereNotNull('kinh_do')
             ->get();
 
-        // Lịch sử thăm viếng - 30 ngày gần đây
         $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
             ->where('id_ban', $banTrungLao->id)
             ->where('trang_thai', 'da_tham')
-            ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60)) // Tăng lên 60 ngày
+            ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60))
             ->orderBy('ngay_tham', 'desc')
-            ->limit(50) // Tăng giới hạn
+            ->limit(50)
             ->get();
 
-        // Thống kê thăm viếng
         $thongKe = $this->getThongKeThamVieng($banTrungLao->id);
 
         return view('_ban_trung_lao.tham_vieng', compact(
@@ -768,22 +573,25 @@ class BanTrungLaoController extends Controller
             ->where('trang_thai', 'da_tham')
             ->count();
 
-        // Số lần thăm tháng này
-        $thongKe['this_month'] = ThamVieng::where('id_ban', $banNganhId)
+        // Thống kê theo tháng
+        $monthlyStats = ThamVieng::selectRaw('MONTH(ngay_tham) as month, YEAR(ngay_tham) as year, COUNT(*) as count')
+            ->where('id_ban', $banNganhId)
             ->where('trang_thai', 'da_tham')
-            ->whereMonth('ngay_tham', Carbon::now()->month)
-            ->whereYear('ngay_tham', Carbon::now()->year)
-            ->count();
+            ->whereBetween('ngay_tham', [Carbon::now()->subMonths(5), Carbon::now()])
+            ->groupBy('month', 'year')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
 
-        // Thống kê 6 tháng gần đây
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+        $thongKe['this_month'] = $monthlyStats->firstWhere('month', $currentMonth)
+                ?->where('year', $currentYear)->count ?? 0;
+
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $count = ThamVieng::where('id_ban', $banNganhId)
-                ->where('trang_thai', 'da_tham')
-                ->whereMonth('ngay_tham', $month->month)
-                ->whereYear('ngay_tham', $month->year)
-                ->count();
-
+            $count = $monthlyStats->firstWhere('month', $month->month)
+                    ?->where('year', $month->year)->count ?? 0;
             $thongKe['months'][] = $month->format('m/Y');
             $thongKe['counts'][] = $count;
         }
@@ -796,8 +604,6 @@ class BanTrungLaoController extends Controller
      */
     public function themThamVieng(Request $request)
     {
-        Log::info('Thêm thăm viếng request:', $request->all());
-
         $validator = Validator::make($request->all(), [
             'tin_huu_id' => 'required|exists:tin_huu,id',
             'nguoi_tham_id' => 'required|exists:tin_huu,id',
@@ -809,7 +615,6 @@ class BanTrungLaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Validation failed for themThamVieng:', $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu không hợp lệ',
@@ -837,8 +642,6 @@ class BanTrungLaoController extends Controller
             }
 
             DB::commit();
-            Log::info('Thêm thăm viếng thành công, ID:', ['tham_vieng_id' => $thamVieng->id]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Đã thêm lần thăm thành công',
@@ -909,7 +712,6 @@ class BanTrungLaoController extends Controller
             ->orderBy('ngay_tham', 'desc')
             ->get();
 
-        // Format data
         $formattedResults = $thamViengs->map(function ($thamVieng) {
             return [
                 'id' => $thamVieng->id,
@@ -958,337 +760,753 @@ class BanTrungLaoController extends Controller
         }
     }
 
+    /**
+     * Hiển thị trang phân công chi tiết nhiệm vụ
+     */
+    public function phanCongChiTiet(Request $request)
+    {
+        $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+        if (!$banTrungLao) {
+            return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
+        }
+
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
+        $selectedBuoiNhom = $request->input('buoi_nhom_id');
+
+        $months = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthName = Carbon::create()->month($i)->translatedFormat('F');
+            $months[$i] = $monthName;
+        }
+
+        $currentYear = (int) date('Y');
+        $years = range($currentYear - 2, $currentYear + 1);
+
+        $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banTrungLao->id)
+            ->whereYear('ngay_dien_ra', $year)
+            ->whereMonth('ngay_dien_ra', $month)
+            ->orderBy('ngay_dien_ra', 'desc')
+            ->get();
+
+        $currentBuoiNhom = $selectedBuoiNhom ? BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])->find($selectedBuoiNhom) : null;
+
+        $danhSachNhiemVu = NhiemVu::all();
+
+        $thanhVienBan = TinHuuBanNganh::with('tinHuu')
+            ->where('ban_nganh_id', $banTrungLao->id)
+            ->get();
+
+        $nhiemVuPhanCong = [];
+        $daPhanCong = [];
+
+        if ($selectedBuoiNhom) {
+            $nhiemVuPhanCong = BuoiNhomNhiemVu::with(['nhiemVu', 'tinHuu'])
+                ->where('buoi_nhom_id', $selectedBuoiNhom)
+                ->orderBy('vi_tri')
+                ->get();
+
+            foreach ($nhiemVuPhanCong as $phanCong) {
+                if ($phanCong->tin_huu_id) {
+                    $daPhanCong[$phanCong->tin_huu_id] = ($daPhanCong[$phanCong->tin_huu_id] ?? 0) + 1;
+                }
+            }
+        }
+
+        return view('_ban_trung_lao.phan_cong_chi_tiet', compact(
+            'banTrungLao',
+            'months',
+            'years',
+            'month',
+            'year',
+            'buoiNhomOptions',
+            'selectedBuoiNhom',
+            'currentBuoiNhom',
+            'danhSachNhiemVu',
+            'thanhVienBan',
+            'nhiemVuPhanCong',
+            'daPhanCong'
+        ));
+    }
+
+    /**
+     * Lưu phân công nhiệm vụ
+     */
+    public function phanCongNhiemVu(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'buoi_nhom_id' => 'required|exists:buoi_nhom,id',
+            'nhiem_vu_id' => 'required|exists:nhiem_vu,id',
+            'tin_huu_id' => 'required|exists:tin_huu,id',
+            'ghi_chu' => 'nullable|string',
+            'id' => 'nullable|exists:buoi_nhom_nhiem_vu,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $buoiNhom = BuoiNhom::find($request->buoi_nhom_id);
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+
+            if (!$banTrungLao || $buoiNhom->ban_nganh_id != $banTrungLao->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Buổi nhóm không thuộc Ban Trung Lão'
+                ], 403);
+            }
+
+            $isMember = TinHuuBanNganh::where('tin_huu_id', $request->tin_huu_id)
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->exists();
+
+            if (!$isMember) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Người được phân công không thuộc Ban Trung Lão'
+                ], 403);
+            }
+
+            $nhiemVu = NhiemVu::find($request->nhiem_vu_id);
+            if ($nhiemVu->id_ban_nganh != $banTrungLao->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nhiệm vụ không thuộc Ban Trung Lão'
+                ], 403);
+            }
+
+            $maxPosition = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
+                ->max('vi_tri') ?? 0;
+
+            if ($request->filled('id')) {
+                $phanCong = BuoiNhomNhiemVu::find($request->id);
+                $phanCong->update([
+                    'nhiem_vu_id' => $request->nhiem_vu_id,
+                    'tin_huu_id' => $request->tin_huu_id,
+                    'ghi_chu' => $request->ghi_chu
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cập nhật phân công nhiệm vụ thành công'
+                ]);
+            } else {
+                $exists = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
+                    ->where('nhiem_vu_id', $request->nhiem_vu_id)
+                    ->exists();
+
+                if ($exists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Nhiệm vụ này đã được phân công cho buổi nhóm'
+                    ], 422);
+                }
+
+                BuoiNhomNhiemVu::create([
+                    'buoi_nhom_id' => $request->buoi_nhom_id,
+                    'nhiem_vu_id' => $request->nhiem_vu_id,
+                    'tin_huu_id' => $request->tin_huu_id,
+                    'vi_tri' => $maxPosition + 1,
+                    'ghi_chu' => $request->ghi_chu
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Phân công nhiệm vụ thành công'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Lỗi phân công nhiệm vụ: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi phân công nhiệm vụ: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Xóa phân công nhiệm vụ
+     */
+    public function xoaPhanCong($id)
+    {
+        try {
+            $phanCong = BuoiNhomNhiemVu::find($id);
+
+            if (!$phanCong) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy phân công này'
+                ], 404);
+            }
+
+            $buoiNhom = BuoiNhom::find($phanCong->buoi_nhom_id);
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+
+            if (!$banTrungLao || $buoiNhom->ban_nganh_id != $banTrungLao->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không có quyền xóa phân công này'
+                ], 403);
+            }
+
+            $phanCong->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa phân công thành công'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi xóa phân công nhiệm vụ: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi xóa phân công: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách Ban Điều Hành (JSON cho DataTables)
+     */
+    public function dieuHanhList(Request $request)
+    {
+        try {
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+            if (!$banTrungLao) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy Ban Trung Lão'
+                ], 404);
+            }
+
+            $query = TinHuuBanNganh::with('tinHuu')
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->whereNotNull('chuc_vu')
+                ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên']);
+
+            if ($hoTen = $request->input('ho_ten')) {
+                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
+                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
+                });
+            }
+
+            if ($chucVu = $request->input('chuc_vu')) {
+                $query->where('chuc_vu', $chucVu);
+            }
+
+            $data = $query->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'tin_huu_id' => $item->tin_huu_id,
+                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
+                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
+                ];
+            });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Không có thành viên Ban Điều Hành',
+                    'data' => []
+                ]);
+            }
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Lỗi lấy danh sách Ban Điều Hành: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách Ban Viên (JSON cho DataTables)
+     */
+    public function banVienList(Request $request)
+    {
+        try {
+            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+            if (!$banTrungLao) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy Ban Trung Lão'
+                ], 404);
+            }
+
+            $query = TinHuuBanNganh::with('tinHuu')
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->where(function ($q) {
+                    $q->whereNull('chuc_vu')
+                        ->orWhere('chuc_vu', 'Thành viên')
+                        ->orWhere('chuc_vu', '');
+                });
+
+            if ($hoTen = $request->input('ho_ten')) {
+                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
+                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
+                });
+            }
+
+            if ($soDienThoai = $request->input('so_dien_thoai')) {
+                $query->whereHas('tinHuu', function ($q) use ($soDienThoai) {
+                    $q->where('so_dien_thoai', 'like', '%' . $soDienThoai . '%');
+                });
+            }
+
+            if ($diaChi = $request->input('dia_chi')) {
+                $query->whereHas('tinHuu', function ($q) use ($diaChi) {
+                    $q->where('dia_chi', 'like', '%' . $diaChi . '%');
+                });
+            }
+
+            $data = $query->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'tin_huu_id' => $item->tin_huu_id,
+                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
+                    'so_dien_thoai' => $item->tinHuu->so_dien_thoai ?? 'N/A',
+                    'dia_chi' => $item->tinHuu->dia_chi ?? 'N/A',
+                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
+                ];
+            });
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Không có Ban Viên',
+                    'data' => []
+                ]);
+            }
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+            Log::error('Lỗi lấy danh sách Ban Viên: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Hiển thị form nhập liệu báo cáo Ban Trung Lão
      */
-    public function banTrungLaoForm(Request $request)
+    // Trong BanTrungLaoController.php
+    // Trong BanTrungLaoController.php
+    public function formBaoCaoBanTrungLao(Request $request): View
     {
-        $month = $request->get('month', date('m'));
-        $year = $request->get('year', date('Y'));
-        $buoiNhomType = $request->get('buoi_nhom_id', 1); // Mặc định là Ban Trung Lão
+        $month = $request->get('month', date('m')); // Lấy month từ request, mặc định là tháng hiện tại
+        $year = $request->get('year', date('Y')); // Lấy year từ request, mặc định là năm hiện tại
+        $buoiNhomType = $request->get('buoi_nhom_type', 1); // Lấy buoi_nhom_type, mặc định là 1 (Ban Trung Lão)
 
-        // ID của Ban Trung Lão và Hội Thánh
-        $banTrungLaoId = 1; // Ban Trung Lão
-        $hoiThanhId = 13;   // Hội Thánh
+        $nextMonth = $month == 12 ? 1 : (int) $month + 1;
+        $nextYear = $month == 12 ? (int) $year + 1 : $year;
 
-        // Lấy danh sách tín hữu trong Ban Trung Lão
-        $thanhVienBan = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $banTrungLaoId)
-            ->get();
-
-        // Lấy buổi nhóm của Hội Thánh trong tháng hiện tại
         $buoiNhomHT = BuoiNhom::with('dienGia')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', $hoiThanhId)
+            ->where('ban_nganh_id', self::HOI_THANH_ID)
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        // Lấy buổi nhóm Ban Trung Lão trong tháng hiện tại
-        $buoiNhomBTL = BuoiNhom::with('dienGia')
+        $buoiNhomBTL = BuoiNhom::with(['dienGia', 'giaoDichTaiChinh'])
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', $banTrungLaoId)
+            ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        // Lấy đánh giá hiện tại
-        $diemManh = DanhGia::where('ban_nganh_id', $banTrungLaoId)
+        $tinHuuTrungLao = TinHuu::select('tin_huu.id', 'tin_huu.ho_ten')
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+            ->orderBy('tin_huu.ho_ten')
+            ->get();
+
+        $diemManh = DanhGia::where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
             ->where('loai', 'diem_manh')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        $diemYeu = DanhGia::where('ban_nganh_id', $banTrungLaoId)
+        $diemYeu = DanhGia::where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
             ->where('loai', 'diem_yeu')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        // Lấy kế hoạch cho tháng tiếp theo
-        $nextMonth = $month == 12 ? 1 : $month + 1;
-        $nextYear = $month == 12 ? $year + 1 : $year;
-
         $keHoach = KeHoach::with('nguoiPhuTrach')
-            ->where('ban_nganh_id', $banTrungLaoId)
+            ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
             ->where('thang', $nextMonth)
             ->where('nam', $nextYear)
             ->get();
 
-        // Lấy kiến nghị
         $kienNghi = KienNghi::with('nguoiDeXuat')
-            ->where('ban_nganh_id', $banTrungLaoId)
+            ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        return view('_ban_trung_lao.form_ban_trung_lao', compact(
+        return view('_ban_trung_lao.nhap_lieu_bao_cao', compact(
             'month',
             'year',
-            'buoiNhomType',
-            'thanhVienBan',
+            'nextMonth',
+            'nextYear',
             'buoiNhomHT',
             'buoiNhomBTL',
+            'tinHuuTrungLao',
             'diemManh',
             'diemYeu',
             'keHoach',
-            'kienNghi'
+            'kienNghi',
+            'buoiNhomType'
         ));
     }
 
     /**
-     * Lưu cập nhật số lượng tham dự buổi nhóm
+     * Cập nhật số lượng tham dự và dâng hiến cho một buổi nhóm
      */
-    public function capNhatSoLuongThamDu(Request $request)
+    public function updateThamDuTrungLao(Request $request)
     {
+        $request->validate([
+            'id' => 'required|exists:buoi_nhom,id',
+            'so_luong_trung_lao' => 'required|integer|min:0'
+        ]);
+
         try {
-            $buoiNhomId = $request->buoi_nhom_id;
-            $soLuongTrungLao = $request->so_luong_trung_lao;
-
-            // Tìm buổi nhóm
-            $buoiNhom = BuoiNhom::findOrFail($buoiNhomId);
-
-            // Cập nhật số lượng trung lão
-            $buoiNhom->so_luong_trung_lao = $soLuongTrungLao;
-
-            // Nếu có dâng hiến và là buổi nhóm Ban Trung Lão (id = 1)
-            if ($request->has('dang_hien') && $buoiNhom->ban_nganh_id == 1) {
-                // Định dạng lại số tiền (loại bỏ dấu phẩy)
-                $dangHien = str_replace([',', '.'], '', $request->dang_hien);
-
-                // Tạo hoặc cập nhật giao dịch tài chính
-                $giaoDich = GiaoDichTaiChinh::updateOrCreate(
-                    [
-                        'buoi_nhom_id' => $buoiNhomId,
-                        'loai' => 'thu',
-                        'ban_nganh_id' => 1
-                    ],
-                    [
-                        'so_tien' => $dangHien,
-                        'mo_ta' => 'Dâng hiến buổi nhóm ngày ' . Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y'),
-                        'ngay_giao_dich' => $buoiNhom->ngay_dien_ra
-                    ]
-                );
-            }
-
+            $buoiNhom = BuoiNhom::findOrFail($request->id);
+            $buoiNhom->so_luong_trung_lao = $request->so_luong_trung_lao;
             $buoiNhom->save();
+
+            // Xử lý dâng hiến
+            if ($request->has('dang_hien')) {
+                // Loại bỏ các ký tự không phải số
+                $dangHien = preg_replace('/[^0-9]/', '', $request->dang_hien);
+
+                if ($dangHien > 0) {
+                    // Tìm hoặc tạo mới giao dịch tài chính
+                    $giaoDich = GiaoDichTaiChinh::firstOrNew([
+                        'buoi_nhom_id' => $buoiNhom->id,
+                        'ban_nganh_id' => 1, // ID của Ban Trung Lão
+                    ]);
+
+                    $giaoDich->loai = 'thu';
+                    $giaoDich->so_tien = $dangHien;
+                    $giaoDich->mo_ta = 'Dâng hiến buổi nhóm Ban Trung Lão ngày ' .
+                        Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y');
+                    $giaoDich->ngay_giao_dich = $buoiNhom->ngay_dien_ra;
+                    $giaoDich->save();
+                }
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Đã cập nhật số lượng tham dự thành công.'
+                'message' => 'Cập nhật số lượng tham dự thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi cập nhật số lượng tham dự: ' . $e->getMessage());
-
+            Log::error('Lỗi cập nhật: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi cập nhật: ' . $e->getMessage()
+                'message' => 'Có lỗi: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Lưu tất cả số lượng tham dự và dâng hiến
+     */
+    public function saveThamDuTrungLao(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2021|max:2030',
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            'buoi_nhom' => 'required|array'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($request->buoi_nhom as $id => $data) {
+                $buoiNhom = BuoiNhom::findOrFail($id);
+                $buoiNhom->so_luong_trung_lao = $data['so_luong_trung_lao'] ?? 0;
+                $buoiNhom->save();
+
+                // Xử lý dâng hiến
+                if ($buoiNhom->ban_nganh_id == 1 && isset($data['dang_hien'])) {
+                    $dangHien = str_replace('.', '', $data['dang_hien']); // Xóa dấu phân cách hàng nghìn
+
+                    if ($dangHien > 0) {
+                        // Tìm hoặc tạo mới giao dịch tài chính
+                        $giaoDich = GiaoDichTaiChinh::firstOrNew([
+                            'buoi_nhom_id' => $buoiNhom->id,
+                            'ban_nganh_id' => 1, // ID của Ban Trung Lão
+                        ]);
+
+                        $giaoDich->loai = 'thu';
+                        $giaoDich->so_tien = $dangHien;
+                        $giaoDich->mo_ta = 'Dâng hiến buổi nhóm Ban Trung Lão ngày ' .
+                            Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y');
+                        $giaoDich->ngay_giao_dich = $buoiNhom->ngay_dien_ra;
+                        $giaoDich->save();
+                    }
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Đã lưu số lượng tham dự thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi lưu tham dự: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 
     /**
      * Lưu đánh giá báo cáo
      */
-    public function luuDanhGia(Request $request)
+    public function saveDanhGiaTrungLao(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2021|max:2030',
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            'diem_manh' => 'required|array',
+            'diem_manh_id' => 'required|array',
+            'diem_yeu' => 'required|array',
+            'diem_yeu_id' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
         try {
-            $banTrungLaoId = 1; // ID của Ban Trung Lão
-            $month = $request->month;
-            $year = $request->year;
+            foreach ($request->diem_manh as $index => $noiDung) {
+                $id = $request->diem_manh_id[$index];
 
-            // Xóa đánh giá cũ của tháng này
-            DanhGia::where('ban_nganh_id', $banTrungLaoId)
-                ->where('thang', $month)
-                ->where('nam', $year)
-                ->delete();
+                if (empty($noiDung)) {
+                    continue;
+                }
 
-            // Lưu điểm mạnh mới
-            if ($request->has('diem_manh')) {
-                foreach ($request->diem_manh as $diemManh) {
-                    if (!empty($diemManh)) {
-                        DanhGia::create([
-                            'ban_nganh_id' => $banTrungLaoId,
-                            'loai' => 'diem_manh',
-                            'noi_dung' => $diemManh,
-                            'thang' => $month,
-                            'nam' => $year,
-                            'nguoi_danh_gia_id' => Auth::user()->tin_huu_id ?? null
-                        ]);
-                    }
+                if ($id > 0) {
+                    $danhGia = DanhGia::findOrFail($id);
+                    $danhGia->noi_dung = $noiDung;
+                    $danhGia->save();
+                } else {
+                    DanhGia::create([
+                        'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
+                        'loai' => 'diem_manh',
+                        'noi_dung' => $noiDung,
+                        'thang' => $request->month,
+                        'nam' => $request->year,
+                        'nguoi_danh_gia_id' => Auth::check() ? Auth::user()->tin_huu_id : null
+                    ]);
                 }
             }
 
-            // Lưu điểm yếu mới
-            if ($request->has('diem_yeu')) {
-                foreach ($request->diem_yeu as $diemYeu) {
-                    if (!empty($diemYeu)) {
-                        DanhGia::create([
-                            'ban_nganh_id' => $banTrungLaoId,
-                            'loai' => 'diem_yeu',
-                            'noi_dung' => $diemYeu,
-                            'thang' => $month,
-                            'nam' => $year,
-                            'nguoi_danh_gia_id' => Auth::user()->tin_huu_id ?? null
-                        ]);
-                    }
+            foreach ($request->diem_yeu as $index => $noiDung) {
+                $id = $request->diem_yeu_id[$index];
+
+                if (empty($noiDung)) {
+                    continue;
+                }
+
+                if ($id > 0) {
+                    $danhGia = DanhGia::findOrFail($id);
+                    $danhGia->noi_dung = $noiDung;
+                    $danhGia->save();
+                } else {
+                    DanhGia::create([
+                        'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
+                        'loai' => 'diem_yeu',
+                        'noi_dung' => $noiDung,
+                        'thang' => $request->month,
+                        'nam' => $request->year,
+                        'nguoi_danh_gia_id' => Auth::check() ? Auth::user()->tin_huu_id : null
+                    ]);
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã lưu đánh giá thành công.'
-            ]);
+            DB::commit();
+            return redirect()->back()->with('success', 'Đã lưu đánh giá thành công!');
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Lỗi lưu đánh giá: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi lưu đánh giá: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 
     /**
      * Lưu kế hoạch báo cáo
      */
-    public function luuKeHoach(Request $request)
+    public function saveKeHoachTrungLao(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2021|max:2030',
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            'kehoach' => 'required|array',
+            'kehoach.*.hoat_dong' => 'required|string',
+            'kehoach.*.thoi_gian' => 'nullable|string',
+            'kehoach.*.nguoi_phu_trach_id' => 'nullable|exists:tin_huu,id',
+            'kehoach.*.ghi_chu' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
         try {
-            $banTrungLaoId = 1; // ID của Ban Trung Lão
+            $nextMonth = $request->month == 12 ? 1 : $request->month + 1;
+            $nextYear = $request->month == 12 ? $request->year + 1 : $request->year;
 
-            // Tháng kế hoạch là tháng sau
-            $currentMonth = $request->month;
-            $currentYear = $request->year;
+            foreach ($request->kehoach as $data) {
+                $id = $data['id'] ?? 0;
 
-            $nextMonth = $currentMonth == 12 ? 1 : $currentMonth + 1;
-            $nextYear = $currentMonth == 12 ? $currentYear + 1 : $currentYear;
+                if (empty($data['hoat_dong'])) {
+                    continue;
+                }
 
-            // Xóa kế hoạch cũ của tháng sau
-            KeHoach::where('ban_nganh_id', $banTrungLaoId)
-                ->where('thang', $nextMonth)
-                ->where('nam', $nextYear)
-                ->delete();
-
-            // Lưu kế hoạch mới
-            if ($request->has('hoat_dong')) {
-                $count = count($request->hoat_dong);
-
-                for ($i = 0; $i < $count; $i++) {
-                    if (!empty($request->hoat_dong[$i])) {
-                        KeHoach::create([
-                            'ban_nganh_id' => $banTrungLaoId,
-                            'hoat_dong' => $request->hoat_dong[$i],
-                            'thoi_gian' => $request->thoi_gian[$i] ?? null,
-                            'nguoi_phu_trach_id' => $request->nguoi_phu_trach_id[$i] ?? null,
-                            'ghi_chu' => $request->ghi_chu[$i] ?? null,
-                            'thang' => $nextMonth,
-                            'nam' => $nextYear,
-                            'trang_thai' => $request->trang_thai[$i] ?? 'chua_thuc_hien'
-                        ]);
-                    }
+                if ($id > 0) {
+                    $keHoach = KeHoach::findOrFail($id);
+                    $keHoach->update([
+                        'hoat_dong' => $data['hoat_dong'],
+                        'thoi_gian' => $data['thoi_gian'] ?? '',
+                        'nguoi_phu_trach_id' => $data['nguoi_phu_trach_id'] ?? null,
+                        'ghi_chu' => $data['ghi_chu'] ?? ''
+                    ]);
+                } else {
+                    KeHoach::create([
+                        'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
+                        'hoat_dong' => $data['hoat_dong'],
+                        'thoi_gian' => $data['thoi_gian'] ?? '',
+                        'nguoi_phu_trach_id' => $data['nguoi_phu_trach_id'] ?? null,
+                        'ghi_chu' => $data['ghi_chu'] ?? '',
+                        'thang' => $nextMonth,
+                        'nam' => $nextYear,
+                        'trang_thai' => 'chua_thuc_hien'
+                    ]);
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã lưu kế hoạch thành công.'
-            ]);
+            DB::commit();
+            return redirect()->back()->with('success', 'Đã lưu kế hoạch thành công!');
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Lỗi lưu kế hoạch: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi lưu kế hoạch: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 
     /**
      * Lưu kiến nghị báo cáo
      */
-    public function luuKienNghi(Request $request)
+    public function saveKienNghiTrungLao(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2021|max:2030',
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            'kiennghi' => 'required|array',
+            'kiennghi.*.tieu_de' => 'required|string',
+            'kiennghi.*.noi_dung' => 'required|string',
+            'kiennghi.*.nguoi_de_xuat_id' => 'nullable|exists:tin_huu,id',
+            'kiennghi.*.phan_hoi' => 'nullable|string',
+            'kiennghi.*.trang_thai' => 'nullable|in:moi,da_xem,da_xu_ly'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
         try {
-            $banTrungLaoId = 1; // ID của Ban Trung Lão
-            $month = $request->month;
-            $year = $request->year;
+            foreach ($request->kiennghi as $data) {
+                $id = $data['id'] ?? 0;
 
-            // Không xóa kiến nghị cũ vì kiến nghị cần được theo dõi liên tục
+                if (empty($data['tieu_de']) || empty($data['noi_dung'])) {
+                    continue;
+                }
 
-            // Lưu kiến nghị mới hoặc cập nhật kiến nghị cũ
-            if ($request->has('tieu_de')) {
-                $count = count($request->tieu_de);
-
-                for ($i = 0; $i < $count; $i++) {
-                    if (!empty($request->tieu_de[$i]) && !empty($request->noi_dung[$i])) {
-                        // Nếu có id thì cập nhật, không thì tạo mới
-                        if (!empty($request->kien_nghi_id[$i])) {
-                            $kienNghi = KienNghi::find($request->kien_nghi_id[$i]);
-                            if ($kienNghi) {
-                                $kienNghi->update([
-                                    'tieu_de' => $request->tieu_de[$i],
-                                    'noi_dung' => $request->noi_dung[$i],
-                                    'nguoi_de_xuat_id' => $request->nguoi_de_xuat_id[$i] ?? null,
-                                    'trang_thai' => $request->trang_thai_kien_nghi[$i] ?? 'moi',
-                                    'phan_hoi' => $request->phan_hoi[$i] ?? null
-                                ]);
-                            }
-                        } else {
-                            KienNghi::create([
-                                'ban_nganh_id' => $banTrungLaoId,
-                                'tieu_de' => $request->tieu_de[$i],
-                                'noi_dung' => $request->noi_dung[$i],
-                                'nguoi_de_xuat_id' => $request->nguoi_de_xuat_id[$i] ?? null,
-                                'thang' => $month,
-                                'nam' => $year,
-                                'trang_thai' => $request->trang_thai_kien_nghi[$i] ?? 'moi',
-                                'phan_hoi' => $request->phan_hoi[$i] ?? null
-                            ]);
-                        }
-                    }
+                if ($id > 0) {
+                    $kienNghi = KienNghi::findOrFail($id);
+                    $kienNghi->update([
+                        'tieu_de' => $data['tieu_de'],
+                        'noi_dung' => $data['noi_dung'],
+                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? null,
+                        'trang_thai' => $data['trang_thai'] ?? 'moi',
+                        'phan_hoi' => $data['phan_hoi'] ?? null
+                    ]);
+                } else {
+                    KienNghi::create([
+                        'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
+                        'tieu_de' => $data['tieu_de'],
+                        'noi_dung' => $data['noi_dung'],
+                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? null,
+                        'thang' => $request->month,
+                        'nam' => $request->year,
+                        'trang_thai' => $data['trang_thai'] ?? 'moi',
+                        'phan_hoi' => $data['phan_hoi'] ?? null
+                    ]);
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã lưu kiến nghị thành công.'
-            ]);
+            DB::commit();
+            return redirect()->back()->with('success', 'Đã lưu kiến nghị thành công!');
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Lỗi lưu kiến nghị: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Có lỗi xảy ra khi lưu kiến nghị: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 
     /**
-     * Lưu tất cả thông tin báo cáo
+     * Lưu toàn bộ báo cáo Ban Trung Lão
      */
     public function luuBaoCaoBanTrungLao(Request $request)
     {
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            // Lưu các phần dữ liệu
-            $this->capNhatSoLuongThamDu($request);
-            $this->luuDanhGia($request);
-            $this->luuKeHoach($request);
-            $this->luuKienNghi($request);
+        try {
+            if ($request->has('buoi_nhom')) {
+                $requestForThamDu = new Request($request->only(['month', 'year', 'ban_nganh_id', 'buoi_nhom']));
+                $this->saveThamDuTrungLao($requestForThamDu);
+            }
+
+            if ($request->has('diem_manh') || $request->has('diem_yeu')) {
+                $requestForDanhGia = new Request($request->only(['month', 'year', 'ban_nganh_id', 'diem_manh', 'diem_manh_id', 'diem_yeu', 'diem_yeu_id']));
+                $this->saveDanhGiaTrungLao($requestForDanhGia);
+            }
+
+            if ($request->has('kehoach')) {
+                $requestForKeHoach = new Request($request->only(['month', 'year', 'ban_nganh_id', 'kehoach']));
+                $this->saveKeHoachTrungLao($requestForKeHoach);
+            }
+
+            if ($request->has('kiennghi')) {
+                $requestForKienNghi = new Request($request->only(['month', 'year', 'ban_nganh_id', 'kiennghi']));
+                $this->saveKienNghiTrungLao($requestForKienNghi);
+            }
 
             DB::commit();
-
             return response()->json([
                 'success' => true,
-                'message' => 'Đã lưu báo cáo thành công.'
+                'message' => 'Đã lưu báo cáo thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Lỗi lưu báo cáo tổng hợp: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi lưu báo cáo: ' . $e->getMessage()
@@ -1297,15 +1515,98 @@ class BanTrungLaoController extends Controller
     }
 
     /**
+     * Lấy dữ liệu tóm tắt cho báo cáo
+     */
+    private function getSummaryData($month, $year, $banId)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+        $totalMeetings = BuoiNhom::where(function ($query) use ($banId) {
+            $query->where('ban_nganh_id', $banId)
+                ->orWhereNull('ban_nganh_id');
+        })
+            ->whereMonth('ngay_dien_ra', $month)
+            ->whereYear('ngay_dien_ra', $year)
+            ->count();
+
+        $avgAttendance = BuoiNhom::where(function ($query) use ($banId) {
+            $query->where('ban_nganh_id', $banId)
+                ->orWhereNull('ban_nganh_id');
+        })
+            ->whereMonth('ngay_dien_ra', $month)
+            ->whereYear('ngay_dien_ra', $year)
+            ->avg('so_luong_tin_huu') ?? 0;
+
+        $totalVisits = ThamVieng::where('id_ban', $banId)
+            ->whereMonth('ngay_tham', $month)
+            ->whereYear('ngay_tham', $year)
+            ->count();
+
+        $totalOffering = $this->getFinancialData($month, $year, $banId)['tongTon'] ?? 0;
+
+        return [
+            'totalMeetings' => $totalMeetings,
+            'avgAttendance' => round($avgAttendance),
+            'totalVisits' => $totalVisits,
+            'totalOffering' => $totalOffering
+        ];
+    }
+
+    /**
+     * Lấy dữ liệu tài chính
+     */
+    /**
+     * Lấy dữ liệu tài chính
+     */
+    private function getFinancialData($month, $year, $banId)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+
+        $hasTransactions = GiaoDichTaiChinh::where('ban_nganh_id', $banId)
+            ->whereMonth('ngay_giao_dich', $month)
+            ->whereYear('ngay_giao_dich', $year)
+            ->exists();
+
+        if (!$hasTransactions) {
+            return [
+                'giaoDich' => collect([]),
+                'tongThu' => 0,
+                'tongChi' => 0,
+                'tongTon' => 0
+            ];
+        }
+
+        $giaoDich = GiaoDichTaiChinh::where('ban_nganh_id', $banId)
+            ->whereMonth('ngay_giao_dich', $month)
+            ->whereYear('ngay_giao_dich', $year)
+            ->orderBy('ngay_giao_dich')
+            ->get();
+
+        $tongThu = $giaoDich->where('loai', 'thu')->sum('so_tien');
+        $tongChi = $giaoDich->where('loai', 'chi')->sum('so_tien');
+        $tongTon = $tongThu - $tongChi;
+
+        return [
+            'giaoDich' => $giaoDich,
+            'tongThu' => $tongThu,
+            'tongChi' => $tongChi,
+            'tongTon' => $tongTon
+        ];
+    }
+
+
+    /**
      * Hiển thị báo cáo Ban Trung Lão
      */
-    public function baoCaoBanTrungLao(Request $request): \Illuminate\View\View
+    public function baoCaoBanTrungLao(Request $request)
     {
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
 
         // ID của Ban Trung Lão
-        $banTrungLaoId = 1; // Giả sử ID=1 là Ban Trung Lão
+        $banTrungLaoId = 1;
 
         // 1. Lấy thông tin Ban điều hành
         $banDieuHanh = TinHuuBanNganh::with('tinHuu')
@@ -1317,7 +1618,7 @@ class BanTrungLaoController extends Controller
         $buoiNhomHT = BuoiNhom::with('dienGia')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', 13) // Giả sử ID=13 là Hội thánh
+            ->where('ban_nganh_id', 20) // Hội thánh
             ->orderBy('ngay_dien_ra')
             ->get();
 
@@ -1397,7 +1698,7 @@ class BanTrungLaoController extends Controller
             'totalVisits' => $totalVisits,
         ];
 
-        return view('_bao_cao.ban_trung_lao', compact(
+        return view('_ban_trung_lao.nhap_lieu_bao_cao', compact(
             'month',
             'year',
             'banDieuHanh',
@@ -1413,727 +1714,60 @@ class BanTrungLaoController extends Controller
         ));
     }
 
-
-    /**
-     * Hiển thị trang phân công chi tiết nhiệm vụ
-     */
-    public function phanCongChiTiet(Request $request)
+    public function capNhatSoLuongThamDu(Request $request)
     {
-        // Lấy thông tin ban Trung Lão
-        $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-        if (!$banTrungLao) {
-            return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
-        }
-
-        // Lấy tháng và năm từ request, nếu không có thì lấy tháng và năm hiện tại
-        $month = $request->input('month', date('m')); // Tháng hiện tại
-        $year = $request->input('year', date('Y')); // Năm hiện tại
-        $selectedBuoiNhom = $request->input('buoi_nhom_id');
-
-        // Tạo danh sách các tháng
-        $months = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $monthName = Carbon::create()->month($i)->translatedFormat('F');
-            $months[$i] = $monthName;
-        }
-
-        // Tạo danh sách các năm (2 năm trước đến 1 năm sau)
-        $currentYear = (int) date('Y');
-        $years = range($currentYear - 2, $currentYear + 1);
-
-        // Lấy danh sách các buổi nhóm trong tháng và năm đã chọn
-        $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banTrungLao->id)
-            ->whereYear('ngay_dien_ra', $year)
-            ->whereMonth('ngay_dien_ra', $month)
-            ->orderBy('ngay_dien_ra', 'desc')
-            ->get();
-
-        // Thông tin buổi nhóm đang được chọn
-        $currentBuoiNhom = null;
-        if ($selectedBuoiNhom) {
-            $currentBuoiNhom = BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])
-                ->find($selectedBuoiNhom);
-        }
-
-        // Lấy danh sách các nhiệm vụ thuộc ban Trung Lão
-        $danhSachNhiemVu = NhiemVu::All();
-
-        // Lấy danh sách thành viên ban Trung Lão
-        $thanhVienBan = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $banTrungLao->id)
-            ->get();
-
-        // Lấy phân công nhiệm vụ của buổi nhóm đã chọn
-        $nhiemVuPhanCong = [];
-        $daPhanCong = [];
-
-        if ($selectedBuoiNhom) {
-            $nhiemVuPhanCong = BuoiNhomNhiemVu::with(['nhiemVu', 'tinHuu'])
-                ->where('buoi_nhom_id', $selectedBuoiNhom)
-                ->orderBy('vi_tri')
-                ->get();
-
-            // Đếm số nhiệm vụ đã phân công cho mỗi tín hữu
-            foreach ($nhiemVuPhanCong as $phanCong) {
-                if ($phanCong->tin_huu_id) {
-                    if (!isset($daPhanCong[$phanCong->tin_huu_id])) {
-                        $daPhanCong[$phanCong->tin_huu_id] = 1;
-                    } else {
-                        $daPhanCong[$phanCong->tin_huu_id]++;
-                    }
-                }
-            }
-        }
-
-        return view('_ban_trung_lao.phan_cong_chi_tiet', compact(
-            'banTrungLao',
-            'months',
-            'years',
-            'month',
-            'year',
-            'buoiNhomOptions',
-            'selectedBuoiNhom',
-            'currentBuoiNhom',
-            'danhSachNhiemVu',
-            'thanhVienBan',
-            'nhiemVuPhanCong',
-            'daPhanCong'
-        ));
+        return $this->updateThamDuTrungLao($request); // Gọi phương thức hiện có
     }
 
     /**
-     * Lưu phân công nhiệm vụ
+     * Xóa đánh giá (điểm mạnh hoặc điểm yếu)
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function phanCongNhiemVu(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'buoi_nhom_id' => 'required|exists:buoi_nhom,id',
-            'nhiem_vu_id' => 'required|exists:nhiem_vu,id',
-            'tin_huu_id' => 'required|exists:tin_huu,id',
-            'ghi_chu' => 'nullable|string',
-            'id' => 'nullable|exists:buoi_nhom_nhiem_vu,id'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            // Kiểm tra xem buổi nhóm có thuộc Ban Trung Lão không
-            $buoiNhom = BuoiNhom::find($request->buoi_nhom_id);
-            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-
-            if (!$banTrungLao || $buoiNhom->ban_nganh_id != $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Buổi nhóm không thuộc Ban Trung Lão'
-                ], 403);
-            }
-
-            // Kiểm tra xem người được phân công có thuộc Ban Trung Lão không
-            $isMember = TinHuuBanNganh::where('tin_huu_id', $request->tin_huu_id)
-                ->where('ban_nganh_id', $banTrungLao->id)
-                ->exists();
-
-            if (!$isMember) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Người được phân công không thuộc Ban Trung Lão'
-                ], 403);
-            }
-
-            // Kiểm tra xem nhiệm vụ có thuộc Ban Trung Lão không
-            $nhiemVu = NhiemVu::find($request->nhiem_vu_id);
-            if ($nhiemVu->id_ban_nganh != $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Nhiệm vụ không thuộc Ban Trung Lão'
-                ], 403);
-            }
-
-            // Lấy vị trí tiếp theo
-            $maxPosition = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
-                ->max('vi_tri') ?? 0;
-
-            // Nếu có ID, cập nhật bản ghi hiện tại
-            if ($request->filled('id')) {
-                $phanCong = BuoiNhomNhiemVu::find($request->id);
-                $phanCong->update([
-                    'nhiem_vu_id' => $request->nhiem_vu_id,
-                    'tin_huu_id' => $request->tin_huu_id,
-                    'ghi_chu' => $request->ghi_chu
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Cập nhật phân công nhiệm vụ thành công'
-                ]);
-            } else {
-                // Kiểm tra xem nhiệm vụ đã được phân công cho buổi nhóm này chưa
-                $exists = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
-                    ->where('nhiem_vu_id', $request->nhiem_vu_id)
-                    ->exists();
-
-                if ($exists) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Nhiệm vụ này đã được phân công cho buổi nhóm'
-                    ], 422);
-                }
-
-                // Tạo phân công mới
-                BuoiNhomNhiemVu::create([
-                    'buoi_nhom_id' => $request->buoi_nhom_id,
-                    'nhiem_vu_id' => $request->nhiem_vu_id,
-                    'tin_huu_id' => $request->tin_huu_id,
-                    'vi_tri' => $maxPosition + 1,
-                    'ghi_chu' => $request->ghi_chu
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Phân công nhiệm vụ thành công'
-                ]);
-            }
-        } catch (\Exception $e) {
-            Log::error('Lỗi phân công nhiệm vụ: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi phân công nhiệm vụ: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Xóa phân công nhiệm vụ
-     */
-    public function xoaPhanCong($id)
+    public function xoaDanhGia($id)
     {
         try {
-            // Tìm phân công cần xóa
-            $phanCong = BuoiNhomNhiemVu::find($id);
-
-            if (!$phanCong) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy phân công này'
-                ], 404);
-            }
-
-            // Kiểm tra buổi nhóm có thuộc Ban Trung Lão không
-            $buoiNhom = BuoiNhom::find($phanCong->buoi_nhom_id);
-            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-
-            if (!$banTrungLao || $buoiNhom->ban_nganh_id != $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không có quyền xóa phân công này'
-                ], 403);
-            }
-
-            // Xóa phân công
-            $phanCong->delete();
-
+            $danhGia = DanhGia::where('id', $id)
+                ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+                ->firstOrFail();
+            $danhGia->delete();
             return response()->json([
                 'success' => true,
-                'message' => 'Xóa phân công thành công'
+                'message' => 'Xóa đánh giá thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi xóa phân công nhiệm vụ: ' . $e->getMessage());
-
+            \Log::error('Lỗi xóa đánh giá: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa phân công: ' . $e->getMessage()
+                'message' => 'Đã xảy ra lỗi khi xóa đánh giá!'
             ], 500);
         }
     }
 
     /**
-     * Lấy danh sách Ban Điều Hành (JSON cho DataTables)
+     * Xóa kiến nghị
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function dieuHanhList(Request $request)
+    public function xoaKienNghi($id)
     {
         try {
-            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-            if (!$banTrungLao) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy Ban Trung Lão'
-                ], 404);
-            }
-
-            $query = TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $banTrungLao->id)
-                ->whereNotNull('chuc_vu')
-                ->whereIn('chuc_vu', [
-                    'Cố Vấn',
-                    'Cố Vấn Linh Vụ',
-                    'Trưởng Ban',
-                    'Thư Ký',
-                    'Thủ Quỹ',
-                    'Ủy Viên'
-                ]);
-
-            if ($hoTen = $request->input('ho_ten')) {
-                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
-                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
-                });
-            }
-
-            if ($chucVu = $request->input('chuc_vu')) {
-                $query->where('chuc_vu', $chucVu);
-            }
-
-            $data = $query->get()->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'tin_huu_id' => $item->tin_huu_id,
-                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
-                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
-                ];
-            });
-
-            if ($data->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Không có thành viên Ban Điều Hành',
-                    'data' => []
-                ]);
-            }
-
-            return response()->json($data);
-        } catch (\Exception $e) {
-            Log::error('Lỗi lấy danh sách Ban Điều Hành: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function banVienList(Request $request)
-    {
-        try {
-            $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-            if (!$banTrungLao) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy Ban Trung Lão'
-                ], 404);
-            }
-
-            $query = TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $banTrungLao->id)
-                ->where(function ($q) {
-                    $q->whereNull('chuc_vu')
-                        ->orWhere('chuc_vu', 'Thành viên')
-                        ->orWhere('chuc_vu', '');
-                });
-
-            if ($hoTen = $request->input('ho_ten')) {
-                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
-                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
-                });
-            }
-
-            if ($soDienThoai = $request->input('so_dien_thoai')) {
-                $query->whereHas('tinHuu', function ($q) use ($soDienThoai) {
-                    $q->where('so_dien_thoai', 'like', '%' . $soDienThoai . '%');
-                });
-            }
-
-            if ($diaChi = $request->input('dia_chi')) {
-                $query->whereHas('tinHuu', function ($q) use ($diaChi) {
-                    $q->where('dia_chi', 'like', '%' . $diaChi . '%');
-                });
-            }
-
-            $data = $query->get()->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'tin_huu_id' => $item->tin_huu_id,
-                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
-                    'so_dien_thoai' => $item->tinHuu->so_dien_thoai ?? 'N/A',
-                    'dia_chi' => $item->tinHuu->dia_chi ?? 'N/A',
-                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
-                ];
-            });
-
-            if ($data->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Không có Ban Viên',
-                    'data' => []
-                ]);
-            }
-
-            return response()->json($data);
-        } catch (\Exception $e) {
-            Log::error('Lỗi lấy danh sách Ban Viên: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-
-
-    // Method hiển thị form nhập liệu báo cáo
-    public function formBaoCaoBanTrungLao(Request $request)
-    {
-        $month = $request->get('month', date('m'));
-        $year = $request->get('year', date('Y'));
-        $buoiNhomType = $request->get('ban_nganh_id', 1);
-
-        // Tính toán tháng năm tiếp theo
-        $nextMonth = $month == 12 ? 1 : $month + 1;
-        $nextYear = $month == 12 ? $year + 1 : $year;
-
-        // Lấy danh sách buổi nhóm Hội Thánh trong tháng
-        $buoiNhomHT = BuoiNhom::with('dienGia')
-            ->whereYear('ngay_dien_ra', $year)
-            ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', 20)
-            ->orderBy('ngay_dien_ra')
-            ->get();
-
-        // Lấy danh sách buổi nhóm Ban Trung Lão trong tháng
-        $buoiNhomBTL = BuoiNhom::with(['dienGia', 'giaoDichTaiChinh'])
-            ->whereYear('ngay_dien_ra', $year)
-            ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', 1)
-            ->orderBy('ngay_dien_ra')
-            ->get();
-
-        // Lấy danh sách tín hữu thuộc Ban Trung Lão
-        $tinHuuTrungLao = TinHuu::select('tin_huu.id', 'tin_huu.ho_ten')
-            ->whereExists(function ($query) {
-                $query->select(\DB::raw(1))
-                    ->from('tin_huu_ban_nganh')
-                    ->whereColumn('tin_huu_ban_nganh.tin_huu_id', 'tin_huu.id')
-                    ->where('tin_huu_ban_nganh.ban_nganh_id', 1);
-            })
-            ->orderBy('tin_huu.ho_ten')
-            ->get();
-
-        // Lấy đánh giá
-        $diemManh = DanhGia::where('ban_nganh_id', 1)
-            ->where('loai', 'diem_manh')
-            ->where('thang', $month)
-            ->where('nam', $year)
-            ->get();
-
-        $diemYeu = DanhGia::where('ban_nganh_id', 1)
-            ->where('loai', 'diem_yeu')
-            ->where('thang', $month)
-            ->where('nam', $year)
-            ->get();
-
-        // Lấy kế hoạch tháng tiếp theo
-        $keHoach = KeHoach::with('nguoiPhuTrach')
-            ->where('ban_nganh_id', 1)
-            ->where('thang', $nextMonth)
-            ->where('nam', $nextYear)
-            ->get();
-
-        // Lấy kiến nghị
-        $kienNghi = KienNghi::with('nguoiDeXuat')
-            ->where('ban_nganh_id', 1)
-            ->where('thang', $month)
-            ->where('nam', $year)
-            ->get();
-
-        return view('_ban_trung_lao.nhap_lieu_bao_cao', compact(
-            'month',
-            'year',
-            'buoiNhomType',
-            'nextMonth',
-            'nextYear',
-            'buoiNhomHT',
-            'buoiNhomBTL',
-            'tinHuuTrungLao',
-            'diemManh',
-            'diemYeu',
-            'keHoach',
-            'kienNghi'
-        ));
-    }
-
-
-    // Cập nhật số lượng tham dự
-    public function updateThamDuTrungLao(Request $request)
-    {
-        $request->validate([
-            'id' => 'required|exists:buoi_nhom,id',
-            'so_luong_trung_lao' => 'required|integer|min:0'
-        ]);
-
-        try {
-            $buoiNhom = BuoiNhom::findOrFail($request->id);
-            $buoiNhom->so_luong_trung_lao = $request->so_luong_trung_lao;
-            $buoiNhom->save();
-
-            // Xử lý dâng hiến
-            if ($request->has('dang_hien')) {
-                // Loại bỏ các ký tự không phải số
-                $dangHien = preg_replace('/[^0-9]/', '', $request->dang_hien);
-
-                if ($dangHien > 0) {
-                    // Tìm hoặc tạo mới giao dịch tài chính
-                    $giaoDich = GiaoDichTaiChinh::firstOrNew([
-                        'buoi_nhom_id' => $buoiNhom->id,
-                        'ban_nganh_id' => 1, // ID của Ban Trung Lão
-                    ]);
-
-                    $giaoDich->loai = 'thu';
-                    $giaoDich->so_tien = $dangHien;
-                    $giaoDich->mo_ta = 'Dâng hiến buổi nhóm Ban Trung Lão ngày ' .
-                        Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y');
-                    $giaoDich->ngay_giao_dich = $buoiNhom->ngay_dien_ra;
-                    $giaoDich->save();
-                }
-            }
-
+            $kienNghi = KienNghi::where('id', $id)
+                ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+                ->firstOrFail();
+            $kienNghi->delete();
             return response()->json([
                 'success' => true,
-                'message' => 'Cập nhật số lượng tham dự thành công!'
+                'message' => 'Xóa kiến nghị thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi cập nhật: ' . $e->getMessage());
+            \Log::error('Lỗi xóa kiến nghị: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi: ' . $e->getMessage()
+                'message' => 'Đã xảy ra lỗi khi xóa kiến nghị!'
             ], 500);
-        }
-    }
-
-    // Lưu tất cả số lượng tham dự
-    public function saveThamDuTrungLao(Request $request)
-    {
-        $request->validate([
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2021|max:2030',
-            'ban_nganh_id' => 'required|exists:ban_nganh,id',
-            'buoi_nhom' => 'required|array'
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            foreach ($request->buoi_nhom as $id => $data) {
-                $buoiNhom = BuoiNhom::findOrFail($id);
-                $buoiNhom->so_luong_trung_lao = $data['so_luong_trung_lao'] ?? 0;
-                $buoiNhom->save();
-
-                // Xử lý dâng hiến
-                if ($buoiNhom->ban_nganh_id == 1 && isset($data['dang_hien'])) {
-                    $dangHien = str_replace('.', '', $data['dang_hien']); // Xóa dấu phân cách hàng nghìn
-
-                    if ($dangHien > 0) {
-                        // Tìm hoặc tạo mới giao dịch tài chính
-                        $giaoDich = GiaoDichTaiChinh::firstOrNew([
-                            'buoi_nhom_id' => $buoiNhom->id,
-                            'ban_nganh_id' => 1, // ID của Ban Trung Lão
-                        ]);
-
-                        $giaoDich->loai = 'thu';
-                        $giaoDich->so_tien = $dangHien;
-                        $giaoDich->mo_ta = 'Dâng hiến buổi nhóm Ban Trung Lão ngày ' .
-                            Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y');
-                        $giaoDich->ngay_giao_dich = $buoiNhom->ngay_dien_ra;
-                        $giaoDich->save();
-                    }
-                }
-            }
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Đã lưu số lượng tham dự thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Lỗi lưu tham dự: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
-        }
-    }
-
-    // Lưu đánh giá
-    public function saveDanhGiaTrungLao(Request $request)
-    {
-        $request->validate([
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2021|max:2030',
-            'ban_nganh_id' => 'required|exists:ban_nganh,id',
-            'diem_manh' => 'required|array',
-            'diem_manh_id' => 'required|array',
-            'diem_yeu' => 'required|array',
-            'diem_yeu_id' => 'required|array'
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            // Lưu điểm mạnh
-            foreach ($request->diem_manh as $index => $noiDung) {
-                $id = $request->diem_manh_id[$index];
-
-                if (empty($noiDung))
-                    continue; // Bỏ qua nếu nội dung trống
-
-                if ($id > 0) {
-                    // Cập nhật
-                    $danhGia = DanhGia::findOrFail($id);
-                    $danhGia->noi_dung = $noiDung;
-                    $danhGia->save();
-                } else {
-                    // Tạo mới
-                    DanhGia::create([
-                        'ban_nganh_id' => $request->ban_nganh_id,
-                        'loai' => 'diem_manh',
-                        'noi_dung' => $noiDung,
-                        'thang' => $request->month,
-                        'nam' => $request->year,
-                        'nguoi_danh_gia_id' => Auth::check() ? Auth::user()->tin_huu_id : null
-                    ]);
-                }
-            }
-
-            // Lưu điểm yếu
-            foreach ($request->diem_yeu as $index => $noiDung) {
-                $id = $request->diem_yeu_id[$index];
-
-                if (empty($noiDung))
-                    continue; // Bỏ qua nếu nội dung trống
-
-                if ($id > 0) {
-                    // Cập nhật
-                    $danhGia = DanhGia::findOrFail($id);
-                    $danhGia->noi_dung = $noiDung;
-                    $danhGia->save();
-                } else {
-                    // Tạo mới
-                    DanhGia::create([
-                        'ban_nganh_id' => $request->ban_nganh_id,
-                        'loai' => 'diem_yeu',
-                        'noi_dung' => $noiDung,
-                        'thang' => $request->month,
-                        'nam' => $request->year,
-                        'nguoi_danh_gia_id' => Auth::check() ? Auth::user()->tin_huu_id : null
-                    ]);
-                }
-            }
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Đã lưu đánh giá thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
-        }
-    }
-
-    // Lưu kế hoạch
-    public function saveKeHoachTrungLao(Request $request)
-    {
-        $request->validate([
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2021|max:2030',
-            'ban_nganh_id' => 'required|exists:ban_nganh,id',
-            'kehoach' => 'required|array'
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            // Lưu kế hoạch
-            foreach ($request->kehoach as $data) {
-                $id = $data['id'] ?? 0;
-
-                // Bỏ qua nếu hoạt động trống
-                if (empty($data['hoat_dong']))
-                    continue;
-
-                if ($id > 0) {
-                    // Cập nhật
-                    $keHoach = KeHoach::findOrFail($id);
-                    $keHoach->hoat_dong = $data['hoat_dong'];
-                    $keHoach->thoi_gian = $data['thoi_gian'] ?? '';
-                    $keHoach->nguoi_phu_trach_id = $data['nguoi_phu_trach_id'] ?? null;
-                    $keHoach->ghi_chu = $data['ghi_chu'] ?? '';
-                    $keHoach->save();
-                } else {
-                    // Tạo mới
-                    KeHoach::create([
-                        'ban_nganh_id' => $request->ban_nganh_id,
-                        'hoat_dong' => $data['hoat_dong'],
-                        'thoi_gian' => $data['thoi_gian'] ?? '',
-                        'nguoi_phu_trach_id' => $data['nguoi_phu_trach_id'] ?? null,
-                        'ghi_chu' => $data['ghi_chu'] ?? '',
-                        'thang' => $request->month,
-                        'nam' => $request->year,
-                        'trang_thai' => 'chua_thuc_hien'
-                    ]);
-                }
-            }
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Đã lưu kế hoạch thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
-        }
-    }
-
-    // Lưu kiến nghị
-    public function saveKienNghiTrungLao(Request $request)
-    {
-        $request->validate([
-            'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2021|max:2030',
-            'ban_nganh_id' => 'required|exists:ban_nganh,id',
-            'kiennghi' => 'required|array'
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            // Lưu kiến nghị
-            foreach ($request->kiennghi as $data) {
-                $id = $data['id'] ?? 0;
-
-                // Bỏ qua nếu tiêu đề hoặc nội dung trống
-                if (empty($data['tieu_de']) || empty($data['noi_dung']))
-                    continue;
-
-                if ($id > 0) {
-                    // Cập nhật
-                    $kienNghi = KienNghi::findOrFail($id);
-                    $kienNghi->tieu_de = $data['tieu_de'];
-                    $kienNghi->noi_dung = $data['noi_dung'];
-                    $kienNghi->nguoi_de_xuat_id = $data['nguoi_de_xuat_id'] ?? null;
-                    $kienNghi->save();
-                } else {
-                    // Tạo mới
-                    KienNghi::create([
-                        'ban_nganh_id' => $request->ban_nganh_id,
-                        'tieu_de' => $data['tieu_de'],
-                        'noi_dung' => $data['noi_dung'],
-                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? null,
-                        'thang' => $request->month,
-                        'nam' => $request->year,
-                        'trang_thai' => 'moi'
-                    ]);
-                }
-            }
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Đã lưu kiến nghị thành công!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
 }

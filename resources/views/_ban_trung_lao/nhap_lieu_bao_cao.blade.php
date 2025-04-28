@@ -125,8 +125,8 @@
                                 <div class="form-group">
                                     <label for="buoi_nhom_type">Buổi nhóm:</label>
                                     <select id="buoi_nhom_type" name="buoi_nhom_type" class="form-control">
-                                        <option value="1" {{ $buoiNhomType == 1 ? 'selected' : '' }}>Ban Trung Lão (Nhóm tối thứ 7)</option>
-                                        <option value="13" {{ $buoiNhomType == 13 ? 'selected' : '' }}>Hội Thánh (Nhóm Chúa Nhật)</option>
+                                        <option value="1" {{ isset($buoiNhomType) && $buoiNhomType == 1 ? 'selected' : '' }}>Ban Trung Lão (Nhóm tối thứ 7)</option>
+                                        <option value="13" {{ isset($buoiNhomType) && $buoiNhomType == 13 ? 'selected' : '' }}>Hội Thánh (Nhóm Chúa Nhật)</option>
                                     </select>
                                 </div>
                             </div>

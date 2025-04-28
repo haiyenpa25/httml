@@ -280,7 +280,6 @@
 @endsection
 
 @section('page-scripts')
-
     @push('scripts')
         <script>
             $(function () {
@@ -288,6 +287,12 @@
                 $('.money-format').on('input', function () {
                     let value = $(this).val().replace(/\D/g, '');
                     $(this).val(new Intl.NumberFormat('vi-VN').format(value));
+                });
+
+                // Tự động gửi form khi thay đổi buoi_nhom_type
+                $('#buoi_nhom_type').on('change', function () {
+                    console.log('Đã thay đổi buoi_nhom_type:', $(this).val());
+                    $('#filter-form').submit();
                 });
 
                 // Xử lý cập nhật số lượng tham dự riêng lẻ
@@ -298,7 +303,7 @@
 
                     let data = {
                         _token: '{{ csrf_token() }}',
-                        buoi_nhom_id: buoiNhomId,
+                        id: buoiNhomId, // Thay buoi_nhom_id thành id để khớp với validation
                         so_luong_trung_lao: row.find(`input[name="buoi_nhom[${buoiNhomId}][so_luong_trung_lao]"]`).val()
                     };
 
@@ -312,7 +317,12 @@
                         url: '{{ route("_ban_trung_lao.update_thamdu_trung_lao") }}',
                         type: 'POST',
                         data: data,
+                        dataType: 'json',
+                        beforeSend: function () {
+                            console.log('Đang gửi AJAX cập nhật số lượng:', data);
+                        },
                         success: function (response) {
+                            console.log('Phản hồi:', response);
                             if (response.success) {
                                 toastr.success('Cập nhật thành công!');
                             } else {
@@ -320,7 +330,35 @@
                             }
                         },
                         error: function (xhr) {
-                            toastr.error('Lỗi kết nối máy chủ: ' + (xhr.responseJSON?.message || 'Vui lòng thử lại.'));
+                            window.handleAjaxError(xhr);
+                        }
+                    });
+                });
+
+                // Xử lý form điểm danh
+                $('#thamdu-form').on('submit', function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        beforeSend: function () {
+                            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success('Đã lưu số lượng tham dự thành công!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error(response.message || 'Có lỗi xảy ra!');
+                            }
+                        },
+                        error: function (xhr) {
+                            window.handleAjaxError(xhr);
+                        },
+                        complete: function () {
+                            $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Lưu tất cả thay đổi');
                         }
                     });
                 });
@@ -329,27 +367,51 @@
                 $('#add-diem-manh').on('click', function () {
                     let count = $('.diem-manh-item').length;
                     let html = `
-                        <div class="form-group diem-manh-item">
-                            <div class="input-group">
-                                <textarea class="form-control" name="diem_manh[]" rows="2" 
-                                          placeholder="Nhập điểm mạnh..."></textarea>
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-danger remove-diem-manh">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <input type="hidden" name="diem_manh_id[]" value="0">
-                        </div>
-                    `;
+                                        <div class="form-group diem-manh-item">
+                                            <div class="input-group">
+                                                <textarea class="form-control" name="diem_manh[]" rows="2" 
+                                                          placeholder="Nhập điểm mạnh..."></textarea>
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-danger remove-diem-manh">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="diem_manh_id[]" value="0">
+                                        </div>
+                                    `;
                     $('#diem-manh-container').append(html);
                 });
 
                 $(document).on('click', '.remove-diem-manh', function () {
-                    if ($('.diem-manh-item').length > 1) {
-                        $(this).closest('.diem-manh-item').remove();
+                    const item = $(this).closest('.diem-manh-item');
+                    const id = item.find('input[name$="[id]"]').val();
+
+                    if (id != '0' && !confirm('Bạn có chắc chắn muốn xóa điểm mạnh này?')) {
+                        return;
+                    }
+
+                    if (id != '0') {
+                        $.ajax({
+                            url: '{{ route("api.ban_trung_lao.xoa_danh_gia", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                            method: 'DELETE',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: function (response) {
+                                if (response.success) {
+                                    toastr.success(response.message);
+                                    item.remove();
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            },
+                            error: function (xhr) {
+                                window.handleAjaxError(xhr);
+                            }
+                        });
+                    } else if ($('.diem-manh-item').length > 1) {
+                        item.remove();
                     } else {
-                        $(this).closest('.diem-manh-item').find('textarea').val('');
+                        item.find('textarea').val('');
                     }
                 });
 
@@ -357,69 +419,121 @@
                 $('#add-diem-yeu').on('click', function () {
                     let count = $('.diem-yeu-item').length;
                     let html = `
-                        <div class="form-group diem-yeu-item">
-                            <div class="input-group">
-                                <textarea class="form-control" name="diem_yeu[]" rows="2" 
-                                          placeholder="Nhập điểm cần cải thiện..."></textarea>
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-danger remove-diem-yeu">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <input type="hidden" name="diem_yeu_id[]" value="0">
-                        </div>
-                    `;
+                                        <div class="form-group diem-yeu-item">
+                                            <div class="input-group">
+                                                <textarea class="form-control" name="diem_yeu[]" rows="2" 
+                                                          placeholder="Nhập điểm cần cải thiện..."></textarea>
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-danger remove-diem-yeu">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="diem_yeu_id[]" value="0">
+                                        </div>
+                                    `;
                     $('#diem-yeu-container').append(html);
                 });
 
                 $(document).on('click', '.remove-diem-yeu', function () {
-                    if ($('.diem-yeu-item').length > 1) {
-                        $(this).closest('.diem-yeu-item').remove();
-                    } else {
-                        $(this).closest('.diem-yeu-item').find('textarea').val('');
+                    const item = $(this).closest('.diem-yeu-item');
+                    const id = item.find('input[name$="[id]"]').val();
+
+                    if (id != '0' && !confirm('Bạn có chắc chắn muốn xóa điểm yếu này?')) {
+                        return;
                     }
+
+                    if (id != '0') {
+                        $.ajax({
+                            url: '{{ route("api.ban_trung_lao.xoa_danh_gia", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                            method: 'DELETE',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: function (response) {
+                                if (response.success) {
+                                    toastr.success(response.message);
+                                    item.remove();
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            },
+                            error: function (xhr) {
+                                window.handleAjaxError(xhr);
+                            }
+                        });
+                    } else if ($('.diem-yeu-item').length > 1) {
+                        item.remove();
+                    } else {
+                        item.find('textarea').val('');
+                    }
+                });
+
+                // Xử lý form đánh giá
+                $('#danhgia-form').on('submit', function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        beforeSend: function () {
+                            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success('Đã lưu đánh giá thành công!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error(response.message || 'Có lỗi xảy ra!');
+                            }
+                        },
+                        error: function (xhr) {
+                            window.handleAjaxError(xhr);
+                        },
+                        complete: function () {
+                            $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Lưu đánh giá');
+                        }
+                    });
                 });
 
                 // Thêm/xóa kế hoạch
                 $('#add-kehoach').on('click', function () {
                     let count = $('.kehoach-row').length;
                     let html = `
-                        <tr class="kehoach-row">
-                            <td>${count + 1}</td>
-                            <td>
-                                <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" 
-                                       value="" required>
-                                <input type="hidden" name="kehoach[${count}][id]" value="0">
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" 
-                                       value="">
-                            </td>
-                            <td>
-                                <select class="form-control" name="kehoach[${count}][nguoi_phu_trach_id]">
-                                    <option value="">-- Chọn người phụ trách --</option>
-                                    @if ($tinHuuTrungLao->isEmpty())
-                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                    @else
-                                        @foreach($tinHuuTrungLao as $tinHuu)
-                                            @if ($tinHuu)
-                                                <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </td>
-                            <td>
-                                <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-kehoach">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                                        <tr class="kehoach-row">
+                                            <td>${count + 1}</td>
+                                            <td>
+                                                <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" 
+                                                       value="" required>
+                                                <input type="hidden" name="kehoach[${count}][id]" value="0">
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" 
+                                                       value="">
+                                            </td>
+                                            <td>
+                                                <select class="form-control" name="kehoach[${count}][nguoi_phu_trach_id]">
+                                                    <option value="">-- Chọn người phụ trách --</option>
+                                                    @if ($tinHuuTrungLao->isEmpty())
+                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                    @else
+                                                        @foreach($tinHuuTrungLao as $tinHuu)
+                                                            @if ($tinHuu)
+                                                                <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm remove-kehoach">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
                     $('#kehoach-tbody').append(html);
                     reindexKehoach();
                 });
@@ -440,63 +554,115 @@
                     });
                 }
 
+                // Xử lý form kế hoạch
+                $('#kehoach-form').on('submit', function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        beforeSend: function () {
+                            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success('Đã lưu kế hoạch thành công!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error(response.message || 'Có lỗi xảy ra!');
+                            }
+                        },
+                        error: function (xhr) {
+                            window.handleAjaxError(xhr);
+                        },
+                        complete: function () {
+                            $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Lưu kế hoạch');
+                        }
+                    });
+                });
+
                 // Thêm/xóa kiến nghị
                 $('#add-kiennghi').on('click', function () {
                     let count = $('.kiennghi-card').length;
                     let html = `
-                        <div class="card mb-3 kiennghi-card">
-                            <div class="card-header bg-light">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="m-0">Kiến nghị #${count + 1}</h6>
-                                    </div>
-                                    <div class="col-auto">
-                                        <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label>Tiêu đề:</label>
-                                    <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" 
-                                           value="" required>
-                                    <input type="hidden" name="kiennghi[${count}][id]" value="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>Nội dung:</label>
-                                    <textarea class="form-control" name="kiennghi[${count}][noi_dung]" 
-                                              rows="3" required></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>Người đề xuất:</label>
-                                    <select class="form-control" name="kiennghi[${count}][nguoi_de_xuat_id]">
-                                        <option value="">-- Chọn người đề xuất --</option>
-                                        @if ($tinHuuTrungLao->isEmpty())
-                                            <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                        @else
-                                            @foreach($tinHuuTrungLao as $tinHuu)
-                                                @if ($tinHuu)
-                                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                @endif
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                                        <div class="card mb-3 kiennghi-card">
+                                            <div class="card-header bg-light">
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <h6 class="m-0">Kiến nghị #${count + 1}</h6>
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="form-group">
+                                                    <label>Tiêu đề:</label>
+                                                    <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" 
+                                                           value="" required>
+                                                    <input type="hidden" name="kiennghi[${count}][id]" value="0">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Nội dung:</label>
+                                                    <textarea class="form-control" name="kiennghi[${count}][noi_dung]" 
+                                                              rows="3" required></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Người đề xuất:</label>
+                                                    <select class="form-control" name="kiennghi[${count}][nguoi_de_xuat_id]">
+                                                        <option value="">-- Chọn người đề xuất --</option>
+                                                        @if ($tinHuuTrungLao->isEmpty())
+                                                            <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                        @else
+                                                            @foreach($tinHuuTrungLao as $tinHuu)
+                                                                @if ($tinHuu)
+                                                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                @endif
+                                                            @endforeach
+                                                        @endif
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
                     $('#kiennghi-container').append(html);
                     reindexKiennghi();
                 });
 
                 $(document).on('click', '.remove-kiennghi', function () {
-                    if ($('.kiennghi-card').length > 1) {
-                        $(this).closest('.kiennghi-card').remove();
+                    const card = $(this).closest('.kiennghi-card');
+                    const id = card.find('input[name$="[id]"]').val();
+
+                    if (id != '0' && !confirm('Bạn có chắc chắn muốn xóa kiến nghị này?')) {
+                        return;
+                    }
+
+                    if (id != '0') {
+                        $.ajax({
+                            url: '{{ route("api.ban_trung_lao.xoa_kien_nghi", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                            method: 'DELETE',
+                            data: { _token: '{{ csrf_token() }}' },
+                            success: function (response) {
+                                if (response.success) {
+                                    toastr.success(response.message);
+                                    card.remove();
+                                    reindexKiennghi();
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            },
+                            error: function (xhr) {
+                                window.handleAjaxError(xhr);
+                            }
+                        });
+                    } else if ($('.kiennghi-card').length > 1) {
+                        card.remove();
                         reindexKiennghi();
                     } else {
-                        let card = $(this).closest('.kiennghi-card');
                         card.find('input[type="text"], textarea').val('');
                         card.find('select').val('');
                     }
@@ -507,8 +673,35 @@
                         $(this).find('.card-header h6').text('Kiến nghị #' + (index + 1));
                     });
                 }
+
+                // Xử lý form kiến nghị
+                $('#kiennghi-form').on('submit', function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        beforeSend: function () {
+                            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success('Đã lưu kiến nghị thành công!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error(response.message || 'Có lỗi xảy ra!');
+                            }
+                        },
+                        error: function (xhr) {
+                            window.handleAjaxError(xhr);
+                        },
+                        complete: function () {
+                            $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Lưu kiến nghị');
+                        }
+                    });
+                });
             });
         </script>
     @endpush
-
 @endsection

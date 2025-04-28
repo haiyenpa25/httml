@@ -284,14 +284,12 @@ Route::prefix('api/ban-trung-lao')
         Route::post('/phan-cong-nhiem-vu', [BanTrungLaoController::class, 'phanCongNhiemVu'])->name('phan_cong_nhiem_vu');
         Route::delete('/xoa-phan-cong/{id}', [BanTrungLaoController::class, 'xoaPhanCong'])->name('xoa_phan_cong');
 
-        // Báo cáo và thống kê (thêm mới)
+        // Báo cáo và thống kê
         Route::post('/luu-bao-cao', [BanTrungLaoController::class, 'luuBaoCaoBanTrungLao'])->name('luu_bao_cao');
-        Route::post('/cap-nhat-so-luong-tham-du', [BanTrungLaoController::class, 'capNhatSoLuongThamDu'])->name('cap_nhat_so_luong_tham_du');
-        Route::post('/luu-danh-gia', [BanTrungLaoController::class, 'luuDanhGia'])->name('luu_danh_gia');
-        Route::post('/luu-ke-hoach', [BanTrungLaoController::class, 'luuKeHoach'])->name('luu_ke_hoach');
-        Route::post('/luu-kien-nghi', [BanTrungLaoController::class, 'luuKienNghi'])->name('luu_kien_nghi');
+        Route::post('/update-thamdu-trung-lao', [BanTrungLaoController::class, 'updateThamDuTrungLao'])->name('update_thamdu_trung_lao'); // Sửa từ cap-nhat-so-luong-tham-du
+        Route::delete('/xoa-danh-gia/{id}', [BanTrungLaoController::class, 'xoaDanhGia'])->name('xoa_danh_gia'); // Thêm route xóa đánh giá
+        Route::delete('/xoa-kien-nghi/{id}', [BanTrungLaoController::class, 'xoaKienNghi'])->name('xoa_kien_nghi'); // Thêm route xóa kiến nghị
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -323,11 +321,9 @@ Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])
             ->name('save_kiennghi_trung_lao');
 
         // API cập nhật nhanh từng dòng
-        // Thay đổi thành capNhatSoLuongThamDu
         Route::post('update-thamdu-trung-lao', [BanTrungLaoController::class, 'updateThamDuTrungLao'])
             ->name('update_thamdu_trung_lao');
     });
-
 
 /*
 |--------------------------------------------------------------------------
