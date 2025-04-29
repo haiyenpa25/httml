@@ -44,48 +44,8 @@
                 @endif
             </div>
 
-            <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
-            <div class="action-buttons-container">
-                <!-- Hàng 1: Chức năng điều hướng chính -->
-                <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.index') }}" class="action-btn btn-primary-custom">
-                        <i class="fas fa-home"></i> Trang chính
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="action-btn btn-success-custom">
-                        <i class="fas fa-clipboard-check"></i> Điểm danh
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="action-btn btn-info-custom">
-                        <i class="fas fa-user-friends"></i> Thăm viếng
-                    </a>
-                </div>
-
-                <!-- Hàng 2: Chức năng phân công và báo cáo -->
-                <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="action-btn btn-warning-custom">
-                        <i class="fas fa-tasks"></i> Phân công
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
-                        <i class="fas fa-clipboard-list"></i> Chi tiết PC
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
-                        <i class="fas fa-file-alt"></i> Nhập báo cáo
-                    </a>
-                </div>
-
-                <!-- Hàng 3: Chức năng quản lý -->
-                <div class="button-row">
-                    <button type="button" class="action-btn btn-success-custom" data-toggle="modal"
-                        data-target="#modal-them-thanh-vien">
-                        <i class="fas fa-user-plus"></i> Thêm thành viên
-                    </button>
-                    <button type="button" class="action-btn btn-info-custom" id="btn-refresh">
-                        <i class="fas fa-sync"></i> Tải lại
-                    </button>
-                    <button type="button" class="action-btn btn-primary-custom" id="btn-export">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
-                    </button>
-                </div>
-            </div>
+            <!-- Thanh điều hướng nhanh -->
+            @include('partials._ban_trung_lao_navigation')
 
             <!-- Bộ lọc nâng cao -->
             <div class="card card-secondary">
@@ -122,8 +82,7 @@
                         <div class="col-md-3 col-sm-6 col-12">
                             <div class="form-group">
                                 <label>Số điện thoại</label>
-                                <input type="text" class="form-control" id="filter-so-dien-thoai"
-                                    placeholder="Nhập số điện thoại">
+                                <input type="text" class="form-control" id="filter-so-dien-thoai" placeholder="Nhập số điện thoại">
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6 col-12">
@@ -150,13 +109,13 @@
                 </div>
                 <!-- /.card-header -->
                 <div class="card-body table-responsive p-0">
-                    <table id="ban-dieu-hanh-table" class="table table-bordered table-striped">
+                    <table id="ban-dieu-hanh-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
-                                <th style="width: 50px">STT</th>
-                                <th>Vai trò</th>
-                                <th>Họ tên</th>
-                                <th style="width: 120px">Thao tác</th>
+                                <th style="width: 50px" data-priority="1">STT</th>
+                                <th data-priority="3">Vai trò</th>
+                                <th data-priority="1">Họ tên</th>
+                                <th style="width: 120px" data-priority="2">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -182,14 +141,14 @@
                 </div>
                 <!-- /.card-header -->
                 <div class="card-body table-responsive p-0">
-                    <table id="ban-vien-table" class="table table-bordered table-striped">
+                    <table id="ban-vien-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
-                                <th style="width: 50px">STT</th>
-                                <th>Họ tên</th>
-                                <th>Số điện thoại</th>
-                                <th>Địa chỉ</th>
-                                <th style="width: 120px">Thao tác</th>
+                                <th style="width: 50px" data-priority="1">STT</th>
+                                <th data-priority="1">Họ tên</th>
+                                <th data-priority="3">Số điện thoại</th>
+                                <th data-priority="4">Địa chỉ</th>
+                                <th style="width: 120px" data-priority="2">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -205,121 +164,14 @@
     <!-- /.content -->
 
     <!-- Modal Thêm Thành Viên -->
-    <div class="modal fade" id="modal-them-thanh-vien">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Thêm Thành Viên</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <form id="form-them-thanh-vien" action="{{ route('api.ban_trung_lao.them_thanh_vien') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <input type="hidden" name="ban_nganh_id" value="{{ $banTrungLao->id }}">
-                        <div class="form-group">
-                            <label for="tin_huu_id">Chọn Tín Hữu <span class="text-danger">*</span></label>
-                            <select class="form-control select2bs4" name="tin_huu_id" id="tin_huu_id" required
-                                style="width: 100%">
-                                <option value="">-- Chọn Tín Hữu --</option>
-                                @foreach($tinHuuList as $tinHuu)
-                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="chuc_vu">Chức Vụ</label>
-                            <select class="form-control" name="chuc_vu" id="chuc_vu" style="width: 100%">
-                                <option value="">-- Thành viên --</option>
-                                <option value="Cố Vấn Linh Vụ">Cố Vấn Linh Vụ</option>
-                                <option value="Trưởng Ban">Trưởng Ban</option>
-                                <option value="Thư Ký">Thư Ký</option>
-                                <option value="Thủ Quỹ">Thủ Quỹ</option>
-                                <option value="Ủy Viên">Ủy Viên</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer justify-content-between">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
-                    </div>
-                </form>
-            </div>
-            <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-    </div>
-    <!-- /.modal -->
+    @include('_ban_trung_lao.partials._modal_them_thanh_vien', ['banTrungLao' => $banTrungLao, 'tinHuuList' => $tinHuuList])
 
     <!-- Modal Cập Nhật Chức Vụ -->
-    <div class="modal fade" id="modal-edit-chuc-vu">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Cập Nhật Chức Vụ</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <form id="form-sua-chuc-vu" action="{{ route('api.ban_trung_lao.cap_nhat_chuc_vu') }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-body">
-                        <input type="hidden" name="tin_huu_id" id="edit_tin_huu_id">
-                        <input type="hidden" name="ban_nganh_id" id="edit_ban_nganh_id">
-                        <div class="form-group">
-                            <label>Tín Hữu</label>
-                            <p id="edit_ten_tin_huu" class="form-control-static font-weight-bold"></p>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_chuc_vu">Chức Vụ</label>
-                            <select class="form-control" name="chuc_vu" id="edit_chuc_vu" style="width: 100%">
-                                <option value="">-- Thành viên --</option>
-                                <option value="Cố Vấn Linh Vụ">Cố Vấn Linh Vụ</option>
-                                <option value="Trưởng Ban">Trưởng Ban</option>
-                                <option value="Thư Ký">Thư Ký</option>
-                                <option value="Thủ Quỹ">Thủ Quỹ</option>
-                                <option value="Ủy Viên">Ủy Viên</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer justify-content-between">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Lưu</button>
-                    </div>
-                </form>
-            </div>
-            <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-    </div>
-    <!-- /.modal -->
+    @include('_ban_trung_lao.partials._modal_cap_nhat_chuc_vu')
 
     <!-- Modal Xóa Thành Viên -->
-    <div class="modal fade" id="modal-xoa-thanh-vien">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Xóa Thành Viên</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Bạn có chắc chắn muốn xóa thành viên <strong id="delete_ten_tin_huu"></strong> khỏi Ban Trung Lão?
-                    </p>
-                    <input type="hidden" id="delete_tin_huu_id">
-                    <input type="hidden" id="delete_ban_nganh_id">
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-danger" id="confirm-delete">Xóa</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- /.modal -->
+    @include('_ban_trung_lao.partials._modal_xoa_thanh_vien')
 @endsection
 
-@include('scripts.ban_trung_lao.ban-trung-lao')
+<!-- Bao gồm script từ file _scripts_index -->
+@include('_ban_trung_lao.scripts._scripts_index')

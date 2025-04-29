@@ -1,9 +1,5 @@
 @section('page-styles')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
-    <!-- Select2 CSS -->
+    <!-- CSS tùy chỉnh -->
     <style>
         /* Select2 adjustments for better mobile compatibility */
         .select2-container--bootstrap4 .select2-selection__rendered {
@@ -192,6 +188,37 @@
             padding: 20px;
         }
 
+        /* Tùy chỉnh nút mở rộng của DataTables Responsive */
+        table.dataTable.dtr-inline.collapsed>tbody>tr>td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed>tbody>tr>th.dtr-control:before {
+            top: 50%;
+            left: 5px;
+            height: 1em;
+            width: 1em;
+            margin-top: -9px;
+            display: block;
+            position: absolute;
+            color: white;
+            border: 0.15em solid white;
+            border-radius: 1em;
+            box-shadow: 0 0 0.2em #444;
+            box-sizing: content-box;
+            text-align: center;
+            text-indent: 0 !important;
+            font-family: "Courier New", Courier, monospace;
+            line-height: 1em;
+            content: "+";
+            background-color: #0275d8;
+        }
+
+        table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th.dtr-control:before {
+            content: '−';
+            color: white;
+            background-color: #dc3545;
+            border: 0.15em solid white;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 767px) {
             .content-header h1 {
@@ -378,25 +405,25 @@
                             // Ensure chuc_vu is a string to avoid null issues
                             const chucVu = row.chuc_vu || '';
                             return `
-                                                                                            <div class="btn-group">
-                                                                                                <button type="button" 
-                                                                                                        class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                                                                        data-toggle="modal" 
-                                                                                                        data-target="#modal-edit-chuc-vu"
-                                                                                                        data-id="${row.tin_huu_id}" 
-                                                                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                                                                        data-ten="${row.ho_ten}" 
-                                                                                                        data-chucvu="${chucVu}">
-                                                                                                    <i class="fas fa-edit"></i>
-                                                                                                </button>
-                                                                                                <button type="button" 
-                                                                                                        class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                                                                        data-id="${row.tin_huu_id}" 
-                                                                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                                                                        data-ten="${row.ho_ten}">
-                                                                                                    <i class="fas fa-trash"></i>
-                                                                                                </button>
-                                                                                            </div>`;
+                                    <div class="btn-group">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                data-toggle="modal" 
+                                                data-target="#modal-edit-chuc-vu"
+                                                data-id="${row.tin_huu_id}" 
+                                                data-ban-id="{{ $banTrungLao->id }}"
+                                                data-ten="${row.ho_ten}" 
+                                                data-chucvu="${chucVu}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                data-id="${row.tin_huu_id}" 
+                                                data-ban-id="{{ $banTrungLao->id }}"
+                                                data-ten="${row.ho_ten}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>`;
                         }
                     }
                 ],
@@ -426,25 +453,25 @@
                             // Ensure chuc_vu is a string to avoid null issues
                             const chucVu = row.chuc_vu || '';
                             return `
-                                                                                            <div class="btn-group">
-                                                                                                <button type="button" 
-                                                                                                        class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                                                                        data-toggle="modal" 
-                                                                                                        data-target="#modal-edit-chuc-vu"
-                                                                                                        data-id="${row.tin_huu_id}" 
-                                                                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                                                                        data-ten="${row.ho_ten}" 
-                                                                                                        data-chucvu="${chucVu}">
-                                                                                                    <i class="fas fa-edit"></i>
-                                                                                                </button>
-                                                                                                <button type="button" 
-                                                                                                        class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                                                                        data-id="${row.tin_huu_id}" 
-                                                                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                                                                        data-ten="${row.ho_ten}">
-                                                                                                    <i class="fas fa-trash"></i>
-                                                                                                </button>
-                                                                                            </div>`;
+                                    <div class="btn-group">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                data-toggle="modal" 
+                                                data-target="#modal-edit-chuc-vu"
+                                                data-id="${row.tin_huu_id}" 
+                                                data-ban-id="{{ $banTrungLao->id }}"
+                                                data-ten="${row.ho_ten}" 
+                                                data-chucvu="${chucVu}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                data-id="${row.tin_huu_id}" 
+                                                data-ban-id="{{ $banTrungLao->id }}"
+                                                data-ten="${row.ho_ten}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>`;
                         }
                     }
                 ],
@@ -508,13 +535,12 @@
             });
 
             // Xử lý submit form cập nhật chức vụ
-            // Xử lý submit form cập nhật chức vụ
             $('#form-sua-chuc-vu').submit(function (e) {
                 e.preventDefault();
                 $.ajax({
                     url: $(this).attr('action'),
                     method: 'POST',
-                    data: $(this).serialize() + '&_method=PUT',
+                    data: $(this).serialize(),
                     dataType: 'json'
                 })
                     .done(response => {
@@ -544,20 +570,19 @@
                     tin_huu_id: $('#delete_tin_huu_id').val(),
                     ban_nganh_id: $('#delete_ban_nganh_id').val(),
                     _token: $('meta[name="csrf-token"]').attr('content'),
-                    _method: 'DELETE' // Thêm _method để giả lập DELETE
+                    _method: 'DELETE'
                 };
 
-                // Log dữ liệu gửi đi để kiểm tra
                 console.log('Dữ liệu gửi đi để xóa:', data);
 
                 $.ajax({
                     url: "{{ route('api.ban_trung_lao.xoa_thanh_vien') }}",
-                    method: 'POST', // Sử dụng POST
+                    method: 'POST',
                     data: data,
                     dataType: 'json'
                 })
                     .done(response => {
-                        console.log('Phản hồi từ máy chủ:', response); // Log phản hồi để kiểm tra
+                        console.log('Phản hồi từ máy chủ:', response);
                         if (response.success) {
                             $('#modal-xoa-thanh-vien').modal('hide');
                             toastr.success(response.message);
@@ -568,7 +593,7 @@
                         }
                     })
                     .fail(xhr => {
-                        console.error('Lỗi từ máy chủ:', xhr.responseJSON); // Log lỗi chi tiết
+                        console.error('Lỗi từ máy chủ:', xhr.responseJSON);
                         let errorMessage = 'Không thể xóa thành viên. Vui lòng thử lại sau!';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
@@ -640,24 +665,22 @@
                     timeout = setTimeout(() => func.apply(context, args), wait);
                 };
             }
-        });
 
-        // Xử lý TurboLinks nếu có
-        document.addEventListener('turbolinks:load', function () {
-            window.isDataTableInitialized = false;
-            $(document).ready();
-        });
+            // Xử lý TurboLinks nếu có
+            document.addEventListener('turbolinks:load', function () {
+                window.isDataTableInitialized = false;
+                $(document).ready();
+            });
 
-
-
-        $(document).on('click', '.btn-xoa-thanh-vien', function () {
-            const id = $(this).data('id');
-            const banId = $(this).data('ban-id');
-            const ten = $(this).data('ten');
-            $('#delete_tin_huu_id').val(id);
-            $('#delete_ban_nganh_id').val(banId);
-            $('#delete_ten_tin_huu').text(ten);
-            $('#modal-xoa-thanh-vien').modal('show');
+            $(document).on('click', '.btn-xoa-thanh-vien', function () {
+                const id = $(this).data('id');
+                const banId = $(this).data('ban-id');
+                const ten = $(this).data('ten');
+                $('#delete_tin_huu_id').val(id);
+                $('#delete_ban_nganh_id').val(banId);
+                $('#delete_ten_tin_huu').text(ten);
+                $('#modal-xoa-thanh-vien').modal('show');
+            });
         });
     </script>
 @endsection
