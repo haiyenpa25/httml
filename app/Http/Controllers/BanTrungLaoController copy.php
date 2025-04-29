@@ -9,26 +9,13 @@ use App\Models\BuoiNhom;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
-use App\Traits\ApiResponseTrait;
-use Illuminate\Support\Facades\Cache;
 
 class BanTrungLaoController extends Controller
 {
-
-    // Trait để chuẩn hóa các phản hồi API
-    use ApiResponseTrait;
-
-    // Các ID cố định để tránh magic numbers
-    public const BAN_TRUNG_LAO_ID = 1;
-    public const HOI_THANH_ID = 20;
-
     protected $thanhVienController;
     protected $thamViengController;
     protected $baoCaoController;
 
-    /**
-     * Khởi tạo controller với dependency injection
-     */
     public function __construct(
         BanTrungLaoThanhVienController $thanhVienController,
         BanTrungLaoThamViengController $thamViengController,
@@ -41,8 +28,6 @@ class BanTrungLaoController extends Controller
 
     /**
      * Hiển thị trang chính của Ban Trung Lão
-     * 
-     * @return View
      */
     public function index(): View
     {
@@ -51,48 +36,30 @@ class BanTrungLaoController extends Controller
 
     /**
      * Thêm thành viên vào Ban Trung Lão
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function themThanhVien(Request $request): JsonResponse
-    {
-        return $this->thanhVienController->themThanhVien($request);
-    }
+    // public function themThanhVien(Request $request): JsonResponse
+    // {
+    //     return $this->thanhVienController->themThanhVien($request);
+    // }
 
     /**
      * Xóa thành viên khỏi Ban Trung Lão
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function xoaThanhVien(Request $request): JsonResponse
-    {
-        $response = $this->thanhVienController->xoaThanhVien($request);
-        // Xóa cache liên quan khi có thay đổi thành viên
-        Cache::forget('ban_trung_lao_thanh_vien');
-        return $response;
-    }
+    // public function xoaThanhVien(Request $request): JsonResponse
+    // {
+    //     return $this->thanhVienController->xoaThanhVien($request);
+    // }
 
     /**
      * Cập nhật chức vụ thành viên trong Ban Trung Lão
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function capNhatChucVu(Request $request): JsonResponse
-    {
-        $response = $this->thanhVienController->capNhatChucVu($request);
-        // Xóa cache liên quan khi có thay đổi chức vụ
-        Cache::forget('ban_trung_lao_thanh_vien');
-        return $response;
-    }
+    // public function capNhatChucVu(Request $request): JsonResponse
+    // {
+    //     return $this->thanhVienController->capNhatChucVu($request);
+    // }
 
     /**
      * Hiển thị trang điểm danh của Ban Trung Lão
-     * 
-     * @param Request $request
-     * @return View
      */
     public function diemDanh(Request $request): View
     {
@@ -101,9 +68,6 @@ class BanTrungLaoController extends Controller
 
     /**
      * Xử lý lưu điểm danh
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function luuDiemDanh(Request $request): JsonResponse
     {
@@ -112,49 +76,11 @@ class BanTrungLaoController extends Controller
 
     /**
      * Thêm buổi nhóm mới
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function themBuoiNhom(Request $request): JsonResponse
     {
         return $this->thanhVienController->themBuoiNhom($request);
     }
-
-    /**
-     * API nhận danh sách Ban Điều Hành
-     * 
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function dieuHanhList(Request $request): JsonResponse
-    {
-        // Sử dụng cache để tối ưu hiệu suất
-        $cacheKey = 'ban_dieu_hanh_list_' . md5(json_encode($request->all()));
-        $cacheDuration = now()->addMinutes(30);
-
-        return Cache::remember($cacheKey, $cacheDuration, function () use ($request) {
-            return $this->thanhVienController->dieuHanhList($request);
-        });
-    }
-
-    /**
-     * API nhận danh sách Ban Viên
-     * 
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function banVienList(Request $request): JsonResponse
-    {
-        // Sử dụng cache để tối ưu hiệu suất
-        $cacheKey = 'ban_vien_list_' . md5(json_encode($request->all()));
-        $cacheDuration = now()->addMinutes(30);
-
-        return Cache::remember($cacheKey, $cacheDuration, function () use ($request) {
-            return $this->thanhVienController->banVienList($request);
-        });
-    }
-
 
     /**
      * Hiển thị trang phân công của Ban Trung Lão
@@ -204,7 +130,21 @@ class BanTrungLaoController extends Controller
         return $this->thanhVienController->xoaPhanCong($id);
     }
 
+    /**
+     * Lấy danh sách Ban Điều Hành (JSON cho DataTables)
+     */
+    public function dieuHanhList(Request $request): JsonResponse
+    {
+        return $this->thanhVienController->dieuHanhList($request);
+    }
 
+    /**
+     * Lấy danh sách Ban Viên (JSON cho DataTables)
+     */
+    public function banVienList(Request $request): JsonResponse
+    {
+        return $this->thanhVienController->banVienList($request);
+    }
 
     /**
      * Hiển thị trang thăm viếng

@@ -11,8 +11,11 @@ use App\Models\DienGia;
 use App\Models\NhiemVu;
 use App\Models\TinHuu;
 use App\Models\TinHuuBanNganh;
+use App\Traits\ApiResponseTrait;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -20,40 +23,52 @@ use Illuminate\View\View;
 
 class BanTrungLaoThanhVienController extends Controller
 {
+    use ApiResponseTrait;
+
+    // Hằng số để tránh magic numbers
     private const BAN_TRUNG_LAO_ID = 1;
 
     /**
-     * Hiển thị trang chính của Ban Trung Lão
+     * Hiển thị trang chính của Ban Trung Lão.
+     *
+     * @return View
      */
-    public function index()
+    public function index(): View
     {
-        $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+        $banTrungLao = Cache::remember('ban_trung_lao', now()->addDay(), function () {
+            return BanNganh::where('ten', 'Ban Trung Lão')->first();
+        });
+
         if (!$banTrungLao) {
-            return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
+            throw new \Exception('Không tìm thấy Ban Trung Lão');
         }
 
-        $banDieuHanh = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $banTrungLao->id)
-            ->whereNotNull('chuc_vu')
-            ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên'])
-            ->orderByRaw("CASE 
+        $banDieuHanh = Cache::remember('ban_trung_lao_dieu_hanh', now()->addHour(), function () use ($banTrungLao) {
+            return TinHuuBanNganh::with('tinHuu')
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->whereNotNull('chuc_vu')
+                ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên'])
+                ->orderByRaw("CASE 
                 WHEN chuc_vu = 'Cố Vấn' OR chuc_vu = 'Cố Vấn Linh Vụ' THEN 1 
                 WHEN chuc_vu = 'Trưởng Ban' THEN 2 
                 WHEN chuc_vu = 'Thư Ký' THEN 3 
                 WHEN chuc_vu = 'Thủ Quỹ' THEN 4 
                 WHEN chuc_vu = 'Ủy Viên' THEN 5 
                 ELSE 6 END")
-            ->get();
+                ->get();
+        });
 
-        $banVien = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $banTrungLao->id)
-            ->where(function ($query) {
-                $query->whereNull('chuc_vu')
-                    ->orWhere('chuc_vu', 'Thành viên')
-                    ->orWhere('chuc_vu', '');
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $banVien = Cache::remember('ban_trung_lao_ban_vien', now()->addHour(), function () use ($banTrungLao) {
+            return TinHuuBanNganh::with('tinHuu')
+                ->where('ban_nganh_id', $banTrungLao->id)
+                ->where(function ($query) {
+                    $query->whereNull('chuc_vu')
+                        ->orWhere('chuc_vu', 'Thành viên')
+                        ->orWhere('chuc_vu', '');
+                })
+                ->orderBy('created_at', 'desc')
+                ->get();
+        });
 
         $existingMemberIds = TinHuuBanNganh::where('ban_nganh_id', $banTrungLao->id)
             ->pluck('tin_huu_id')
@@ -67,9 +82,12 @@ class BanTrungLaoThanhVienController extends Controller
     }
 
     /**
-     * Thêm thành viên vào Ban Trung Lão
+     * Thêm thành viên vào Ban Trung Lão.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function themThanhVien(Request $request)
+    public function themThanhVien(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'tin_huu_id' => 'required|exists:tin_huu,id',
@@ -82,67 +100,69 @@ class BanTrungLaoThanhVienController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Thành viên này đã thuộc ban Trung Lão!'
-            ], 422);
+            return $this->errorResponse('Thành viên này đã thuộc Ban Trung Lão!', 422);
         }
 
-        TinHuuBanNganh::create([
-            'tin_huu_id' => $validatedData['tin_huu_id'],
-            'ban_nganh_id' => $validatedData['ban_nganh_id'],
-            'chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Đã thêm thành viên vào ban Trung Lão thành công!'
-        ]);
+        try {
+            DB::beginTransaction();
+            TinHuuBanNganh::create([
+                'tin_huu_id' => $validatedData['tin_huu_id'],
+                'ban_nganh_id' => $validatedData['ban_nganh_id'],
+                'chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên'
+            ]);
+            $this->clearBanTrungLaoCache();
+            DB::commit();
+            return $this->successResponse('Đã thêm thành viên vào Ban Trung Lão thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi thêm thành viên: ' . $e->getMessage());
+            return $this->errorResponse('Có lỗi xảy ra: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
-     * Xóa thành viên khỏi Ban Trung Lão
+     * Xóa thành viên khỏi Ban Trung Lão.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function xoaThanhVien(Request $request)
+    public function xoaThanhVien(Request $request): JsonResponse
     {
+        $validatedData = $request->validate([
+            'tin_huu_id' => 'required|exists:tin_huu,id',
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+        ]);
+
+        $recordExists = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
+            ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
+            ->exists();
+
+        if (!$recordExists) {
+            return $this->notFoundResponse('Không tìm thấy thành viên trong Ban Trung Lão để xóa.');
+        }
+
         try {
-            $validatedData = $request->validate([
-                'tin_huu_id' => 'required|exists:tin_huu,id',
-                'ban_nganh_id' => 'required|exists:ban_nganh,id',
-            ]);
-
-            $recordExists = TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
-                ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
-                ->exists();
-
-            if (!$recordExists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy thành viên trong Ban Trung Lão để xóa.'
-                ], 404);
-            }
-
+            DB::beginTransaction();
             TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
                 ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
                 ->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã xóa thành viên khỏi ban Trung Lão thành công!'
-            ]);
+            $this->clearBanTrungLaoCache();
+            DB::commit();
+            return $this->successResponse('Đã xóa thành viên khỏi Ban Trung Lão thành công!');
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Lỗi khi xóa thành viên khỏi Ban Trung Lão: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa thành viên: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Đã xảy ra lỗi khi xóa thành viên: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Cập nhật chức vụ thành viên trong Ban Trung Lão
+     * Cập nhật chức vụ thành viên trong Ban Trung Lão.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function capNhatChucVu(Request $request)
+    public function capNhatChucVu(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'tin_huu_id' => 'required|exists:tin_huu,id',
@@ -150,41 +170,61 @@ class BanTrungLaoThanhVienController extends Controller
             'chuc_vu' => 'nullable|string|max:50',
         ]);
 
-        if ($validatedData['chuc_vu'] == 'Trưởng Ban') {
-            $existingTruongBan = TinHuuBanNganh::where('ban_nganh_id', $validatedData['ban_nganh_id'])
-                ->where('chuc_vu', 'Trưởng Ban')
-                ->where('tin_huu_id', '!=', $validatedData['tin_huu_id'])
-                ->first();
+        try {
+            DB::beginTransaction();
 
-            if ($existingTruongBan) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ban Trung Lão đã có Trưởng Ban! Vui lòng thay đổi chức vụ của người hiện tại trước.'
-                ], 422);
+            if ($validatedData['chuc_vu'] === 'Trưởng Ban') {
+                $existingTruongBan = TinHuuBanNganh::where('ban_nganh_id', $validatedData['ban_nganh_id'])
+                    ->where('chuc_vu', 'Trưởng Ban')
+                    ->where('tin_huu_id', '!=', $validatedData['tin_huu_id'])
+                    ->first();
+
+                if ($existingTruongBan) {
+                    return $this->errorResponse('Ban Trung Lão đã có Trưởng Ban! Vui lòng thay đổi chức vụ của người hiện tại trước.', 422);
+                }
+
+                BanNganh::where('id', $validatedData['ban_nganh_id'])
+                    ->update(['truong_ban_id' => $validatedData['tin_huu_id']]);
             }
 
-            BanNganh::where('id', $validatedData['ban_nganh_id'])
-                ->update(['truong_ban_id' => $validatedData['tin_huu_id']]);
+            TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
+                ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
+                ->update(['chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên']);
+
+            $this->clearBanTrungLaoCache();
+            DB::commit();
+            return $this->successResponse('Đã cập nhật chức vụ thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi cập nhật chức vụ: ' . $e->getMessage());
+            return $this->errorResponse('Có lỗi xảy ra: ' . $e->getMessage(), 500);
         }
-
-        TinHuuBanNganh::where('tin_huu_id', $validatedData['tin_huu_id'])
-            ->where('ban_nganh_id', $validatedData['ban_nganh_id'])
-            ->update(['chuc_vu' => $validatedData['chuc_vu'] ?? 'Thành viên']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Đã cập nhật chức vụ thành công!'
-        ]);
     }
 
     /**
-     * Hiển thị trang điểm danh của Ban Trung Lão
+     * Xóa cache liên quan đến Ban Trung Lão.
+     *
+     * @return void
      */
-    public function diemDanh(Request $request)
+    private function clearBanTrungLaoCache(): void
+    {
+        Cache::forget('ban_trung_lao');
+        Cache::forget('ban_trung_lao_dieu_hanh');
+        Cache::forget('ban_trung_lao_ban_vien');
+        Cache::forget('ban_trung_lao_thanh_vien');
+    }
+
+    /**
+     * Hiển thị trang điểm danh của Ban Trung Lão.
+     *
+     * @param Request $request
+     * @return View
+     */
+    public function diemDanh(Request $request): View
     {
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
-            return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
+            return view('errors.custom', ['message' => 'Không tìm thấy Ban Trung Lão']);
         }
 
         $month = $request->input('month', date('m'));
@@ -258,9 +298,12 @@ class BanTrungLaoThanhVienController extends Controller
     }
 
     /**
-     * Xử lý lưu điểm danh
+     * Xử lý lưu điểm danh.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function luuDiemDanh(Request $request)
+    public function luuDiemDanh(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'buoi_nhom_id' => 'required|exists:buoi_nhom,id',
@@ -270,15 +313,11 @@ class BanTrungLaoThanhVienController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
             $buoiNhomId = $request->buoi_nhom_id;
             $attendanceData = $request->attendance;
 
@@ -300,24 +339,21 @@ class BanTrungLaoThanhVienController extends Controller
             $buoiNhom->save();
 
             DB::commit();
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã lưu điểm danh thành công'
-            ]);
+            return $this->successResponse('Đã lưu điểm danh thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Lỗi lưu điểm danh: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi lưu điểm danh: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Đã xảy ra lỗi khi lưu điểm danh: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Thêm buổi nhóm mới
+     * Thêm buổi nhóm mới.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function themBuoiNhom(Request $request)
+    public function themBuoiNhom(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'ban_nganh_id' => 'required|exists:ban_nganh,id',
@@ -331,11 +367,7 @@ class BanTrungLaoThanhVienController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
         try {
@@ -350,28 +382,25 @@ class BanTrungLaoThanhVienController extends Controller
                 'ghi_chu' => $request->ghi_chu
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Đã tạo buổi nhóm mới thành công',
-                'data' => $buoiNhom
-            ]);
+            return $this->successResponse('Đã tạo buổi nhóm mới thành công!', $buoiNhom);
         } catch (\Exception $e) {
             Log::error('Lỗi thêm buổi nhóm: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi tạo buổi nhóm: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Đã xảy ra lỗi khi tạo buổi nhóm: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Hiển thị trang phân công của Ban Trung Lão
+     * Hiển thị trang phân công của Ban Trung Lão.
+     *
+     * @param Request $request
+     * @return View
+     * @throws \Exception
      */
-    public function phanCong(Request $request)
+    public function phanCong(Request $request): View
     {
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
-            return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
+            throw new \Exception('Không tìm thấy Ban Trung Lão');
         }
 
         $month = $request->input('month', date('m'));
@@ -411,9 +440,13 @@ class BanTrungLaoThanhVienController extends Controller
     }
 
     /**
-     * Cập nhật thông tin buổi nhóm
+     * Cập nhật thông tin buổi nhóm.
+     *
+     * @param Request $request
+     * @param BuoiNhom $buoiNhom
+     * @return JsonResponse
      */
-    public function updateBuoiNhom(Request $request, BuoiNhom $buoiNhom)
+    public function updateBuoiNhom(Request $request, BuoiNhom $buoiNhom): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'ngay_dien_ra' => 'required|date',
@@ -437,75 +470,59 @@ class BanTrungLaoThanhVienController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ.',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
         try {
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
             if (!$banTrungLao || $buoiNhom->ban_nganh_id !== $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Buổi nhóm không thuộc Ban Trung Lão.'
-                ], 403);
+                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Trung Lão.');
             }
 
             $buoiNhom->update($validator->validated());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Buổi nhóm đã được cập nhật thành công.',
-                'data' => $buoiNhom->fresh()->load(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])
-            ]);
+            return $this->successResponse('Buổi nhóm đã được cập nhật thành công.', $buoiNhom->fresh()->load(['dienGia', 'tinHuuHdct', 'tinHuuDoKt']));
         } catch (\Exception $e) {
-            Log::error('Error updating BuoiNhom ' . $buoiNhom->id . ': ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi cập nhật buổi nhóm.'
-            ], 500);
+            Log::error('Lỗi cập nhật BuoiNhom ' . $buoiNhom->id . ': ' . $e->getMessage());
+            return $this->errorResponse('Đã xảy ra lỗi khi cập nhật buổi nhóm: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Xóa buổi nhóm
+     * Xóa buổi nhóm.
+     *
+     * @param BuoiNhom $buoiNhom
+     * @return JsonResponse
      */
-    public function deleteBuoiNhom(BuoiNhom $buoiNhom)
+    public function deleteBuoiNhom(BuoiNhom $buoiNhom): JsonResponse
     {
         try {
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
             if (!$banTrungLao || $buoiNhom->ban_nganh_id !== $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Buổi nhóm không thuộc Ban Trung Lão.'
-                ], 403);
+                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Trung Lão.');
             }
 
             $buoiNhom->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Buổi nhóm đã được xóa thành công.'
-            ]);
+            return $this->successResponse('Buổi nhóm đã được xóa thành công!');
         } catch (\Exception $e) {
-            Log::error('Error deleting BuoiNhom ' . $buoiNhom->id . ': ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi khi xóa buổi nhóm. Có thể do dữ liệu liên quan.'
-            ], 500);
+            Log::error('Lỗi xóa BuoiNhom ' . $buoiNhom->id . ': ' . $e->getMessage());
+            return $this->errorResponse('Lỗi khi xóa buổi nhóm: Có thể do dữ liệu liên quan.', 500);
         }
     }
 
     /**
-     * Hiển thị trang phân công chi tiết nhiệm vụ
+     * Hiển thị trang phân công chi tiết nhiệm vụ.
+     *
+     * @param Request $request
+     * @return View
+     * @throws \Exception
      */
-    public function phanCongChiTiet(Request $request)
+    public function phanCongChiTiet(Request $request): View
     {
         $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
         if (!$banTrungLao) {
-            return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
+            throw new \Exception('Không tìm thấy Ban Trung Lão');
         }
 
         $month = $request->input('month', date('m'));
@@ -568,9 +585,12 @@ class BanTrungLaoThanhVienController extends Controller
     }
 
     /**
-     * Lưu phân công nhiệm vụ
+     * Lưu phân công nhiệm vụ.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function phanCongNhiemVu(Request $request)
+    public function phanCongNhiemVu(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'buoi_nhom_id' => 'required|exists:buoi_nhom,id',
@@ -581,11 +601,7 @@ class BanTrungLaoThanhVienController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->validationErrorResponse($validator->errors()->toArray());
         }
 
         try {
@@ -593,10 +609,7 @@ class BanTrungLaoThanhVienController extends Controller
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
 
             if (!$banTrungLao || $buoiNhom->ban_nganh_id != $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Buổi nhóm không thuộc Ban Trung Lão'
-                ], 403);
+                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Trung Lão.');
             }
 
             $isMember = TinHuuBanNganh::where('tin_huu_id', $request->tin_huu_id)
@@ -604,18 +617,12 @@ class BanTrungLaoThanhVienController extends Controller
                 ->exists();
 
             if (!$isMember) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Người được phân công không thuộc Ban Trung Lão'
-                ], 403);
+                return $this->forbiddenResponse('Người được phân công không thuộc Ban Trung Lão.');
             }
 
             $nhiemVu = NhiemVu::find($request->nhiem_vu_id);
             if ($nhiemVu->id_ban_nganh != $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Nhiệm vụ không thuộc Ban Trung Lão'
-                ], 403);
+                return $this->forbiddenResponse('Nhiệm vụ không thuộc Ban Trung Lão.');
             }
 
             $maxPosition = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
@@ -629,96 +636,75 @@ class BanTrungLaoThanhVienController extends Controller
                     'ghi_chu' => $request->ghi_chu
                 ]);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Cập nhật phân công nhiệm vụ thành công'
-                ]);
-            } else {
-                $exists = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
-                    ->where('nhiem_vu_id', $request->nhiem_vu_id)
-                    ->exists();
-
-                if ($exists) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Nhiệm vụ này đã được phân công cho buổi nhóm'
-                    ], 422);
-                }
-
-                BuoiNhomNhiemVu::create([
-                    'buoi_nhom_id' => $request->buoi_nhom_id,
-                    'nhiem_vu_id' => $request->nhiem_vu_id,
-                    'tin_huu_id' => $request->tin_huu_id,
-                    'vi_tri' => $maxPosition + 1,
-                    'ghi_chu' => $request->ghi_chu
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Phân công nhiệm vụ thành công'
-                ]);
+                return $this->successResponse('Cập nhật phân công nhiệm vụ thành công!');
             }
+
+            $exists = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
+                ->where('nhiem_vu_id', $request->nhiem_vu_id)
+                ->exists();
+
+            if ($exists) {
+                return $this->errorResponse('Nhiệm vụ này đã được phân công cho buổi nhóm.', 422);
+            }
+
+            BuoiNhomNhiemVu::create([
+                'buoi_nhom_id' => $request->buoi_nhom_id,
+                'nhiem_vu_id' => $request->nhiem_vu_id,
+                'tin_huu_id' => $request->tin_huu_id,
+                'vi_tri' => $maxPosition + 1,
+                'ghi_chu' => $request->ghi_chu
+            ]);
+
+            return $this->successResponse('Phân công nhiệm vụ thành công!');
         } catch (\Exception $e) {
             Log::error('Lỗi phân công nhiệm vụ: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi phân công nhiệm vụ: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Đã xảy ra lỗi khi phân công nhiệm vụ: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Xóa phân công nhiệm vụ
+     * Xóa phân công nhiệm vụ.
+     *
+     * @param int $id
+     * @return JsonResponse
      */
-    public function xoaPhanCong($id)
+    public function xoaPhanCong($id): JsonResponse
     {
         try {
             $phanCong = BuoiNhomNhiemVu::find($id);
 
             if (!$phanCong) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy phân công này'
-                ], 404);
+                return $this->notFoundResponse('Không tìm thấy phân công này.');
             }
 
             $buoiNhom = BuoiNhom::find($phanCong->buoi_nhom_id);
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
 
             if (!$banTrungLao || $buoiNhom->ban_nganh_id != $banTrungLao->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không có quyền xóa phân công này'
-                ], 403);
+                return $this->forbiddenResponse('Không có quyền xóa phân công này.');
             }
 
             $phanCong->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Xóa phân công thành công'
-            ]);
+            return $this->successResponse('Xóa phân công thành công!');
         } catch (\Exception $e) {
             Log::error('Lỗi xóa phân công nhiệm vụ: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa phân công: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Đã xảy ra lỗi khi xóa phân công: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Lấy danh sách Ban Điều Hành (JSON cho DataTables)
+     * Lấy danh sách Ban Điều Hành (JSON cho DataTables).
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function dieuHanhList(Request $request)
+    public function dieuHanhList(Request $request): JsonResponse
     {
         try {
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
             if (!$banTrungLao) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy Ban Trung Lão'
-                ], 404);
+                return $this->notFoundResponse('Không tìm thấy Ban Trung Lão.');
             }
 
             $query = TinHuuBanNganh::with('tinHuu')
@@ -746,35 +732,28 @@ class BanTrungLaoThanhVienController extends Controller
             });
 
             if ($data->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Không có thành viên Ban Điều Hành',
-                    'data' => []
-                ]);
+                return $this->successResponse('Không có thành viên Ban Điều Hành.', []);
             }
 
-            return response()->json($data);
+            return $this->successResponse('Lấy danh sách Ban Điều Hành thành công.', $data);
         } catch (\Exception $e) {
             Log::error('Lỗi lấy danh sách Ban Điều Hành: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Lỗi hệ thống: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Lấy danh sách Ban Viên (JSON cho DataTables)
+     * Lấy danh sách Ban Viên (JSON cho DataTables).
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function banVienList(Request $request)
+    public function banVienList(Request $request): JsonResponse
     {
         try {
             $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
             if (!$banTrungLao) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy Ban Trung Lão'
-                ], 404);
+                return $this->notFoundResponse('Không tìm thấy Ban Trung Lão.');
             }
 
             $query = TinHuuBanNganh::with('tinHuu')
@@ -815,20 +794,13 @@ class BanTrungLaoThanhVienController extends Controller
             });
 
             if ($data->isEmpty()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Không có Ban Viên',
-                    'data' => []
-                ]);
+                return $this->successResponse('Không có Ban Viên.', []);
             }
 
-            return response()->json($data);
+            return $this->successResponse('Lấy danh sách Ban Viên thành công.', $data);
         } catch (\Exception $e) {
             Log::error('Lỗi lấy danh sách Ban Viên: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('Lỗi hệ thống: ' . $e->getMessage(), 500);
         }
     }
 }
