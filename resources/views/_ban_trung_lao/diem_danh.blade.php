@@ -372,4 +372,4 @@
     </div>
 @endsection
 
-@include('scripts.ban_trung_lao.ban_trung_lao_diem_danh')
+@include('_ban_trung_lao.scripts._scripts_diem_danh')

@@ -46,8 +46,8 @@ class LichBuoiNhomController extends Controller
 
     public function edit(LichBuoiNhom $lichBuoiNhom)
     {
-       $banNganhs = BanNganh::all();
-        return view('lich_buoi_nhom.edit', compact('lichBuoiNhom','banNganhs'));
+        $banNganhs = BanNganh::all();
+        return view('lich_buoi_nhom.edit', compact('lichBuoiNhom', 'banNganhs'));
     }
 
     public function update(Request $request, LichBuoiNhom $lichBuoiNhom)

@@ -303,28 +303,28 @@
             });
 
             // Khởi tạo bản đồ Leaflet
-            @if(count($tinHuuWithLocations) > 0)
-                if ($('#map').length) {
-                    var map = L.map('map').setView([{{ $tinHuuWithLocations[0]->vi_do }}, {{ $tinHuuWithLocations[0]->kinh_do }}], 13);
+            @if($tinHuuWithLocations->isNotEmpty())
+                    if ($('#map').length) {
+                        var map = L.map('map').setView([{{ $tinHuuWithLocations[0]->vi_do }}, {{ $tinHuuWithLocations[0]->kinh_do }}], 13);
 
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    }).addTo(map);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        }).addTo(map);
 
-                    @foreach($tinHuuWithLocations as $tinHuu)
-                        L.marker([{{ $tinHuu->vi_do }}, {{ $tinHuu->kinh_do }}])
-                            .addTo(map)
-                            .bindPopup("<b>{{ $tinHuu->ho_ten }}</b><br>{{ $tinHuu->dia_chi }}<br><a href='https://www.google.com/maps/dir/?api=1&destination={{ $tinHuu->vi_do }},{{ $tinHuu->kinh_do }}' target='_blank'>Chỉ đường</a>");
-                    @endforeach
-                                                                        }
-            @else
-                                                                        if ($('#map').length) {
-                    document.getElementById('map').innerHTML = '<div class="text-center p-3"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Không có dữ liệu tọa độ của tín hữu.</p></div>';
+                        @foreach($tinHuuWithLocations as $tinHuu)
+                            L.marker([{{ $tinHuu->vi_do }}, {{ $tinHuu->kinh_do }}])
+                                .addTo(map)
+                                .bindPopup("<b>{{ $tinHuu->ho_ten }}</b><br>{{ $tinHuu->dia_chi }}<br><a href='https://www.google.com/maps/dir/?api=1&destination={{ $tinHuu->vi_do }},{{ $tinHuu->kinh_do }}' target='_blank'>Chỉ đường</a>");
+                        @endforeach
                 }
+            @else
+                if ($('#map').length) {
+                        document.getElementById('map').innerHTML = '<div class="text-center p-3"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Không có dữ liệu tọa độ của tín hữu.</p></div>';
+                    }
             @endif
 
-                                    // Khởi tạo biểu đồ thống kê
-                                    if ($('#visitChart').length) {
+                                        // Khởi tạo biểu đồ thống kê
+                                        if ($('#visitChart').length) {
                 var ctx = document.getElementById('visitChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'bar',
@@ -429,20 +429,20 @@
                                 if (response.data.length > 0) {
                                     $.each(response.data, function (index, item) {
                                         $('#lich-su-table-body').append(`
-                                                                    <tr>
-                                                                        <td>${item.ngay_tham_formatted}</td>
-                                                                        <td>${item.tin_huu_name || 'N/A'}</td>
-                                                                        <td>${item.nguoi_tham_name || 'N/A'}</td>
-                                                                        <td>
-                                                                            <button type="button" class="btn btn-sm btn-info btn-xem-chi-tiet" 
-                                                                                data-id="${item.id}"
-                                                                                data-toggle="modal" 
-                                                                                data-target="#modal-chi-tiet-tham-vieng">
-                                                                                <i class="fas fa-eye"></i> Chi tiết
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                `);
+                                                                        <tr>
+                                                                            <td>${item.ngay_tham_formatted}</td>
+                                                                            <td>${item.tin_huu_name || 'N/A'}</td>
+                                                                            <td>${item.nguoi_tham_name || 'N/A'}</td>
+                                                                            <td>
+                                                                                <button type="button" class="btn btn-sm btn-info btn-xem-chi-tiet" 
+                                                                                    data-id="${item.id}"
+                                                                                    data-toggle="modal" 
+                                                                                    data-target="#modal-chi-tiet-tham-vieng">
+                                                                                    <i class="fas fa-eye"></i> Chi tiết
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    `);
                                     });
                                 } else {
                                     $('#lich-su-table-body').append('<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>');
@@ -522,26 +522,26 @@
                                         var hasCoordinates = item.vi_do && item.kinh_do;
 
                                         $('#de-xuat-table-body').append(`
-                                                                    <tr>
-                                                                        <td>${item.ho_ten}</td>
-                                                                        <td>${item.so_dien_thoai || 'N/A'}</td>
-                                                                        <td>${lastVisit}</td>
-                                                                        <td>
-                                                                            <div class="btn-group">
-                                                                                <button type="button" class="btn btn-sm btn-info btn-them-tham-vieng" 
-                                                                                    data-id="${item.id}" data-ten="${item.ho_ten}"
-                                                                                    data-toggle="modal" data-target="#modal-them-tham-vieng">
-                                                                                    <i class="fas fa-plus"></i> Thăm
-                                                                                </button>
-                                                                                <a href="https://www.google.com/maps/dir/?api=1&destination=${item.vi_do || ''},${item.kinh_do || ''}" 
-                                                                                    class="btn btn-sm btn-success ${!hasCoordinates ? 'disabled' : ''}" 
-                                                                                    target="_blank">
-                                                                                    <i class="fas fa-map-marker-alt"></i> Chỉ đường
-                                                                                </a>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                `);
+                                                                        <tr>
+                                                                            <td>${item.ho_ten}</td>
+                                                                            <td>${item.so_dien_thoai || 'N/A'}</td>
+                                                                            <td>${lastVisit}</td>
+                                                                            <td>
+                                                                                <div class="btn-group">
+                                                                                    <button type="button" class="btn btn-sm btn-info btn-them-tham-vieng" 
+                                                                                        data-id="${item.id}" data-ten="${item.ho_ten}"
+                                                                                        data-toggle="modal" data-target="#modal-them-tham-vieng">
+                                                                                        <i class="fas fa-plus"></i> Thăm
+                                                                                    </button>
+                                                                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${item.vi_do || ''},${item.kinh_do || ''}" 
+                                                                                        class="btn btn-sm btn-success ${!hasCoordinates ? 'disabled' : ''}" 
+                                                                                        target="_blank">
+                                                                                        <i class="fas fa-map-marker-alt"></i> Chỉ đường
+                                                                                    </a>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    `);
                                     });
                                 } else {
                                     $('#de-xuat-table-body').append('<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>');

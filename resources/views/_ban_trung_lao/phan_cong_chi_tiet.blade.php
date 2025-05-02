@@ -354,4 +354,4 @@
     </div>
 @endsection
 
-@include('scripts.ban_trung_lao.phan_cong_chi_tiet')
+@include('_ban_trung_lao.scripts._scripts_phan_cong_chi_tiet')

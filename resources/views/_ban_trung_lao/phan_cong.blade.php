@@ -218,5 +218,4 @@
     </section>
 @endsection
 
-
-@include('scripts.ban_trung_lao.phan_cong')
+@include('_ban_trung_lao.scripts._scripts_phan_cong')

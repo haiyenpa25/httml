@@ -403,6 +403,4 @@
     </div>
 @endsection
 
-
-
-@include('scripts.ban_trung_lao.ban_trung_lao_tham_vieng')
+@include('_ban_trung_lao.scripts._scripts_tham_vieng')

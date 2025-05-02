@@ -71,6 +71,9 @@ class BanTrungLaoThamViengController extends Controller
     /**
      * Tạo thống kê thăm viếng
      */
+    /**
+     * Tạo thống kê thăm viếng
+     */
     private function getThongKeThamVieng($banNganhId)
     {
         $thongKe = [
@@ -80,28 +83,27 @@ class BanTrungLaoThamViengController extends Controller
             'counts' => []
         ];
 
+        // Tổng số lần thăm
         $thongKe['total_visits'] = ThamVieng::where('id_ban', $banNganhId)
             ->where('trang_thai', 'da_tham')
             ->count();
 
-        $monthlyStats = ThamVieng::selectRaw('MONTH(ngay_tham) as month, YEAR(ngay_tham) as year, COUNT(*) as count')
-            ->where('id_ban', $banNganhId)
+        // Số lần thăm trong tháng hiện tại
+        $thongKe['this_month'] = ThamVieng::where('id_ban', $banNganhId)
             ->where('trang_thai', 'da_tham')
-            ->whereBetween('ngay_tham', [Carbon::now()->subMonths(5), Carbon::now()])
-            ->groupBy('month', 'year')
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
-            ->get();
+            ->whereMonth('ngay_tham', Carbon::now()->month)
+            ->whereYear('ngay_tham', Carbon::now()->year)
+            ->count();
 
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
-        $thongKe['this_month'] = $monthlyStats->firstWhere('month', $currentMonth)
-            ?->where('year', $currentYear)->count ?? 0;
-
+        // Thống kê 6 tháng gần nhất
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $count = $monthlyStats->firstWhere('month', $month->month)
-                ?->where('year', $month->year)->count ?? 0;
+            $count = ThamVieng::where('id_ban', $banNganhId)
+                ->where('trang_thai', 'da_tham')
+                ->whereMonth('ngay_tham', $month->month)
+                ->whereYear('ngay_tham', $month->year)
+                ->count();
+
             $thongKe['months'][] = $month->format('m/Y');
             $thongKe['counts'][] = $count;
         }

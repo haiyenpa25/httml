@@ -223,13 +223,90 @@
                 </li>
 
                 <!-- Quản lý Tài Chính -->
-                <li class="nav-item">
-                    <a href="{{ route('_tai_chinh.bao_cao') }}"
-                        class="nav-link {{ request()->routeIs('_tai_chinh.*') ? 'active' : '' }}">
-                        <i class="nav-icon fas fa-money-bill"></i>
-                        <p>Tài Chính</p>
-                    </a>
-                </li>
+                <!-- Quản lý Thủ Quỹ -->
+                @if (Auth::check() && Auth::user()->vai_tro === 'quan_tri')
+                            <li class="nav-item has-treeview {{ request()->routeIs('_thu_quy.*') ? 'menu-open' : '' }}">
+                                <a href="#" class="nav-link {{ request()->routeIs('_thu_quy.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-money-bill-wave"></i>
+                                    <p>
+                                        Quản lý Thủ Quỹ
+                                        <i class="fas fa-angle-left right"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('_thu_quy.dashboard') }}"
+                                            class="nav-link {{ request()->routeIs('_thu_quy.dashboard') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Dashboard</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        @if (Route::has('_thu_quy.quy.index'))
+                                            <a href="{{ route('_thu_quy.quy.index') }}"
+                                                class="nav-link {{ request()->routeIs('_thu_quy.quy.*') ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Quản lý Quỹ</p>
+                                            </a>
+                                        @endif
+                                    </li>
+                                    <li class="nav-item">
+                                        @if (Route::has('_thu_quy.giao_dich.index'))
+                                            <a href="{{ route('_thu_quy.giao_dich.index') }}"
+                                                class="nav-link {{ request()->routeIs('_thu_quy.giao_dich.*') ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Giao dịch</p>
+                                            </a>
+                                        @endif
+                                    </li>
+                                    <li class="nav-item">
+                                        @if (Route::has('_thu_quy.chi_dinh_ky.index'))
+                                            <a href="{{ route('_thu_quy.chi_dinh_ky.index') }}"
+                                                class="nav-link {{ request()->routeIs('_thu_quy.chi_dinh_ky.*') ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Chi định kỳ</p>
+                                            </a>
+                                        @endif
+                                    </li>
+                                    <li class="nav-item">
+                                        @if (Route::has('_thu_quy.bao_cao.index'))
+                                            <a href="{{ route('_thu_quy.bao_cao.index') }}"
+                                                class="nav-link {{ request()->routeIs('_thu_quy.bao_cao.*') ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Báo cáo</p>
+                                            </a>
+                                        @endif
+                                    </li>
+                                    <li class="nav-item">
+                                        @if (Route::has('_thu_quy.lich_su.index'))
+                                            <a href="{{ route('_thu_quy.lich_su.index') }}"
+                                                class="nav-link {{ request()->routeIs('_thu_quy.lich_su.*') ? 'active' : '' }}">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>Lịch sử thao tác</p>
+                                            </a>
+                                        @endif
+                                    </li>
+                                    <li class="nav-item">
+                                        @if (Route::has('_thu_quy.thong_bao.index'))
+                                                                <a href="{{ route('_thu_quy.thong_bao.index') }}"
+                                                                    class="nav-link {{ request()->routeIs('_thu_quy.thong_bao.*') ? 'active' : '' }}">
+                                                                    <i class="far fa-circle nav-icon"></i>
+                                                                    <p>Thông báo</p>
+                                                                    @php
+                                                                        $thongBaoChuaDoc = Auth::check() ?
+                                                                            \App\Models\ThongBaoTaiChinh::where('nguoi_nhan_id', Auth::id())
+                                                                                ->where('da_doc', false)
+                                                                                ->count() : 0;
+                                                                    @endphp
+                                                                    @if($thongBaoChuaDoc > 0)
+                                                                        <span class="badge badge-warning right">{{ $thongBaoChuaDoc }}</span>
+                                                                    @endif
+                                                                </a>
+                                        @endif
+                                    </li>
+                                </ul>
+                            </li>
+                @endif
 
                 <!-- Quản lý Thờ Phượng -->
                 <li class="nav-item">
@@ -258,10 +335,10 @@
                         <p>
                             Thông báo
                             @php
-                            $thongBaoChuaDoc = Auth::check() ? 
-                                \App\Models\ThongBao::where('nguoi_nhan_id', Auth::id())
-                                ->where('da_doc', false)
-                                ->count() : 0;
+                                $thongBaoChuaDoc = Auth::check() ?
+                                    \App\Models\ThongBao::where('nguoi_nhan_id', Auth::id())
+                                        ->where('da_doc', false)
+                                        ->count() : 0;
                             @endphp
                             @if($thongBaoChuaDoc > 0)
                                 <span class="badge badge-warning right">{{ $thongBaoChuaDoc }}</span>
@@ -271,13 +348,15 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('thong-bao.index') }}" class="nav-link {{ Request::is('thong-bao') ? 'active' : '' }}">
+                            <a href="{{ route('thong-bao.index') }}"
+                                class="nav-link {{ Request::is('thong-bao') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Tổng quan</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('thong-bao.inbox') }}" class="nav-link {{ Request::is('thong-bao/inbox') ? 'active' : '' }}">
+                            <a href="{{ route('thong-bao.inbox') }}"
+                                class="nav-link {{ Request::is('thong-bao/inbox') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>
                                     Hộp thư đến
@@ -288,19 +367,22 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('thong-bao.sent') }}" class="nav-link {{ Request::is('thong-bao/sent') ? 'active' : '' }}">
+                            <a href="{{ route('thong-bao.sent') }}"
+                                class="nav-link {{ Request::is('thong-bao/sent') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Đã gửi</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('thong-bao.archived') }}" class="nav-link {{ Request::is('thong-bao/archived') ? 'active' : '' }}">
+                            <a href="{{ route('thong-bao.archived') }}"
+                                class="nav-link {{ Request::is('thong-bao/archived') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Lưu trữ</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('thong-bao.create') }}" class="nav-link {{ Request::is('thong-bao/create') ? 'active' : '' }}">
+                            <a href="{{ route('thong-bao.create') }}"
+                                class="nav-link {{ Request::is('thong-bao/create') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Soạn thông báo</p>
                             </a>

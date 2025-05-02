@@ -1,9 +1,5 @@
 @section('page-styles')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
-    <!-- Select2 CSS -->
+    <!-- CSS tùy chỉnh -->
     <style>
         /* Select2 adjustments for better mobile compatibility */
         .select2-container--bootstrap4 .select2-selection__rendered {
@@ -192,6 +188,37 @@
             padding: 20px;
         }
 
+        /* Tùy chỉnh nút mở rộng của DataTables Responsive */
+        table.dataTable.dtr-inline.collapsed>tbody>tr>td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed>tbody>tr>th.dtr-control:before {
+            top: 50%;
+            left: 5px;
+            height: 1em;
+            width: 1em;
+            margin-top: -9px;
+            display: block;
+            position: absolute;
+            color: white;
+            border: 0.15em solid white;
+            border-radius: 1em;
+            box-shadow: 0 0 0.2em #444;
+            box-sizing: content-box;
+            text-align: center;
+            text-indent: 0 !important;
+            font-family: "Courier New", Courier, monospace;
+            line-height: 1em;
+            content: "+";
+            background-color: #0275d8;
+        }
+
+        table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td.dtr-control:before,
+        table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th.dtr-control:before {
+            content: '−';
+            color: white;
+            background-color: #dc3545;
+            border: 0.15em solid white;
+        }
+
         /* Responsive adjustments */
         @media (max-width: 767px) {
             .content-header h1 {
@@ -280,7 +307,6 @@
 @endsection
 
 @section('page-scripts')
-    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
     <script>
         // Biến toàn cục để theo dõi trạng thái khởi tạo DataTable
         if (typeof window.isDataTableInitialized === 'undefined') {
@@ -297,7 +323,7 @@
             // Đánh dấu rằng script đã được khởi tạo
             window.isDataTableInitialized = true;
 
-            // Khởi tạo Select2 (hợp nhất từ phần 1 và phần 2)
+            // Khởi tạo Select2
             if ($('.select2bs4').length) {
                 $('.select2bs4').each(function () {
                     const $select = $(this);
@@ -314,16 +340,19 @@
                 });
             }
 
-            // Hàm khởi tạo DataTable
+            // Hàm khởi tạo DataTable với kiểm tra tồn tại của table
             function initializeDataTable(tableId, ajaxUrl, columns, filterData) {
+                // Kiểm tra xem table element có tồn tại trong DOM không
                 if (!$(tableId).length) {
                     console.warn(`Table element ${tableId} not found in DOM. Skipping DataTable initialization.`);
                     return null;
                 }
 
+                // Kiểm tra và hủy DataTable nếu đã tồn tại
                 if ($.fn.DataTable.isDataTable(tableId)) {
                     try {
                         $(tableId).DataTable().destroy();
+                        // Xóa nội dung của table để đảm bảo không còn tham chiếu cũ
                         $(tableId).empty();
                     } catch (e) {
                         console.error(`Error destroying DataTable for ${tableId}:`, e);
@@ -360,7 +389,7 @@
             // Khởi tạo DataTable cho Ban Điều Hành
             let tableDieuHanh = initializeDataTable(
                 '#ban-dieu-hanh-table',
-                "{{ route('api.ban_trung_lao.dieu_hanh_list') }}",
+                "{{ route('api.ban_muc_vu.dieu_hanh_list', ['ban_nganh_id' => $ban_nganh_id]) }}",
                 [
                     {
                         data: null,
@@ -373,21 +402,28 @@
                     {
                         data: null,
                         render: function (data, type, row) {
+                            // Ensure chuc_vu is a string to avoid null issues
                             const chucVu = row.chuc_vu || '';
                             return `
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                                data-toggle="modal" data-target="#modal-edit-chuc-vu"
-                                                                data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
-                                                                data-ten="${row.ho_ten}" data-chucvu="${chucVu}">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                                data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
-                                                                data-ten="${row.ho_ten}">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>`;
+                                        <div class="btn-group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                    data-toggle="modal" 
+                                                    data-target="#modal-edit-chuc-vu"
+                                                    data-id="${row.tin_huu_id}" 
+                                                    data-ban-id="{{ $ban_nganh_id }}"
+                                                    data-ten="${row.ho_ten}" 
+                                                    data-chucvu="${chucVu}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                    data-id="${row.tin_huu_id}" 
+                                                    data-ban-id="{{ $ban_nganh_id }}"
+                                                    data-ten="${row.ho_ten}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>`;
                         }
                     }
                 ],
@@ -400,7 +436,7 @@
             // Khởi tạo DataTable cho Ban Viên
             let tableBanVien = initializeDataTable(
                 '#ban-vien-table',
-                "{{ route('api.ban_trung_lao.ban_vien_list') }}",
+                "{{ route('api.ban_muc_vu.ban_vien_list', ['ban_nganh_id' => $ban_nganh_id]) }}",
                 [
                     {
                         data: null,
@@ -414,21 +450,28 @@
                     {
                         data: null,
                         render: function (data, type, row) {
+                            // Ensure chuc_vu is a string to avoid null issues
                             const chucVu = row.chuc_vu || '';
                             return `
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                                data-toggle="modal" data-target="#modal-edit-chuc-vu"
-                                                                data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
-                                                                data-ten="${row.ho_ten}" data-chucvu="${chucVu}">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                                data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
-                                                                data-ten="${row.ho_ten}">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>`;
+                                        <div class="btn-group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                    data-toggle="modal" 
+                                                    data-target="#modal-edit-chuc-vu"
+                                                    data-id="${row.tin_huu_id}" 
+                                                    data-ban-id="{{ $ban_nganh_id }}"
+                                                    data-ten="${row.ho_ten}" 
+                                                    data-chucvu="${chucVu}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                    data-id="${row.tin_huu_id}" 
+                                                    data-ban-id="{{ $ban_nganh_id }}"
+                                                    data-ten="${row.ho_ten}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>`;
                         }
                     }
                 ],
@@ -497,7 +540,7 @@
                 $.ajax({
                     url: $(this).attr('action'),
                     method: 'POST',
-                    data: $(this).serialize() + '&_method=PUT',
+                    data: $(this).serialize(),
                     dataType: 'json'
                 })
                     .done(response => {
@@ -533,7 +576,7 @@
                 console.log('Dữ liệu gửi đi để xóa:', data);
 
                 $.ajax({
-                    url: "{{ route('api.ban_trung_lao.xoa_thanh_vien') }}",
+                    url: "{{ route('api.ban_muc_vu.xoa_thanh_vien') }}",
                     method: 'POST',
                     data: data,
                     dataType: 'json'
@@ -623,142 +666,12 @@
                 };
             }
 
-            // Xử lý form điểm danh (từ view)
-            if ($('#attendance-form').length) {
-                $('#attendance-form').on('submit', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Form điểm danh submitted via AJAX');
+            // Xử lý TurboLinks nếu có
+            document.addEventListener('turbolinks:load', function () {
+                window.isDataTableInitialized = false;
+                $(document).ready();
+            });
 
-                    $.ajax({
-                        url: $(this).attr('action'),
-                        method: 'POST',
-                        data: $(this).serialize(),
-                        dataType: 'json',
-                        beforeSend: function () {
-                            console.log('Sending AJAX request for điểm danh...');
-                            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
-                        },
-                        success: function (response) {
-                            console.log('Success response:', response);
-                            if (response.success) {
-                                toastr.success('Đã lưu điểm danh thành công!');
-                                setTimeout(() => location.reload(), 1000);
-                            } else {
-                                toastr.error('Lỗi: ' + response.message);
-                            }
-                        },
-                        error: function (xhr) {
-                            console.log('Error response:', xhr.responseText, xhr.status);
-                            const errors = xhr.responseJSON ? xhr.responseJSON.errors : null;
-                            let errorMsg = 'Lỗi:\n';
-                            if (errors) {
-                                $.each(errors, function (key, value) {
-                                    errorMsg += `- ${value.join('\n')}\n`;
-                                });
-                            } else {
-                                errorMsg += xhr.responseText;
-                            }
-                            toastr.error(errorMsg);
-                        },
-                        complete: function () {
-                            console.log('AJAX request completed');
-                            $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Lưu điểm danh');
-                        }
-                    });
-                });
-            }
-
-            // Xử lý form thêm buổi nhóm (từ view)
-            if ($('#add-buoi-nhom-form').length) {
-                $('#add-buoi-nhom-form').on('submit', function (e) {
-                    e.preventDefault();
-                    console.log('Form thêm buổi nhóm submitted via AJAX');
-
-                    $.ajax({
-                        url: $(this).attr('action'),
-                        method: 'POST',
-                        data: $(this).serialize(),
-                        dataType: 'json',
-                        success: function (response) {
-                            console.log('Success response:', response);
-                            if (response.success) {
-                                $('#modal-them-buoi-nhom').modal('hide');
-                                toastr.success('Buổi nhóm đã được tạo thành công!');
-                                setTimeout(() => location.reload(), 1000);
-                            } else {
-                                toastr.error('Lỗi: ' + response.message);
-                            }
-                        },
-                        error: function (xhr) {
-                            console.log('Error response:', xhr.responseText, xhr.status);
-                            const errors = xhr.responseJSON ? xhr.responseJSON.errors : null;
-                            let errorMsg = 'Lỗi:\n';
-                            if (errors) {
-                                $.each(errors, function (key, value) {
-                                    errorMsg += `- ${value.join('\n')}\n`;
-                                });
-                            } else {
-                                errorMsg += xhr.responseText;
-                            }
-                            toastr.error(errorMsg);
-                        }
-                    });
-                });
-            }
-
-            // Xử lý thay đổi buổi nhóm (từ view)
-            if ($('#buoi-nhom-select').length) {
-                $('#buoi-nhom-select').on('change', function () {
-                    console.log('Buổi nhóm selected, submitting filter form');
-                    $('#filter-form').submit();
-                });
-            }
-
-            // Xử lý thay đổi màu dòng theo trạng thái điểm danh (từ view)
-            if ($('.attendance-status').length) {
-                $('.attendance-status').on('change', function () {
-                    const status = $(this).val();
-                    const row = $(this).closest('tr');
-                    row.removeClass('table-success table-danger table-warning');
-                    if (status === 'co_mat') {
-                        row.addClass('table-success');
-                    } else if (status === 'vang_mat') {
-                        row.addClass('table-danger');
-                    } else if (status === 'vang_co_phep') {
-                        row.addClass('table-warning');
-                    }
-                });
-                $('.attendance-status').trigger('change');
-            }
-
-            // Khởi tạo biểu đồ PieChart (từ view)
-            @if($selectedBuoiNhom && isset($stats))
-                if ($('#pieChart').length) {
-                    var pieChartCanvas = $('#pieChart').get(0).getContext('2d');
-                    var pieData = {
-                        labels: ['Có mặt', 'Vắng mặt', 'Vắng có phép'],
-                        datasets: [{
-                            data: [{{ $stats['co_mat'] }}, {{ $stats['vang_mat'] }}, {{ $stats['vang_co_phep'] }}],
-                            backgroundColor: ['#28a745', '#dc3545', '#ffc107']
-                        }]
-                    };
-                    var pieOptions = {
-                        legend: {
-                            display: false
-                        },
-                        maintainAspectRatio: false,
-                        responsive: true,
-                    };
-                    new Chart(pieChartCanvas, {
-                        type: 'pie',
-                        data: pieData,
-                        options: pieOptions
-                    });
-                }
-            @endif
-
-            // Xử lý nút xóa thành viên
             $(document).on('click', '.btn-xoa-thanh-vien', function () {
                 const id = $(this).data('id');
                 const banId = $(this).data('ban-id');
@@ -767,12 +680,6 @@
                 $('#delete_ban_nganh_id').val(banId);
                 $('#delete_ten_tin_huu').text(ten);
                 $('#modal-xoa-thanh-vien').modal('show');
-            });
-
-            // Xử lý TurboLinks nếu có
-            document.addEventListener('turbolinks:load', function () {
-                window.isDataTableInitialized = false;
-                $(document).ready();
             });
         });
     </script>
