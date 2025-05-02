@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\PDF;
 use Yajra\DataTables\Facades\DataTables;
 
+
 class BaoCaoTaiChinhController extends ThuQuyController
 {
     /**
