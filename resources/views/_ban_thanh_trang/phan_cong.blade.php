@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Phân Công Buổi Nhóm - Ban Trung Lão')
+@section('title', 'Phân Công Buổi Nhóm - Ban Thanh Tráng')
 
 @section('content')
     <section class="content">
@@ -26,13 +26,13 @@
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
             <!-- Thanh điều hướng nhanh -->
-            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
+            @include('_ban_thanh_trang.partials._navigation')
 
 
             <!-- Thêm thành viên modal -->
             <div class="card card-primary card-outline">
                 <div class="card-header">
-                    <form action="{{ route('_ban_trung_lao.phan_cong') }}" method="GET">
+                    <form action="{{ route('_ban_thanh_trang.phan_cong') }}" method="GET">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -115,8 +115,8 @@
                         Chỉnh sửa Buổi Nhóm
                     </h3>
                 </div>
-                <form id="buoi-nhom-form" action="{{ route('api.ban_trung_lao.update_buoi_nhom', ['buoiNhom' => ':id']) }}"
-                    method="POST">
+                <form id="buoi-nhom-form"
+                    action="{{ route('api.ban_thanh_trang.update_buoi_nhom', ['buoiNhom' => ':id']) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="id" id="buoi-nhom-id">
@@ -179,4 +179,4 @@
     </section>
 @endsection
 
-@include('_ban_trung_lao.scripts._scripts_phan_cong')
+@include('_ban_thanh_trang.scripts._scripts_phan_cong')

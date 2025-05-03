@@ -25,6 +25,8 @@
 <!-- Toastr notifications -->
 <script src="{{ asset('plugins/toastr/toastr.min.js') }}"></script>
 
+<script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
+
 <!-- CSRF setup cho Ajax -->
 <script>
   $.ajaxSetup({

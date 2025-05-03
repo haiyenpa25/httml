@@ -1,5 +1,5 @@
-{{-- Partial cho thanh điều hướng nhanh của Ban Trung Lão --}}
-{{-- File được lưu tại: resources/views/partials/_ban_trung_lao_navigation.blade.php --}}
+{{-- Partial cho thanh điều hướng nhanh của Ban Thanh Tráng --}}
+{{-- File được lưu tại: resources/views/partials/_ban_thanh_trang_navigation.blade.php --}}
 
 <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
 <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
@@ -7,29 +7,29 @@
 <div class="action-buttons-container">
     <!-- Hàng 1: Chức năng điều hướng chính -->
     <div class="button-row">
-        <a href="{{ route('_ban_trung_lao.index') }}" class="action-btn btn-primary-custom">
+        <a href="{{ route('_ban_thanh_trang.index') }}" class="action-btn btn-primary-custom">
             <i class="fas fa-home"></i> Trang chính
         </a>
-        <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="action-btn btn-success-custom">
+        <a href="{{ route('_ban_thanh_trang.diem_danh') }}" class="action-btn btn-success-custom">
             <i class="fas fa-clipboard-check"></i> Điểm danh
         </a>
-        <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="action-btn btn-info-custom">
+        <a href="{{ route('_ban_thanh_trang.tham_vieng') }}" class="action-btn btn-info-custom">
             <i class="fas fa-user-friends"></i> Thăm viếng
         </a>
-        <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="action-btn btn-warning-custom">
+        <a href="{{ route('_ban_thanh_trang.phan_cong') }}" class="action-btn btn-warning-custom">
             <i class="fas fa-tasks"></i> Phân công
         </a>
     </div>
 
     <!-- Hàng 2: Chức năng phân công và báo cáo -->
     <div class="button-row">
-        <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
+        <a href="{{ route('_ban_thanh_trang.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
             <i class="fas fa-clipboard-list"></i> Chi tiết PC
         </a>
-        <a href="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
+        <a href="{{ route('_ban_thanh_trang.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
             <i class="fas fa-file-alt"></i> Nhập báo cáo
         </a>
-        <a href="{{ route('_bao_cao.ban_trung_lao') }}" class="action-btn btn-success-custom">
+        <a href="{{ route('_bao_cao.ban_thanh_trang') }}" class="action-btn btn-success-custom">
             <i class="fas fa-file-alt"></i> Báo cáo
         </a>
         <button type="button" class="action-btn btn-success-custom" data-toggle="modal"

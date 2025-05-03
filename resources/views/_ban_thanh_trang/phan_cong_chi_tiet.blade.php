@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Phân Công Chi Tiết - Ban Trung Lão')
+@section('title', 'Phân Công Chi Tiết - Ban Thanh Tráng')
 
 @section('content')
     <section class="content">
@@ -26,7 +26,7 @@
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
             <!-- Thanh điều hướng nhanh -->
-            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
+            @include('_ban_thanh_trang.partials._navigation')
 
             <!-- Filter Form -->
             <div class="card card-primary card-outline">
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" method="GET" id="filter-form">
+                    <form action="{{ route('_ban_thanh_trang.phan_cong_chi_tiet') }}" method="GET" id="filter-form">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -83,7 +83,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search"></i> Tìm kiếm
                                 </button>
-                                <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="btn btn-default">
+                                <a href="{{ route('_ban_thanh_trang.phan_cong_chi_tiet') }}" class="btn btn-default">
                                     <i class="fas fa-sync"></i> Làm mới
                                 </a>
                             </div>
@@ -221,7 +221,7 @@
                 <div class="card-header">
                     <h3 class="card-title">
                         <i class="fas fa-users"></i>
-                        Danh sách thành viên Ban Trung Lão
+                        Danh sách thành viên Ban Thanh Tráng
                     </h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -273,7 +273,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form id="form-phan-cong" action="{{ route('api.ban_trung_lao.phan_cong_nhiem_vu') }}" method="POST">
+                <form id="form-phan-cong" action="{{ route('api.ban_thanh_trang.phan_cong_nhiem_vu') }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" id="phan-cong-id">
                     <input type="hidden" name="buoi_nhom_id" value="{{ $selectedBuoiNhom }}">
@@ -315,4 +315,4 @@
     </div>
 @endsection
 
-@include('_ban_trung_lao.scripts._scripts_phan_cong_chi_tiet')
+@include('_ban_thanh_trang.scripts._scripts_phan_cong_chi_tiet')

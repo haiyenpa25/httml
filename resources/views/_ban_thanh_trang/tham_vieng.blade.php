@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Thăm Viếng - Ban Trung Lão')
+@section('title', 'Thăm Viếng - Ban Thanh Tráng')
 
 @section('content')
     <section class="content">
@@ -26,7 +26,7 @@
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
             <!-- Thanh điều hướng nhanh -->
-            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
+            @include('_ban_thanh_trang.partials._navigation')
 
             <div class="row">
                 <!-- Cột trái: Danh sách đề xuất thăm viếng -->
@@ -247,7 +247,7 @@
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <form action="{{ route('api.ban_trung_lao.them_tham_vieng') }}" method="POST" id="form-them-tham-vieng">
+                <form action="{{ route('api.ban_thanh_trang.them_tham_vieng') }}" method="POST" id="form-them-tham-vieng">
                     @csrf
                     <div class="modal-body">
                         <!-- Tín hữu được thăm -->
@@ -266,7 +266,7 @@
                             <label>Người thăm <span class="text-danger">*</span></label>
                             <select class="form-control select2bs4" name="nguoi_tham_id" required>
                                 <option value="">-- Chọn người thăm --</option>
-                                @foreach($thanhVienBanTrungLao as $thanhVien)
+                                @foreach($thanhVienBanThanhTrang as $thanhVien)
                                     <option value="{{ $thanhVien->tinHuu->id }}">{{ $thanhVien->tinHuu->ho_ten }}</option>
                                 @endforeach
                             </select>
@@ -302,7 +302,7 @@
                             </select>
                         </div>
 
-                        <input type="hidden" name="id_ban" value="{{ $banTrungLao->id }}">
+                        <input type="hidden" name="id_ban" value="{{ $banThanhTrang->id }}">
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
@@ -364,4 +364,4 @@
     </div>
 @endsection
 
-@include('_ban_trung_lao.scripts._scripts_tham_vieng')
+@include('_ban_thanh_trang.scripts._scripts_tham_vieng')

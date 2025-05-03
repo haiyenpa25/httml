@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Điểm Danh - Ban Trung Lão')
+@section('title', 'Điểm Danh - Ban Thanh Tráng')
 
 @section('content')
     <section class="content">
@@ -26,7 +26,7 @@
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
             <!-- Thanh điều hướng nhanh -->
-            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
+            @include('_ban_thanh_trang.partials._navigation')
 
             <!-- Filter Form -->
             <div class="card card-primary card-outline">
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('_ban_trung_lao.diem_danh') }}" method="GET" id="filter-form">
+                    <form action="{{ route('_ban_thanh_trang.diem_danh') }}" method="GET" id="filter-form">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -83,7 +83,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search"></i> Tìm kiếm
                                 </button>
-                                <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="btn btn-default">
+                                <a href="{{ route('_ban_thanh_trang.diem_danh') }}" class="btn btn-default">
                                     <i class="fas fa-sync"></i> Làm mới
                                 </a>
                             </div>
@@ -156,7 +156,7 @@
 
                 <div class="card-body">
                     @if($selectedBuoiNhom)
-                        <form id="attendance-form" action="{{ route('api.ban_trung_lao.luu_diem_danh') }}" method="POST">
+                        <form id="attendance-form" action="{{ route('api.ban_thanh_trang.luu_diem_danh') }}" method="POST">
                             @csrf
                             <input type="hidden" name="buoi_nhom_id" value="{{ $selectedBuoiNhom }}">
 
@@ -275,9 +275,9 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form action="{{ route('api.ban_trung_lao.them_buoi_nhom') }}" method="POST" id="add-buoi-nhom-form">
+                <form action="{{ route('api.ban_thanh_trang.them_buoi_nhom') }}" method="POST" id="add-buoi-nhom-form">
                     @csrf
-                    <input type="hidden" name="ban_nganh_id" value="{{ $banTrungLao->id }}">
+                    <input type="hidden" name="ban_nganh_id" value="{{ $banThanhTrang->id }}">
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Ngày tổ chức <span class="text-danger">*</span></label>
@@ -333,4 +333,4 @@
     </div>
 @endsection
 
-@include('_ban_trung_lao.scripts._scripts_diem_danh')
+@include('_ban_thanh_trang.scripts._scripts_diem_danh')

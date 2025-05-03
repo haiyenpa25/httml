@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nhập liệu Báo Cáo Ban Trung Lão')
+@section('title', 'Nhập liệu Báo Cáo Ban Thanh Tráng')
 
 @section('content')
     <section class="content-header">
@@ -26,17 +26,17 @@
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
             <!-- Thanh điều hướng nhanh -->
-            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
+            @include('_ban_thanh_trang.partials._ban_thanh_trang_navigation')
 
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Nhập liệu Báo Cáo Ban Trung Lão</h1>
+                    <h1>Nhập liệu Báo Cáo Ban Thanh Tráng</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item"><a href="#">Báo Cáo</a></li>
-                        <li class="breadcrumb-item active">Nhập liệu Ban Trung Lão</li>
+                        <li class="breadcrumb-item active">Nhập liệu Ban Thanh Tráng</li>
                     </ol>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="filter-form" method="GET" action="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}">
+                    <form id="filter-form" method="GET" action="{{ route('_ban_thanh_trang.nhap_lieu_bao_cao') }}">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -86,7 +86,7 @@
                                 <div class="form-group">
                                     <label for="buoi_nhom_type">Buổi nhóm:</label>
                                     <select id="buoi_nhom_type" name="buoi_nhom_type" class="form-control">
-                                        <option value="1" {{ isset($buoiNhomType) && $buoiNhomType == 1 ? 'selected' : '' }}>Ban Trung Lão (Nhóm tối thứ 7)</option>
+                                        <option value="1" {{ isset($buoiNhomType) && $buoiNhomType == 1 ? 'selected' : '' }}>Ban Thanh Tráng (Nhóm tối thứ 7)</option>
                                         <option value="13" {{ isset($buoiNhomType) && $buoiNhomType == 13 ? 'selected' : '' }}>Hội Thánh (Nhóm Chúa Nhật)</option>
                                     </select>
                                 </div>
@@ -133,7 +133,7 @@
                         <!-- Tab: Số lượng tham dự -->
                         <div class="tab-pane fade show active" id="buoinhom" role="tabpanel">
                             <!-- Form cho số lượng tham dự -->
-                            <form id="thamdu-form" method="POST" action="{{ route('_ban_trung_lao.save_thamdu_trung_lao') }}">
+                            <form id="thamdu-form" method="POST" action="{{ route('_ban_thanh_trang.save_thamdu_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
@@ -205,12 +205,12 @@
                                     </div>
                                 @endif
 
-                                <!-- Nhóm tối thứ 7 (nếu đang ở tab Ban Trung Lão) -->
+                                <!-- Nhóm tối thứ 7 (nếu đang ở tab Ban Thanh Tráng) -->
                                 @if ($buoiNhomType == 1)
                                     <div class="card card-primary card-outline">
                                         <div class="card-header">
                                             <h3 class="card-title">
-                                                <i class="fas fa-users"></i> Nhóm tối thứ 7 (Ban Trung Lão)
+                                                <i class="fas fa-users"></i> Nhóm tối thứ 7 (Ban Thanh Tráng)
                                             </h3>
                                             <div class="card-tools">
                                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -404,7 +404,7 @@
 
                         <!-- Tab: Kế hoạch tháng tới -->
                         <div class="tab-pane fade" id="kehoach" role="tabpanel">
-                            <form id="kehoach-form" method="POST" action="{{ route('_ban_trung_lao.save_kehoach_trung_lao') }}">
+                            <form id="kehoach-form" method="POST" action="{{ route('_ban_thanh_trang.save_kehoach_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $nextMonth }}">
                                 <input type="hidden" name="year" value="{{ $nextYear }}">
@@ -446,7 +446,7 @@
                                                                 <select class="form-control" name="kehoach[{{ $index }}][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
                                                                     @if ($tinHuuTrungLao->isEmpty())
-                                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                        <option value="">Không có tín hữu nào trong Ban Thanh Tráng</option>
                                                                     @else
                                                                         @foreach ($tinHuuTrungLao as $tinHuu)
                                                                             @if ($tinHuu)
@@ -484,7 +484,7 @@
                                                                 <select class="form-control" name="kehoach[0][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
                                                                     @if ($tinHuuTrungLao->isEmpty())
-                                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                        <option value="">Không có tín hữu nào trong Ban Thanh Tráng</option>
                                                                     @else
                                                                         @foreach ($tinHuuTrungLao as $tinHuu)
                                                                             @if ($tinHuu)
@@ -520,7 +520,7 @@
 
                         <!-- Tab: Ý kiến & Kiến nghị -->
                         <div class="tab-pane fade" id="kiennghi" role="tabpanel">
-                            <form id="kiennghi-form" method="POST" action="{{ route('_ban_trung_lao.save_kiennghi_trung_lao') }}">
+                            <form id="kiennghi-form" method="POST" action="{{ route('_ban_thanh_trang.save_kiennghi_trung_lao') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
@@ -565,7 +565,7 @@
                                                             <select class="form-control" name="kiennghi[{{ $index }}][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
                                                                 @if ($tinHuuTrungLao->isEmpty())
-                                                                    <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                    <option value="">Không có tín hữu nào trong Ban Thanh Tráng</option>
                                                                 @else
                                                                     @foreach ($tinHuuTrungLao as $tinHuu)
                                                                         @if ($tinHuu)
@@ -611,7 +611,7 @@
                                                             <select class="form-control" name="kiennghi[0][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
                                                                 @if ($tinHuuTrungLao->isEmpty())
-                                                                    <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
+                                                                    <option value="">Không có tín hữu nào trong Ban Thanh Tráng</option>
                                                                 @else
                                                                     @foreach ($tinHuuTrungLao as $tinHuu)
                                                                         @if ($tinHuu)
@@ -643,4 +643,4 @@
     </section>
 @endsection
 
-@include('_ban_trung_lao.scripts._scripts_nhap_lieu_bao_cao')
+@include('_ban_thanh_trang.scripts._scripts_nhap_lieu_bao_cao')
