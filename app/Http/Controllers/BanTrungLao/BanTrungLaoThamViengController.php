@@ -271,4 +271,66 @@ class BanTrungLaoThamViengController extends Controller
             ], 404);
         }
     }
+
+    public function updateThamVieng(Request $request, $id): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'trang_thai' => 'required|in:da_tham,ke_hoach',
+            'ket_qua' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+            $thamVieng = ThamVieng::findOrFail($id);
+            $thamVieng->trang_thai = $request->trang_thai;
+            $thamVieng->ket_qua = $request->ket_qua;
+            $thamVieng->save();
+
+            if ($request->trang_thai == 'da_tham') {
+                TinHuu::where('id', $thamVieng->tin_huu_id)->update([
+                    'ngay_tham_vieng_gan_nhat' => $thamVieng->ngay_tham
+                ]);
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thăm viếng thành công',
+                'data' => $thamVieng
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi cập nhật thăm viếng: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getBuoiNhomList(Request $request): JsonResponse
+    {
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
+
+        $buoiNhoms = BuoiNhom::with(['dienGia'])
+            ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+            ->whereMonth('ngay_dien_ra', $month)
+            ->whereYear('ngay_dien_ra', $year)
+            ->orderBy('ngay_dien_ra', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $buoiNhoms
+        ]);
+    }
 }

@@ -30,8 +30,8 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function formBaoCaoBanTrungLao(Request $request): View
     {
-        $month = (int) $request->get('month', date('m')); // Ép kiểu thành số nguyên
-        $year = (int) $request->get('year', date('Y'));   // Ép kiểu thành số nguyên
+        $month = (int) $request->get('month', date('m'));
+        $year = (int) $request->get('year', date('Y'));
         $buoiNhomType = $request->get('buoi_nhom_type', 1);
 
         $nextMonth = $month == 12 ? 1 : $month + 1;
@@ -83,6 +83,29 @@ class BanTrungLaoBaoCaoController extends Controller
             ->where('nam', $year)
             ->get();
 
+        // Chuẩn bị dữ liệu JSON cho điểm mạnh và điểm yếu
+        $diemManhData = $diemManh->map(function ($item, $index) {
+            return [
+                'stt' => $index + 1,
+                'noi_dung' => e($item->noi_dung ?? 'N/A'),
+                'nguoi_danh_gia' => e($item->nguoiDanhGia ? $item->nguoiDanhGia->ho_ten : 'N/A'),
+                'thao_tac' => '<button type="button" class="btn btn-danger btn-sm remove-danh-gia" data-id="' . e($item->id) . '"><i class="fas fa-trash"></i></button>'
+            ];
+        })->toArray() ?: [];
+
+        $diemYeuData = $diemYeu->map(function ($item, $index) {
+            return [
+                'stt' => $index + 1,
+                'noi_dung' => e($item->noi_dung ?? 'N/A'),
+                'nguoi_danh_gia' => e($item->nguoiDanhGia ? $item->nguoiDanhGia->ho_ten : 'N/A'),
+                'thao_tac' => '<button type="button" class="btn btn-danger btn-sm remove-danh-gia" data-id="' . e($item->id) . '"><i class="fas fa-trash"></i></button>'
+            ];
+        })->toArray() ?: [];
+
+        // Log dữ liệu để kiểm tra
+        Log::info('Dữ liệu điểm mạnh:', ['count' => $diemManh->count(), 'data' => $diemManhData]);
+        Log::info('Dữ liệu điểm yếu:', ['count' => $diemYeu->count(), 'data' => $diemYeuData]);
+
         return view('_ban_trung_lao.nhap_lieu_bao_cao', compact(
             'month',
             'year',
@@ -95,7 +118,9 @@ class BanTrungLaoBaoCaoController extends Controller
             'diemYeu',
             'keHoach',
             'kienNghi',
-            'buoiNhomType'
+            'buoiNhomType',
+            'diemManhData',
+            'diemYeuData'
         ));
     }
 

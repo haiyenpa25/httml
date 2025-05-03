@@ -318,9 +318,11 @@
                         </div>
 
                         <!-- Tab: Đánh giá & Nhận xét -->
+                        <!-- Trong phần Đánh giá & Nhận xét -->
+                        <!-- Trong phần Đánh giá & Nhận xét -->
                         <div class="tab-pane fade" id="danhgia" role="tabpanel">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-12 mb-4"> <!-- Thay col-md-6 thành col-md-12 và thêm margin-bottom -->
                                     <div class="card card-outline card-success">
                                         <div class="card-header">
                                             <h3 class="card-title"><i class="fas fa-thumbs-up"></i> Điểm mạnh</h3>
@@ -334,10 +336,10 @@
                                             <table id="diem-manh-table" class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th width="5%">STT</th>
-                                                        <th width="60%">Nội dung</th>
-                                                        <th width="25%">Người đánh giá</th>
-                                                        <th width="10%">Thao tác</th>
+                                                        <th>STT</th>
+                                                        <th>Nội dung</th>
+                                                        <th>Người đánh giá</th>
+                                                        <th>Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -347,7 +349,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12"> <!-- Thay col-md-6 thành col-md-12 -->
                                     <div class="card card-outline card-danger">
                                         <div class="card-header">
                                             <h3 class="card-title"><i class="fas fa-thumbs-down"></i> Điểm cần cải thiện</h3>
@@ -361,10 +363,10 @@
                                             <table id="diem-yeu-table" class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th width="5%">STT</th>
-                                                        <th width="60%">Nội dung</th>
-                                                        <th width="25%">Người đánh giá</th>
-                                                        <th width="10%">Thao tác</th>
+                                                        <th>STT</th>
+                                                        <th>Nội dung</th>
+                                                        <th>Người đánh giá</th>
+                                                        <th>Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>

@@ -98,6 +98,7 @@
             </div>
 
             <!-- Ban Điều Hành Table -->
+            <!-- Ban Điều Hành Table -->
             <div class="card card-primary card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-user-tie"></i> Ban Điều Hành</h3>
@@ -111,6 +112,7 @@
                     <table id="ban-dieu-hanh-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
+                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
                                 <th style="width: 50px" data-priority="1">STT</th>
                                 <th data-priority="3">Chức vụ</th>
                                 <th data-priority="1">Họ tên</th>
@@ -138,6 +140,7 @@
                     <table id="ban-vien-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
+                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
                                 <th style="width: 50px" data-priority="1">STT</th>
                                 <th data-priority="1">Họ tên</th>
                                 <th data-priority="3">Số điện thoại</th>

@@ -1,5 +1,10 @@
 @section('page-styles')
-    <!-- CSS tùy chỉnh -->
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
+
+    <!-- Select2 CSS -->
     <style>
         /* Select2 adjustments for better mobile compatibility */
         .select2-container--bootstrap4 .select2-selection__rendered {
@@ -167,6 +172,27 @@
             padding: 12px;
         }
 
+        /* Tùy chỉnh nút mở rộng của DataTables Responsive */
+        table.dataTable.dtr-column>tbody>tr>td.dtr-control:before,
+        table.dataTable.dtr-column>tbody>tr>th.dtr-control:before {
+            content: '+';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        table.dataTable.dtr-column>tbody>tr.parent>td.dtr-control:before,
+        table.dataTable.dtr-column>tbody>tr.parent>th.dtr-control:before {
+            content: '-';
+            background-color: #dc3545;
+        }
+
         /* Modal adjustments for better mobile experience */
         .modal-content {
             border-radius: 10px;
@@ -186,37 +212,6 @@
 
         .modal-body {
             padding: 20px;
-        }
-
-        /* Tùy chỉnh nút mở rộng của DataTables Responsive */
-        table.dataTable.dtr-inline.collapsed>tbody>tr>td.dtr-control:before,
-        table.dataTable.dtr-inline.collapsed>tbody>tr>th.dtr-control:before {
-            top: 50%;
-            left: 5px;
-            height: 1em;
-            width: 1em;
-            margin-top: -9px;
-            display: block;
-            position: absolute;
-            color: white;
-            border: 0.15em solid white;
-            border-radius: 1em;
-            box-shadow: 0 0 0.2em #444;
-            box-sizing: content-box;
-            text-align: center;
-            text-indent: 0 !important;
-            font-family: "Courier New", Courier, monospace;
-            line-height: 1em;
-            content: "+";
-            background-color: #0275d8;
-        }
-
-        table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td.dtr-control:before,
-        table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th.dtr-control:before {
-            content: '−';
-            color: white;
-            background-color: #dc3545;
-            border: 0.15em solid white;
         }
 
         /* Responsive adjustments */
@@ -306,6 +301,7 @@
     </style>
 @endsection
 
+
 @section('page-scripts')
     <script>
         // Biến toàn cục để theo dõi trạng thái khởi tạo DataTable
@@ -381,8 +377,37 @@
                     language: {
                         url: '{{ asset("dist/js/Vietnamese.json") }}'
                     },
-                    responsive: true,
-                    autoWidth: false
+                    responsive: {
+                        details: {
+                            type: 'column', // Sử dụng kiểu mở rộng dạng cột
+                            target: 0, // Cột đầu tiên là cột điều khiển
+                            renderer: function (api, rowIdx, columns) {
+                                var data = $.map(columns, function (col, i) {
+                                    // Lấy giá trị data-priority của cột
+                                    var priority = $(api.column(i).header()).attr('data-priority') || '0';
+                                    // Bỏ qua cột nếu không bị ẩn hoặc có data-priority="4" (cột Địa chỉ)
+                                    if (!col.hidden || priority === '4') return '';
+                                    return '<tr data-dt-row="' + col.rowIndex + '" data-dt-column="' + col.columnIndex + '">' +
+                                        '<td><strong>' + col.title + ':</strong></td>' +
+                                        '<td>' + col.data + '</td>' +
+                                        '</tr>';
+                                }).join('');
+                                return data ? $('<table class="table table-bordered"/>').append(data) : false;
+                            }
+                        }
+                    },
+                    autoWidth: false,
+                    columnDefs: [
+                        {
+                            className: 'dt-control', // Thêm class cho cột điều khiển
+                            orderable: false,
+                            searchable: false,
+                            targets: 0 // Cột đầu tiên là cột điều khiển
+                        },
+                        { targets: [0, 1, 4], responsivePriority: 1 }, // Ưu tiên hiển thị STT, Họ tên, Thao tác
+                        { targets: [2, 3], responsivePriority: 100 } // Ưu tiên thấp hơn cho Số điện thoại/Địa chỉ
+                    ],
+                    order: [] // Không sắp xếp mặc định
                 });
             }
 
@@ -391,6 +416,7 @@
                 '#ban-dieu-hanh-table',
                 "{{ route('api.ban_trung_lao.dieu_hanh_list') }}",
                 [
+                    { data: null, defaultContent: '' }, // Cột điều khiển mở rộng
                     {
                         data: null,
                         render: function (data, type, row, meta) {
@@ -402,28 +428,27 @@
                     {
                         data: null,
                         render: function (data, type, row) {
-                            // Ensure chuc_vu is a string to avoid null issues
                             const chucVu = row.chuc_vu || '';
                             return `
-                                    <div class="btn-group">
-                                        <button type="button" 
-                                                class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                data-toggle="modal" 
-                                                data-target="#modal-edit-chuc-vu"
-                                                data-id="${row.tin_huu_id}" 
-                                                data-ban-id="{{ $banTrungLao->id }}"
-                                                data-ten="${row.ho_ten}" 
-                                                data-chucvu="${chucVu}">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" 
-                                                class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                data-id="${row.tin_huu_id}" 
-                                                data-ban-id="{{ $banTrungLao->id }}"
-                                                data-ten="${row.ho_ten}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>`;
+                                            <div class="btn-group">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                        data-toggle="modal" 
+                                                        data-target="#modal-edit-chuc-vu"
+                                                        data-id="${row.tin_huu_id}" 
+                                                        data-ban-id="{{ $banTrungLao->id }}"
+                                                        data-ten="${row.ho_ten}" 
+                                                        data-chucvu="${chucVu}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                        data-id="${row.tin_huu_id}" 
+                                                        data-ban-id="{{ $banTrungLao->id }}"
+                                                        data-ten="${row.ho_ten}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>`;
                         }
                     }
                 ],
@@ -438,6 +463,7 @@
                 '#ban-vien-table',
                 "{{ route('api.ban_trung_lao.ban_vien_list') }}",
                 [
+                    { data: null, defaultContent: '' }, // Cột điều khiển mở rộng
                     {
                         data: null,
                         render: function (data, type, row, meta) {
@@ -450,28 +476,27 @@
                     {
                         data: null,
                         render: function (data, type, row) {
-                            // Ensure chuc_vu is a string to avoid null issues
                             const chucVu = row.chuc_vu || '';
                             return `
-                                    <div class="btn-group">
-                                        <button type="button" 
-                                                class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                data-toggle="modal" 
-                                                data-target="#modal-edit-chuc-vu"
-                                                data-id="${row.tin_huu_id}" 
-                                                data-ban-id="{{ $banTrungLao->id }}"
-                                                data-ten="${row.ho_ten}" 
-                                                data-chucvu="${chucVu}">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" 
-                                                class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                data-id="${row.tin_huu_id}" 
-                                                data-ban-id="{{ $banTrungLao->id }}"
-                                                data-ten="${row.ho_ten}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>`;
+                                            <div class="btn-group">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                        data-toggle="modal" 
+                                                        data-target="#modal-edit-chuc-vu"
+                                                        data-id="${row.tin_huu_id}" 
+                                                        data-ban-id="{{ $banTrungLao->id }}"
+                                                        data-ten="${row.ho_ten}" 
+                                                        data-chucvu="${chucVu}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                        data-id="${row.tin_huu_id}" 
+                                                        data-ban-id="{{ $banTrungLao->id }}"
+                                                        data-ten="${row.ho_ten}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>`;
                         }
                     }
                 ],
