@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nhập liệu Báo Cáo Ban Trung Lão')
+@section('title', 'Nhập liệu Báo Cáo Ban Mục Vụ')
 
 @section('content')
     <section class="content-header">
@@ -24,30 +24,30 @@
                 @endif
             </div>
 
-            <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
+            <!-- Các nút chức năng -->
             <div class="action-buttons-container">
                 <!-- Hàng 1: Chức năng điều hướng chính -->
                 <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.index') }}" class="action-btn btn-primary-custom">
+                    <a href="{{ route('ban_muc_vu.index', ['ban_nganh_id' => $banNganh->id]) }}" class="action-btn btn-primary-custom">
                         <i class="fas fa-home"></i> Trang chính
                     </a>
-                    <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="action-btn btn-success-custom">
+                    <a href="{{ route('ban_muc_vu.diem_danh', ['ban_nganh_id' => $banNganh->id]) }}" class="action-btn btn-success-custom">
                         <i class="fas fa-clipboard-check"></i> Điểm danh
                     </a>
-                    <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="action-btn btn-info-custom">
+                    <a href="{{ route('ban_muc_vu.tham_vieng', ['ban_nganh_id' => $banNganh->id]) }}" class="action-btn btn-info-custom">
                         <i class="fas fa-user-friends"></i> Thăm viếng
                     </a>
                 </div>
 
                 <!-- Hàng 2: Chức năng phân công và báo cáo -->
                 <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="action-btn btn-warning-custom">
+                    <a href="{{ route('ban_muc_vu.phan_cong', ['ban_nganh_id' => $banNganh->id]) }}" class="action-btn btn-warning-custom">
                         <i class="fas fa-tasks"></i> Phân công
                     </a>
-                    <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
+                    <a href="{{ route('ban_muc_vu.phan_cong_chi_tiet', ['ban_nganh_id' => $banNganh->id]) }}" class="action-btn btn-info-custom">
                         <i class="fas fa-clipboard-list"></i> Chi tiết PC
                     </a>
-                    <a href="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
+                    <a href="{{ route('ban_muc_vu.nhap_lieu_bao_cao', ['ban_nganh_id' => $banNganh->id]) }}" class="action-btn btn-success-custom">
                         <i class="fas fa-file-alt"></i> Nhập báo cáo
                     </a>
                 </div>
@@ -69,13 +69,13 @@
 
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Nhập liệu Báo Cáo Ban Trung Lão</h1>
+                    <h1>Nhập liệu Báo Cáo Ban Mục Vụ</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item"><a href="#">Báo Cáo</a></li>
-                        <li class="breadcrumb-item active">Nhập liệu Ban Trung Lão</li>
+                        <li class="breadcrumb-item active">Nhập liệu Ban Mục Vụ</li>
                     </ol>
                 </div>
             </div>
@@ -95,7 +95,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="filter-form" method="GET" action="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}">
+                    <form id="filter-form" method="GET" action="{{ route('ban_muc_vu.nhap_lieu_bao_cao') }}">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -125,8 +125,8 @@
                                 <div class="form-group">
                                     <label for="buoi_nhom_type">Buổi nhóm:</label>
                                     <select id="buoi_nhom_type" name="buoi_nhom_type" class="form-control">
-                                        <option value="1" {{ isset($buoiNhomType) && $buoiNhomType == 1 ? 'selected' : '' }}>Ban Trung Lão (Nhóm tối thứ 7)</option>
-                                        <option value="13" {{ isset($buoiNhomType) && $buoiNhomType == 13 ? 'selected' : '' }}>Hội Thánh (Nhóm Chúa Nhật)</option>
+                                        <option value="1" {{ isset($buoiNhomType) && $buoiNhomType == 1 ? 'selected' : '' }}>Ban Mục Vụ</option>
+                                        <option value="20" {{ isset($buoiNhomType) && $buoiNhomType == 20 ? 'selected' : '' }}>Hội Thánh (Nhóm Chúa Nhật)</option>
                                     </select>
                                 </div>
                             </div>
@@ -172,15 +172,15 @@
                         <!-- Tab: Số lượng tham dự -->
                         <div class="tab-pane fade show active" id="buoinhom" role="tabpanel">
                             <!-- Form cho số lượng tham dự -->
-                            <form id="thamdu-form" method="POST" action="{{ route('_ban_trung_lao.save_thamdu_trung_lao') }}">
+                            <form id="thamdu-form" method="POST" action="{{ route('ban_muc_vu.save_tham_du') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
                                 <input type="hidden" name="buoi_nhom_type" value="{{ $buoiNhomType }}">
-                                <input type="hidden" name="ban_nganh_id" value="1">
+                                <input type="hidden" name="ban_nganh_id" value="{{ $banNganh->id }}">
 
-                                <!-- Nhóm Chúa Nhật (nếu đang ở tab Hội Thánh) -->
-                                @if ($buoiNhomType == 13)
+                                <!-- Nhóm Chúa Nhật (Hội Thánh) -->
+                                @if ($buoiNhomType == 20)
                                     <div class="card card-primary card-outline">
                                         <div class="card-header">
                                             <h3 class="card-title">
@@ -201,7 +201,7 @@
                                                             <th>Ngày</th>
                                                             <th>Đề tài</th>
                                                             <th>Diễn giả</th>
-                                                            <th>Số lượng Trung Lão</th>
+                                                            <th>Số lượng</th>
                                                             <th style="width: 120px">Thao tác</th>
                                                         </tr>
                                                     </thead>
@@ -244,12 +244,12 @@
                                     </div>
                                 @endif
 
-                                <!-- Nhóm tối thứ 7 (nếu đang ở tab Ban Trung Lão) -->
+                                <!-- Nhóm Ban Mục Vụ -->
                                 @if ($buoiNhomType == 1)
                                     <div class="card card-primary card-outline">
                                         <div class="card-header">
                                             <h3 class="card-title">
-                                                <i class="fas fa-users"></i> Nhóm tối thứ 7 (Ban Trung Lão)
+                                                <i class="fas fa-users"></i> Nhóm Ban Mục Vụ
                                             </h3>
                                             <div class="card-tools">
                                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -266,7 +266,7 @@
                                                             <th>Ngày</th>
                                                             <th>Đề tài</th>
                                                             <th>Diễn giả</th>
-                                                            <th>Số lượng Trung Lão</th>
+                                                            <th>Số lượng</th>
                                                             <th>Dâng hiến (VNĐ)</th>
                                                             <th style="width: 120px">Thao tác</th>
                                                         </tr>
@@ -278,7 +278,7 @@
                                                                 <td>{{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}</td>
                                                                 <td>{{ $buoiNhom->chu_de ?? 'N/A' }}</td>
                                                                 <td>{{ $buoiNhom->dienGia->ho_ten ?? 'N/A' }}</td>
-                                                                 <td>
+                                                                <td>
                                                                     <input type="number" class="form-control"
                                                                            name="buoi_nhom[{{ $buoiNhom->id }}][so_luong_trung_lao]"
                                                                            min="0" value="{{ $buoiNhom->so_luong_trung_lao ?? 0 }}">
@@ -391,7 +391,7 @@
                                                 @csrf
                                                 <input type="hidden" name="month" value="{{ $month }}">
                                                 <input type="hidden" name="year" value="{{ $year }}">
-                                                <input type="hidden" name="ban_nganh_id" value="1">
+                                                <input type="hidden" name="ban_nganh_id" value="{{ $banNganh->id }}">
                                                 <input type="hidden" name="loai" value="diem_manh">
                                                 <div class="form-group">
                                                     <label>Nội dung:</label>
@@ -422,7 +422,7 @@
                                                 @csrf
                                                 <input type="hidden" name="month" value="{{ $month }}">
                                                 <input type="hidden" name="year" value="{{ $year }}">
-                                                <input type="hidden" name="ban_nganh_id" value="1">
+                                                <input type="hidden" name="ban_nganh_id" value="{{ $banNganh->id }}">
                                                 <input type="hidden" name="loai" value="diem_yeu">
                                                 <div class="form-group">
                                                     <label>Nội dung:</label>
@@ -441,11 +441,11 @@
 
                         <!-- Tab: Kế hoạch tháng tới -->
                         <div class="tab-pane fade" id="kehoach" role="tabpanel">
-                            <form id="kehoach-form" method="POST" action="{{ route('_ban_trung_lao.save_kehoach_trung_lao') }}">
+                            <form id="kehoach-form" method="POST" action="{{ route('ban_muc_vu.save_ke_hoach') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $nextMonth }}">
                                 <input type="hidden" name="year" value="{{ $nextYear }}">
-                                <input type="hidden" name="ban_nganh_id" value="1">
+                                <input type="hidden" name="ban_nganh_id" value="{{ $banNganh->id }}">
 
                                 <div class="card card-outline card-primary">
                                     <div class="card-header">
@@ -482,18 +482,12 @@
                                                             <td>
                                                                 <select class="form-control" name="kehoach[{{ $index }}][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
-                                                                    @if ($tinHuuTrungLao->isEmpty())
-                                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                                                    @else
-                                                                        @foreach ($tinHuuTrungLao as $tinHuu)
-                                                                            @if ($tinHuu)
-                                                                                <option value="{{ $tinHuu->id }}"
-                                                                                        {{ $item->nguoi_phu_trach_id == $tinHuu->id ? 'selected' : '' }}>
-                                                                                    {{ $tinHuu->ho_ten }}
-                                                                                </option>
-                                                                            @endif
-                                                                        @endforeach
-                                                                    @endif
+                                                                    @foreach ($tinHuuBanNganh as $tinHuu)
+                                                                        <option value="{{ $tinHuu->id }}"
+                                                                                {{ $item->nguoi_phu_trach_id == $tinHuu->id ? 'selected' : '' }}>
+                                                                            {{ $tinHuu->ho_ten }}
+                                                                        </option>
+                                                                    @endforeach
                                                                 </select>
                                                             </td>
                                                             <td>
@@ -520,15 +514,9 @@
                                                             <td>
                                                                 <select class="form-control" name="kehoach[0][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
-                                                                    @if ($tinHuuTrungLao->isEmpty())
-                                                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                                                    @else
-                                                                        @foreach ($tinHuuTrungLao as $tinHuu)
-                                                                            @if ($tinHuu)
-                                                                                <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                                            @endif
-                                                                        @endforeach
-                                                                    @endif
+                                                                    @foreach ($tinHuuBanNganh as $tinHuu)
+                                                                        <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                    @endforeach
                                                                 </select>
                                                             </td>
                                                             <td>
@@ -557,11 +545,11 @@
 
                         <!-- Tab: Ý kiến & Kiến nghị -->
                         <div class="tab-pane fade" id="kiennghi" role="tabpanel">
-                            <form id="kiennghi-form" method="POST" action="{{ route('_ban_trung_lao.save_kiennghi_trung_lao') }}">
+                            <form id="kiennghi-form" method="POST" action="{{ route('ban_muc_vu.save_kien_nghi') }}">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month }}">
                                 <input type="hidden" name="year" value="{{ $year }}">
-                                <input type="hidden" name="ban_nganh_id" value="1">
+                                <input type="hidden" name="ban_nganh_id" value="{{ $banNganh->id }}">
 
                                 <div class="card card-outline card-primary">
                                     <div class="card-header">
@@ -601,18 +589,12 @@
                                                             <label>Người đề xuất:</label>
                                                             <select class="form-control" name="kiennghi[{{ $index }}][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
-                                                                @if ($tinHuuTrungLao->isEmpty())
-                                                                    <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                                                @else
-                                                                    @foreach ($tinHuuTrungLao as $tinHuu)
-                                                                        @if ($tinHuu)
-                                                                            <option value="{{ $tinHuu->id }}"
-                                                                                    {{ $item->nguoi_de_xuat_id == $tinHuu->id ? 'selected' : '' }}>
-                                                                                {{ $tinHuu->ho_ten }}
-                                                                            </option>
-                                                                        @endif
-                                                                    @endforeach
-                                                                @endif
+                                                                @foreach ($tinHuuBanNganh as $tinHuu)
+                                                                    <option value="{{ $tinHuu->id }}"
+                                                                            {{ $item->nguoi_de_xuat_id == $tinHuu->id ? 'selected' : '' }}>
+                                                                        {{ $tinHuu->ho_ten }}
+                                                                    </option>
+                                                                @endforeach
                                                             </select>
                                                         </div>
                                                     </div>
@@ -647,15 +629,9 @@
                                                             <label>Người đề xuất:</label>
                                                             <select class="form-control" name="kiennghi[0][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
-                                                                @if ($tinHuuTrungLao->isEmpty())
-                                                                    <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                                                @else
-                                                                    @foreach ($tinHuuTrungLao as $tinHuu)
-                                                                        @if ($tinHuu)
-                                                                            <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                                        @endif
-                                                                    @endforeach
-                                                                @endif
+                                                                @foreach ($tinHuuBanNganh as $tinHuu)
+                                                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                @endforeach
                                                             </select>
                                                         </div>
                                                     </div>
@@ -680,4 +656,4 @@
     </section>
 @endsection
 
-@include('_ban_trung_lao.scripts._scripts_nhap_lieu_bao_cao')
+@include('_ban_muc_vu.scripts._scripts_nhap_lieu_bao_cao')

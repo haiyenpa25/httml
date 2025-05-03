@@ -173,8 +173,8 @@
         }
 
         /* DataTables Responsive */
-        table.dataTable.dtr-column > tbody > tr > td.dtr-control:before,
-        table.dataTable.dtr-column > tbody > tr > th.dtr-control:before {
+        table.dataTable.dtr-column>tbody>tr>td.dtr-control:before,
+        table.dataTable.dtr-column>tbody>tr>th.dtr-control:before {
             content: '+';
             display: inline-block;
             width: 20px;
@@ -187,7 +187,7 @@
             cursor: pointer;
         }
 
-        table.dataTable.dtr-column > tbody > tr.parent > td.dtr-control:before {
+        table.dataTable.dtr-column>tbody>tr.parent>td.dtr-control:before {
             content: '-';
         }
 
@@ -353,7 +353,7 @@
                     }
 
                     $.ajax({
-                        url: '{{ route("_ban_trung_lao.update_thamdu_trung_lao") }}',
+                        url: '{{ route("ban_muc_vu.update_tham_du") }}',
                         type: 'POST',
                         data: data,
                         dataType: 'json',
@@ -396,7 +396,7 @@
                     });
 
                     $.ajax({
-                        url: $(this).attr('action'),
+                        url: '{{ route("ban_muc_vu.save_tham_du") }}',
                         method: 'POST',
                         data: cleanedData,
                         dataType: 'json',
@@ -435,17 +435,17 @@
                                         if (!col.hidden) return '';
                                         var content = col.data;
                                         // Xử lý input trong cột bị ẩn
-                                        if (i === 4) { // Cột Số lượng Trung Lão
+                                        if (i === 4) { // Cột Số lượng
                                             var rowData = api.row(rowIdx).data();
                                             var buoiNhomId = $(rowData[4]).filter('input[name$="[id]"]').val();
                                             content = '<input type="number" class="form-control" ' +
-                                                      'name="buoi_nhom[' + buoiNhomId + '][so_luong_trung_lao]" ' +
-                                                      'min="0" value="' + $(rowData[4]).filter('input[name$="[so_luong_trung_lao]"]').val() + '">';
+                                                'name="buoi_nhom[' + buoiNhomId + '][so_luong_trung_lao]" ' +
+                                                'min="0" value="' + $(rowData[4]).filter('input[name$="[so_luong_trung_lao]"]').val() + '">';
                                         }
                                         return '<tr data-dt-row="' + col.rowIndex + '" data-dt-column="' + col.columnIndex + '">' +
-                                               '<td>' + col.title + ':</td>' +
-                                               '<td>' + content + '</td>' +
-                                               '</tr>';
+                                            '<td>' + col.title + ':</td>' +
+                                            '<td>' + content + '</td>' +
+                                            '</tr>';
                                     }).join('');
                                     return data ? $('<table class="table"/>').append(data) : false;
                                 }
@@ -466,7 +466,7 @@
                             { targets: [4, 5], searchable: false, orderable: false }
                         ],
                         order: [],
-                        drawCallback: function(settings) {
+                        drawCallback: function (settings) {
                             console.log('DataTables Responsive state (HT):', settings.oInstance.api().responsive.hasHidden());
                         }
                     });
@@ -474,7 +474,7 @@
                     console.error('Lỗi khởi tạo DataTables (buoi-nhom-ht-table):', e);
                 }
 
-                // Khởi tạo DataTable cho bảng Nhóm tối thứ 7 (Ban Trung Lão)
+                // Khởi tạo DataTable cho bảng Nhóm Ban Mục Vụ
                 try {
                     $('#buoi-nhom-btl-table').DataTable({
                         processing: true,
@@ -488,23 +488,23 @@
                                         if (!col.hidden) return '';
                                         var content = col.data;
                                         // Xử lý input trong cột bị ẩn
-                                        if (i === 4 || i === 5) { // Cột Số lượng Trung Lão và Dâng hiến
+                                        if (i === 4 || i === 5) { // Cột Số lượng và Dâng hiến
                                             var rowData = api.row(rowIdx).data();
                                             var buoiNhomId = $(rowData[6]).filter('input[name$="[id]"]').val();
                                             if (i === 4) {
                                                 content = '<input type="number" class="form-control" ' +
-                                                          'name="buoi_nhom[' + buoiNhomId + '][so_luong_trung_lao]" ' +
-                                                          'min="0" value="' + $(rowData[4]).filter('input[name$="[so_luong_trung_lao]"]').val() + '">';
+                                                    'name="buoi_nhom[' + buoiNhomId + '][so_luong_trung_lao]" ' +
+                                                    'min="0" value="' + $(rowData[4]).filter('input[name$="[so_luong_trung_lao]"]').val() + '">';
                                             } else if (i === 5) {
                                                 content = '<input type="text" class="form-control money-format" ' +
-                                                          'name="buoi_nhom[' + buoiNhomId + '][dang_hien]" ' +
-                                                          'value="' + $(rowData[5]).filter('input[name$="[dang_hien]"]').val() + '">';
+                                                    'name="buoi_nhom[' + buoiNhomId + '][dang_hien]" ' +
+                                                    'value="' + $(rowData[5]).filter('input[name$="[dang_hien]"]').val() + '">';
                                             }
                                         }
                                         return '<tr data-dt-row="' + col.rowIndex + '" data-dt-column="' + col.columnIndex + '">' +
-                                               '<td>' + col.title + ':</td>' +
-                                               '<td>' + content + '</td>' +
-                                               '</tr>';
+                                            '<td>' + col.title + ':</td>' +
+                                            '<td>' + content + '</td>' +
+                                            '</tr>';
                                     }).join('');
                                     return data ? $('<table class="table"/>').append(data) : false;
                                 }
@@ -525,7 +525,7 @@
                             { targets: [4, 5, 6], searchable: false, orderable: false }
                         ],
                         order: [],
-                        drawCallback: function(settings) {
+                        drawCallback: function (settings) {
                             console.log('DataTables Responsive state (BTL):', settings.oInstance.api().responsive.hasHidden());
                             // Định dạng lại input money-format trong cột bị ẩn
                             $('.money-format').each(function () {
@@ -543,13 +543,13 @@
                 const diemManhData = [
                     @foreach ($diemManh as $index => $item)
                         [
-                            {{ $index + 1 }},
-                            "{{ addslashes($item->noi_dung) }}",
-                            "{{ $item->nguoi_danh_gia_id && $item->nguoiDanhGia ? addslashes($item->nguoiDanhGia->ho_ten) : 'N/A' }}",
-                            '<button type="button" class="btn btn-danger btn-sm remove-danh-gia" data-id="{{ $item->id }}"><i class="fas fa-trash"></i></button>'
-                        ]@if(!$loop->last),@endif
+                                        {{ $index + 1 }},
+                        "{{ addslashes($item->noi_dung) }}",
+                        "{{ $item->nguoi_danh_gia_id && $item->nguoiDanhGia ? addslashes($item->nguoiDanhGia->ho_ten) : 'N/A' }}",
+                        '<button type="button" class="btn btn-danger btn-sm remove-danh-gia" data-id="{{ $item->id }}"><i class="fas fa-trash"></i></button>'
+                        ]@if(!$loop->last), @endif
                     @endforeach
-                ];
+                        ];
 
                 // Khởi tạo DataTable cho điểm mạnh
                 $('#diem-manh-table').DataTable({
@@ -572,13 +572,13 @@
                 const diemYeuData = [
                     @foreach ($diemYeu as $index => $item)
                         [
-                            {{ $index + 1 }},
-                            "{{ addslashes($item->noi_dung) }}",
-                            "{{ $item->nguoi_danh_gia_id && $item->nguoiDanhGia ? addslashes($item->nguoiDanhGia->ho_ten) : 'N/A' }}",
-                            '<button type="button" class="btn btn-danger btn-sm remove-danh-gia" data-id="{{ $item->id }}"><i class="fas fa-trash"></i></button>'
-                        ]@if(!$loop->last),@endif
+                                        {{ $index + 1 }},
+                        "{{ addslashes($item->noi_dung) }}",
+                        "{{ $item->nguoi_danh_gia_id && $item->nguoiDanhGia ? addslashes($item->nguoiDanhGia->ho_ten) : 'N/A' }}",
+                        '<button type="button" class="btn btn-danger btn-sm remove-danh-gia" data-id="{{ $item->id }}"><i class="fas fa-trash"></i></button>'
+                        ]@if(!$loop->last), @endif
                     @endforeach
-                ];
+                        ];
 
                 // Khởi tạo DataTable cho điểm yếu
                 $('#diem-yeu-table').DataTable({
@@ -601,7 +601,7 @@
                 $('#add-diem-manh-form').on('submit', function (e) {
                     e.preventDefault();
                     $.ajax({
-                        url: '{{ route("_ban_trung_lao.save_danhgia_trung_lao") }}',
+                        url: '{{ route("ban_muc_vu.save_danh_gia") }}',
                         method: 'POST',
                         data: $(this).serialize(),
                         dataType: 'json',
@@ -631,7 +631,7 @@
                 $('#add-diem-yeu-form').on('submit', function (e) {
                     e.preventDefault();
                     $.ajax({
-                        url: '{{ route("_ban_trung_lao.save_danhgia_trung_lao") }}',
+                        url: '{{ route("ban_muc_vu.save_danh_gia") }}',
                         method: 'POST',
                         data: $(this).serialize(),
                         dataType: 'json',
@@ -665,7 +665,7 @@
                     }
 
                     $.ajax({
-                        url: '{{ route("api.ban_trung_lao.xoa_danh_gia", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                        url: '{{ route("ban_muc_vu.xoa_danh_gia", ["id" => "__ID__"]) }}'.replace('__ID__', id),
                         method: 'DELETE',
                         data: { _token: '{{ csrf_token() }}' },
                         success: function (response) {
@@ -687,41 +687,41 @@
                 $('#add-kehoach').on('click', function () {
                     let count = $('.kehoach-row').length;
                     let html = `
-                        <tr class="kehoach-row">
-                            <td>${count + 1}</td>
-                            <td>
-                                <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" 
-                                       value="" required>
-                                <input type="hidden" name="kehoach[${count}][id]" value="0">
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" 
-                                       value="">
-                            </td>
-                            <td>
-                                <select class="form-control" name="kehoach[${count}][nguoi_phu_trach_id]">
-                                    <option value="">-- Chọn người phụ trách --</option>
-                                    @if ($tinHuuTrungLao->isEmpty())
-                                        <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                    @else
-                                        @foreach($tinHuuTrungLao as $tinHuu)
-                                            @if ($tinHuu)
-                                                <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                <tr class="kehoach-row">
+                                    <td>${count + 1}</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" 
+                                               value="" required>
+                                        <input type="hidden" name="kehoach[${count}][id]" value="0">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" 
+                                               value="">
+                                    </td>
+                                    <td>
+                                        <select class="form-control" name="kehoach[${count}][nguoi_phu_trach_id]">
+                                            <option value="">-- Chọn người phụ trách --</option>
+                                            @if ($tinHuuBanNganh->isEmpty())
+                                                <option value="">Không có tín hữu nào trong Ban Mục Vụ</option>
+                                            @else
+                                                @foreach($tinHuuBanNganh as $tinHuu)
+                                                    @if ($tinHuu)
+                                                        <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                    @endif
+                                                @endforeach
                                             @endif
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </td>
-                            <td>
-                                <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-kehoach">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm remove-kehoach">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
                     $('#kehoach-tbody').append(html);
                     reindexKehoach();
                 });
@@ -746,7 +746,7 @@
                 $('#kehoach-form').on('submit', function (e) {
                     e.preventDefault();
                     $.ajax({
-                        url: $(this).attr('action'),
+                        url: '{{ route("ban_muc_vu.save_ke_hoach") }}',
                         method: 'POST',
                         data: $(this).serialize(),
                         dataType: 'json',
@@ -775,49 +775,49 @@
                 $('#add-kiennghi').on('click', function () {
                     let count = $('.kiennghi-card').length;
                     let html = `
-                        <div class="card mb-3 kiennghi-card">
-                            <div class="card-header bg-light">
-                                <div class="row">
-                                    <div class="col">
-                                        <h6 class="m-0">Kiến nghị #${count + 1}</h6>
+                                <div class="card mb-3 kiennghi-card">
+                                    <div class="card-header bg-light">
+                                        <div class="row">
+                                            <div class="col">
+                                                <h6 class="m-0">Kiến nghị #${count + 1}</h6>
+                                            </div>
+                                            <div class="col-auto">
+                                                <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-auto">
-                                        <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="form-group">
-                                    <label>Tiêu đề:</label>
-                                    <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" 
-                                           value="" required>
-                                    <input type="hidden" name="kiennghi[${count}][id]" value="0">
-                                </div>
-                                <div class="form-group">
-                                    <label>Nội dung:</label>
-                                    <textarea class="form-control" name="kiennghi[${count}][noi_dung]" 
-                                              rows="3" required></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>Người đề xuất:</label>
-                                    <select class="form-control" name="kiennghi[${count}][nguoi_de_xuat_id]">
-                                        <option value="">-- Chọn người đề xuất --</option>
-                                        @if ($tinHuuTrungLao->isEmpty())
-                                            <option value="">Không có tín hữu nào trong Ban Trung Lão</option>
-                                        @else
-                                            @foreach($tinHuuTrungLao as $tinHuu)
-                                                @if ($tinHuu)
-                                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>Tiêu đề:</label>
+                                            <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" 
+                                                   value="" required>
+                                            <input type="hidden" name="kiennghi[${count}][id]" value="0">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Nội dung:</label>
+                                            <textarea class="form-control" name="kiennghi[${count}][noi_dung]" 
+                                                      rows="3" required></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Người đề xuất:</label>
+                                            <select class="form-control" name="kiennghi[${count}][nguoi_de_xuat_id]">
+                                                <option value="">-- Chọn người đề xuất --</option>
+                                                @if ($tinHuuBanNganh->isEmpty())
+                                                    <option value="">Không có tín hữu nào trong Ban Mục Vụ</option>
+                                                @else
+                                                    @foreach($tinHuuBanNganh as $tinHuu)
+                                                        @if ($tinHuu)
+                                                            <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                        @endif
+                                                    @endforeach
                                                 @endif
-                                            @endforeach
-                                        @endif
-                                    </select>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    `;
+                            `;
                     $('#kiennghi-container').append(html);
                     reindexKiennghi();
                 });
@@ -832,7 +832,7 @@
 
                     if (id != '0') {
                         $.ajax({
-                            url: '{{ route("api.ban_trung_lao.xoa_kien_nghi", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                            url: '{{ route("ban_muc_vu.xoa_kien_nghi", ["id" => "__ID__"]) }}'.replace('__ID__', id),
                             method: 'DELETE',
                             data: { _token: '{{ csrf_token() }}' },
                             success: function (response) {
@@ -868,7 +868,7 @@
                 $('#kiennghi-form').on('submit', function (e) {
                     e.preventDefault();
                     $.ajax({
-                        url: $(this).attr('action'),
+                        url: '{{ route("ban_muc_vu.save_kien_nghi") }}',
                         method: 'POST',
                         data: $(this).serialize(),
                         dataType: 'json',

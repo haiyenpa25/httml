@@ -28,9 +28,6 @@ class BanTrungLaoBaoCaoController extends Controller
     /**
      * Hiển thị form nhập liệu báo cáo Ban Trung Lão
      */
-    /**
-     * Hiển thị form nhập liệu báo cáo Ban Trung Lão
-     */
     public function formBaoCaoBanTrungLao(Request $request): View
     {
         $month = (int) $request->get('month', date('m')); // Ép kiểu thành số nguyên
@@ -212,6 +209,8 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function updateThamDuTrungLao(Request $request)
     {
+        Log::info('updateThamDuTrungLao: Nhận yêu cầu', $request->all());
+
         $validator = Validator::make($request->all(), [
             'id' => 'required|exists:buoi_nhom,id',
             'so_luong_trung_lao' => 'required|integer|min:0',
@@ -225,6 +224,7 @@ class BanTrungLaoBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('updateThamDuTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first()
@@ -256,12 +256,16 @@ class BanTrungLaoBaoCaoController extends Controller
                 }
             }
 
+            Log::info('updateThamDuTrungLao: Cập nhật thành công', ['buoi_nhom_id' => $buoiNhom->id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Cập nhật số lượng tham dự thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi cập nhật số lượng tham dự: ' . $e->getMessage());
+            Log::error('updateThamDuTrungLao: Lỗi cập nhật số lượng tham dự', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
@@ -274,6 +278,8 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function saveThamDuTrungLao(Request $request)
     {
+        Log::info('saveThamDuTrungLao: Nhận yêu cầu', $request->all());
+
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2021|max:2030',
@@ -292,6 +298,7 @@ class BanTrungLaoBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('saveThamDuTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
             return redirect()->back()->with('error', 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first());
         }
 
@@ -325,20 +332,25 @@ class BanTrungLaoBaoCaoController extends Controller
             }
 
             DB::commit();
+            Log::info('saveThamDuTrungLao: Lưu thành công');
             return redirect()->back()->with('success', 'Đã lưu số lượng tham dự thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi lưu số lượng tham dự: ' . $e->getMessage());
+            Log::error('saveThamDuTrungLao: Lỗi lưu số lượng tham dự', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Lưu đánh giá báo cáo
      */
     public function saveDanhGiaTrungLao(Request $request)
     {
+        Log::info('saveDanhGiaTrungLao: Nhận yêu cầu', $request->all());
+
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2021|max:2030',
@@ -348,32 +360,55 @@ class BanTrungLaoBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('saveDanhGiaTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first()
             ], 422);
         }
 
+        // Kiểm tra nguoi_danh_gia_id
+        if (!Auth::check()) {
+            Log::error('saveDanhGiaTrungLao: Người dùng chưa đăng nhập');
+            return response()->json([
+                'success' => false,
+                'message' => 'Người dùng chưa đăng nhập.'
+            ], 401);
+        }
+
+        $user = Auth::user();
+        if (!$user->tin_huu_id) {
+            Log::error('saveDanhGiaTrungLao: Người dùng không có tin_huu_id', ['user_id' => $user->id]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể xác định người đánh giá. Vui lòng kiểm tra thông tin người dùng (tin_huu_id không tồn tại).'
+            ], 422);
+        }
+
         DB::beginTransaction();
 
         try {
-            DanhGia::create([
+            $danhGia = DanhGia::create([
                 'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
                 'loai' => $request->loai,
                 'noi_dung' => $request->noi_dung,
                 'thang' => $request->month,
                 'nam' => $request->year,
-                'nguoi_danh_gia_id' => Auth::check() ? Auth::user()->tin_huu_id : null
+                'nguoi_danh_gia_id' => $user->tin_huu_id
             ]);
 
             DB::commit();
+            Log::info('saveDanhGiaTrungLao: Lưu thành công', ['danh_gia_id' => $danhGia->id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu đánh giá thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi lưu đánh giá: ' . $e->getMessage());
+            Log::error('saveDanhGiaTrungLao: Lỗi lưu đánh giá', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi: ' . $e->getMessage()
@@ -386,6 +421,8 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function saveKeHoachTrungLao(Request $request)
     {
+        Log::info('saveKeHoachTrungLao: Nhận yêu cầu', $request->all());
+
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2021|max:2030',
@@ -398,7 +435,12 @@ class BanTrungLaoBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            Log::error('saveKeHoachTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first(),
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         DB::beginTransaction();
@@ -423,7 +465,7 @@ class BanTrungLaoBaoCaoController extends Controller
                         'ghi_chu' => $data['ghi_chu'] ?? ''
                     ]);
                 } else {
-                    KeHoach::create([
+                    $keHoach = KeHoach::create([
                         'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
                         'hoat_dong' => $data['hoat_dong'],
                         'thoi_gian' => $data['thoi_gian'] ?? '',
@@ -437,11 +479,21 @@ class BanTrungLaoBaoCaoController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Đã lưu kế hoạch thành công!');
+            Log::info('saveKeHoachTrungLao: Lưu thành công');
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã lưu kế hoạch thành công!'
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi lưu kế hoạch: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
+            Log::error('saveKeHoachTrungLao: Lỗi lưu kế hoạch', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -450,6 +502,8 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function saveKienNghiTrungLao(Request $request)
     {
+        Log::info('saveKienNghiTrungLao: Nhận yêu cầu', $request->all());
+
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2021|max:2030',
@@ -463,12 +517,26 @@ class BanTrungLaoBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            Log::error('saveKienNghiTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first(),
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         DB::beginTransaction();
 
         try {
+            $user = Auth::user();
+            if (!$user || !$user->tin_huu_id) {
+                Log::error('saveKienNghiTrungLao: Người dùng không có tin_huu_id', ['user_id' => $user ? $user->id : null]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xác định người đề xuất. Vui lòng kiểm tra thông tin người dùng (tin_huu_id không tồn tại).'
+                ], 422);
+            }
+
             foreach ($request->kiennghi as $data) {
                 $id = $data['id'] ?? 0;
 
@@ -481,16 +549,16 @@ class BanTrungLaoBaoCaoController extends Controller
                     $kienNghi->update([
                         'tieu_de' => $data['tieu_de'],
                         'noi_dung' => $data['noi_dung'],
-                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? null,
+                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? $user->tin_huu_id,
                         'trang_thai' => $data['trang_thai'] ?? 'moi',
                         'phan_hoi' => $data['phan_hoi'] ?? null
                     ]);
                 } else {
-                    KienNghi::create([
+                    $kienNghi = KienNghi::create([
                         'ban_nganh_id' => self::BAN_TRUNG_LAO_ID,
                         'tieu_de' => $data['tieu_de'],
                         'noi_dung' => $data['noi_dung'],
-                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? null,
+                        'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? $user->tin_huu_id,
                         'thang' => $request->month,
                         'nam' => $request->year,
                         'trang_thai' => $data['trang_thai'] ?? 'moi',
@@ -500,11 +568,21 @@ class BanTrungLaoBaoCaoController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Đã lưu kiến nghị thành công!');
+            Log::info('saveKienNghiTrungLao: Lưu thành công');
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã lưu kiến nghị thành công!'
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi lưu kiến nghị: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
+            Log::error('saveKienNghiTrungLao: Lỗi lưu kiến nghị', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -513,6 +591,8 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function luuBaoCaoBanTrungLao(Request $request)
     {
+        Log::info('luuBaoCaoBanTrungLao: Nhận yêu cầu', $request->all());
+
         DB::beginTransaction();
 
         try {
@@ -537,13 +617,17 @@ class BanTrungLaoBaoCaoController extends Controller
             }
 
             DB::commit();
+            Log::info('luuBaoCaoBanTrungLao: Lưu thành công');
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu báo cáo thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi lưu báo cáo tổng hợp: ' . $e->getMessage());
+            Log::error('luuBaoCaoBanTrungLao: Lỗi lưu báo cáo tổng hợp', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi lưu báo cáo: ' . $e->getMessage()
@@ -564,20 +648,27 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function xoaDanhGia($id)
     {
+        Log::info('xoaDanhGia: Nhận yêu cầu', ['id' => $id]);
+
         try {
             $danhGia = DanhGia::where('id', $id)
                 ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
                 ->firstOrFail();
             $danhGia->delete();
+            Log::info('xoaDanhGia: Xóa thành công', ['id' => $id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Xóa đánh giá thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi xóa đánh giá: ' . $e->getMessage());
+            Log::error('xoaDanhGia: Lỗi xóa đánh giá', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa đánh giá!'
+                'message' => 'Đã xảy ra lỗi khi xóa đánh giá: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -587,20 +678,49 @@ class BanTrungLaoBaoCaoController extends Controller
      */
     public function xoaKienNghi($id)
     {
+        Log::info('xoaKienNghi: Nhận yêu cầu', ['id' => $id]);
+
         try {
             $kienNghi = KienNghi::where('id', $id)
                 ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
                 ->firstOrFail();
+
+            // Kiểm tra quyền xóa (ví dụ: chỉ admin hoặc người tạo kiến nghị được xóa)
+            $user = Auth::user();
+            if (!$user || !$user->tin_huu_id) {
+                Log::error('xoaKienNghi: Người dùng không có tin_huu_id', ['user_id' => $user ? $user->id : null]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không thể xác định người dùng. Vui lòng kiểm tra thông tin (tin_huu_id không tồn tại).'
+                ], 422);
+            }
+
+            if ($kienNghi->nguoi_de_xuat_id !== $user->tin_huu_id) {
+                Log::warning('xoaKienNghi: Người dùng không có quyền xóa', [
+                    'user_tin_huu_id' => $user->tin_huu_id,
+                    'nguoi_de_xuat_id' => $kienNghi->nguoi_de_xuat_id
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn không có quyền xóa kiến nghị này!'
+                ], 403);
+            }
+
             $kienNghi->delete();
+            Log::info('xoaKienNghi: Xóa thành công', ['id' => $id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Xóa kiến nghị thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('Lỗi xóa kiến nghị: ' . $e->getMessage());
+            Log::error('xoaKienNghi: Lỗi xóa kiến nghị', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa kiến nghị!'
+                'message' => 'Đã xảy ra lỗi khi xóa kiến nghị: ' . $e->getMessage()
             ], 500);
         }
     }

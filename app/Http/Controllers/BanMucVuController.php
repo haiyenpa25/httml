@@ -107,9 +107,9 @@ class BanMucVuController extends Controller
     /**
      * Hiển thị trang thăm viếng
      */
-    public function thamVieng(): View
+    public function thamVieng(Request $request): View
     {
-        return $this->thamViengController->thamVieng();
+        return $this->thamViengController->thamVieng($request);
     }
 
     /**
