@@ -21,31 +21,31 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
-class BanThanhTrangThanhVienController extends Controller
+class BanCoDocGiaoDucThanhVienController extends Controller
 {
     use ApiResponseTrait;
 
     // Hằng số để tránh magic numbers
-    private const BAN_THANH_TRANG_ID = 2;
+    private const BAN_NGANH_ID = 2;
 
     /**
-     * Hiển thị trang chính của Ban Thanh Tráng.
+     * Hiển thị trang chính của Ban Cơ Đốc Giáo Dục.
      *
      * @return View
      */
     public function index(): View
     {
-        $banThanhTrang = Cache::remember('ban_thanh_trang', now()->addDay(), function () {
-            return BanNganh::where('ten', 'Ban Thanh Tráng')->first();
+        $banCoDocGiaoDuc = Cache::remember('ban_co_doc_giao_duc', now()->addDay(), function () {
+            return BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
         });
 
-        if (!$banThanhTrang) {
+        if (!$banCoDocGiaoDuc) {
             throw new \Exception('Không tìm thấy Thanh Tráng');
         }
 
-        $banDieuHanh = Cache::remember('ban_thanh_trang_dieu_hanh', now()->addHour(), function () use ($banThanhTrang) {
+        $banDieuHanh = Cache::remember('ban_co_doc_giao_duc_dieu_hanh', now()->addHour(), function () use ($banCoDocGiaoDuc) {
             return TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $banThanhTrang->id)
+                ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
                 ->whereNotNull('chuc_vu')
                 ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên'])
                 ->orderByRaw("CASE 
@@ -58,9 +58,9 @@ class BanThanhTrangThanhVienController extends Controller
                 ->get();
         });
 
-        $banVien = Cache::remember('ban_thanh_trang_ban_vien', now()->addHour(), function () use ($banThanhTrang) {
+        $banVien = Cache::remember('ban_co_doc_giao_duc_ban_vien', now()->addHour(), function () use ($banCoDocGiaoDuc) {
             return TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $banThanhTrang->id)
+                ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
                 ->where(function ($query) {
                     $query->whereNull('chuc_vu')
                         ->orWhere('chuc_vu', 'Thành viên')
@@ -72,7 +72,7 @@ class BanThanhTrangThanhVienController extends Controller
 
 
 
-        $existingMemberIds = TinHuuBanNganh::where('ban_nganh_id', $banThanhTrang->id)
+        $existingMemberIds = TinHuuBanNganh::where('ban_nganh_id', $banCoDocGiaoDuc->id)
             ->pluck('tin_huu_id')
             ->toArray();
 
@@ -80,11 +80,11 @@ class BanThanhTrangThanhVienController extends Controller
             ->orderBy('ho_ten', 'asc')
             ->get();
 
-        return view('_ban_thanh_trang.thanh_vien', compact('banThanhTrang', 'banDieuHanh', 'banVien', 'tinHuuList'));
+        return view('_ban_co_doc_giao_duc.thanh_vien', compact('banCoDocGiaoDuc', 'banDieuHanh', 'banVien', 'tinHuuList'));
     }
 
     /**
-     * Thêm thành viên vào Ban Thanh Tráng.
+     * Thêm thành viên vào Ban Cơ Đốc Giáo Dục.
      *
      * @param Request $request
      * @return JsonResponse
@@ -102,7 +102,7 @@ class BanThanhTrangThanhVienController extends Controller
             ->exists();
 
         if ($exists) {
-            return $this->errorResponse('Thành viên này đã thuộc Ban Thanh Tráng!', 422);
+            return $this->errorResponse('Thành viên này đã thuộc Ban Cơ Đốc Giáo Dục!', 422);
         }
 
         try {
@@ -114,7 +114,7 @@ class BanThanhTrangThanhVienController extends Controller
             ]);
             $this->clearBanThanhTrangCache();
             DB::commit();
-            return $this->successResponse('Đã thêm thành viên vào Ban Thanh Tráng thành công!');
+            return $this->successResponse('Đã thêm thành viên vào Ban Cơ Đốc Giáo Dục thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Lỗi thêm thành viên: ' . $e->getMessage());
@@ -123,7 +123,7 @@ class BanThanhTrangThanhVienController extends Controller
     }
 
     /**
-     * Xóa thành viên khỏi Ban Thanh Tráng.
+     * Xóa thành viên khỏi Ban Cơ Đốc Giáo Dục.
      *
      * @param Request $request
      * @return JsonResponse
@@ -140,7 +140,7 @@ class BanThanhTrangThanhVienController extends Controller
             ->exists();
 
         if (!$recordExists) {
-            return $this->notFoundResponse('Không tìm thấy thành viên trong Ban Thanh Tráng để xóa.');
+            return $this->notFoundResponse('Không tìm thấy thành viên trong Ban Cơ Đốc Giáo Dục để xóa.');
         }
 
         try {
@@ -150,16 +150,16 @@ class BanThanhTrangThanhVienController extends Controller
                 ->delete();
             $this->clearBanThanhTrangCache();
             DB::commit();
-            return $this->successResponse('Đã xóa thành viên khỏi Ban Thanh Tráng thành công!');
+            return $this->successResponse('Đã xóa thành viên khỏi Ban Cơ Đốc Giáo Dục thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Lỗi khi xóa thành viên khỏi Ban Thanh Tráng: ' . $e->getMessage());
+            Log::error('Lỗi khi xóa thành viên khỏi Ban Cơ Đốc Giáo Dục: ' . $e->getMessage());
             return $this->errorResponse('Đã xảy ra lỗi khi xóa thành viên: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Cập nhật chức vụ thành viên trong Ban Thanh Tráng.
+     * Cập nhật chức vụ thành viên trong Ban Cơ Đốc Giáo Dục.
      *
      * @param Request $request
      * @return JsonResponse
@@ -182,7 +182,7 @@ class BanThanhTrangThanhVienController extends Controller
                     ->first();
 
                 if ($existingTruongBan) {
-                    return $this->errorResponse('Ban Thanh Tráng đã có Trưởng Ban! Vui lòng thay đổi chức vụ của người hiện tại trước.', 422);
+                    return $this->errorResponse('Ban Cơ Đốc Giáo Dục đã có Trưởng Ban! Vui lòng thay đổi chức vụ của người hiện tại trước.', 422);
                 }
 
                 BanNganh::where('id', $validatedData['ban_nganh_id'])
@@ -204,29 +204,29 @@ class BanThanhTrangThanhVienController extends Controller
     }
 
     /**
-     * Xóa cache liên quan đến Ban Thanh Tráng.
+     * Xóa cache liên quan đến Ban Cơ Đốc Giáo Dục.
      *
      * @return void
      */
     private function clearBanThanhTrangCache(): void
     {
-        Cache::forget('ban_thanh_trang');
-        Cache::forget('ban_thanh_trang_dieu_hanh');
-        Cache::forget('ban_thanh_trang_ban_vien');
-        Cache::forget('ban_thanh_trang_thanh_vien');
+        Cache::forget('ban_co_doc_giao_duc');
+        Cache::forget('ban_co_doc_giao_duc_dieu_hanh');
+        Cache::forget('ban_co_doc_giao_duc_ban_vien');
+        Cache::forget('ban_co_doc_giao_duc_thanh_vien');
     }
 
     /**
-     * Hiển thị trang điểm danh của Ban Thanh Tráng.
+     * Hiển thị trang điểm danh của Ban Cơ Đốc Giáo Dục.
      *
      * @param Request $request
      * @return View
      */
     public function diemDanh(Request $request): View
     {
-        $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-        if (!$banThanhTrang) {
-            return view('errors.custom', ['message' => 'Không tìm thấy Ban Thanh Tráng']);
+        $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+        if (!$banCoDocGiaoDuc) {
+            return view('errors.custom', ['message' => 'Không tìm thấy Ban Cơ Đốc Giáo Dục']);
         }
 
         $month = $request->input('month', date('m'));
@@ -242,7 +242,7 @@ class BanThanhTrangThanhVienController extends Controller
         $currentYear = (int) date('Y');
         $years = range($currentYear - 2, $currentYear + 1);
 
-        $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banThanhTrang->id)
+        $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banCoDocGiaoDuc->id)
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->orderBy('ngay_dien_ra', 'desc')
@@ -250,8 +250,8 @@ class BanThanhTrangThanhVienController extends Controller
 
         $currentBuoiNhom = $selectedBuoiNhom ? BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])->find($selectedBuoiNhom) : null;
 
-        $danhSachTinHuu = TinHuu::whereHas('banNganhs', function ($query) use ($banThanhTrang) {
-            $query->where('ban_nganh_id', $banThanhTrang->id);
+        $danhSachTinHuu = TinHuu::whereHas('banNganhs', function ($query) use ($banCoDocGiaoDuc) {
+            $query->where('ban_nganh_id', $banCoDocGiaoDuc->id);
         })->orderBy('ho_ten')->get();
 
         $diemDanhData = [];
@@ -283,8 +283,8 @@ class BanThanhTrangThanhVienController extends Controller
 
         $dienGias = DienGia::orderBy('ho_ten')->get();
 
-        return view('_ban_thanh_trang.diem_danh', compact(
-            'banThanhTrang',
+        return view('_ban_co_doc_giao_duc.diem_danh', compact(
+            'banCoDocGiaoDuc',
             'months',
             'years',
             'month',
@@ -392,7 +392,7 @@ class BanThanhTrangThanhVienController extends Controller
     }
 
     /**
-     * Hiển thị trang phân công của Ban Thanh Tráng.
+     * Hiển thị trang phân công của Ban Cơ Đốc Giáo Dục.
      *
      * @param Request $request
      * @return View
@@ -400,16 +400,16 @@ class BanThanhTrangThanhVienController extends Controller
      */
     public function phanCong(Request $request): View
     {
-        $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-        if (!$banThanhTrang) {
-            throw new \Exception('Không tìm thấy Ban Thanh Tráng');
+        $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+        if (!$banCoDocGiaoDuc) {
+            throw new \Exception('Không tìm thấy Ban Cơ Đốc Giáo Dục');
         }
 
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
         $buoiNhoms = BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])
-            ->where('ban_nganh_id', $banThanhTrang->id)
+            ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
             ->whereMonth('ngay_dien_ra', $month)
             ->whereYear('ngay_dien_ra', $year)
             ->orderBy('ngay_dien_ra', 'asc')
@@ -429,8 +429,8 @@ class BanThanhTrangThanhVienController extends Controller
             $years[$i] = $i;
         }
 
-        return view('_ban_thanh_trang.phan_cong', compact(
-            'banThanhTrang',
+        return view('_ban_co_doc_giao_duc.phan_cong', compact(
+            'banCoDocGiaoDuc',
             'buoiNhoms',
             'dienGias',
             'tinHuus',
@@ -476,9 +476,9 @@ class BanThanhTrangThanhVienController extends Controller
         }
 
         try {
-            $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-            if (!$banThanhTrang || $buoiNhom->ban_nganh_id !== $banThanhTrang->id) {
-                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Thanh Tráng.');
+            $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+            if (!$banCoDocGiaoDuc || $buoiNhom->ban_nganh_id !== $banCoDocGiaoDuc->id) {
+                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Cơ Đốc Giáo Dục.');
             }
 
             $buoiNhom->update($validator->validated());
@@ -499,9 +499,9 @@ class BanThanhTrangThanhVienController extends Controller
     public function deleteBuoiNhom(BuoiNhom $buoiNhom): JsonResponse
     {
         try {
-            $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-            if (!$banThanhTrang || $buoiNhom->ban_nganh_id !== $banThanhTrang->id) {
-                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Thanh Tráng.');
+            $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+            if (!$banCoDocGiaoDuc || $buoiNhom->ban_nganh_id !== $banCoDocGiaoDuc->id) {
+                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Cơ Đốc Giáo Dục.');
             }
 
             $buoiNhom->delete();
@@ -522,9 +522,9 @@ class BanThanhTrangThanhVienController extends Controller
      */
     public function phanCongChiTiet(Request $request): View
     {
-        $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-        if (!$banThanhTrang) {
-            throw new \Exception('Không tìm thấy Ban Thanh Tráng');
+        $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+        if (!$banCoDocGiaoDuc) {
+            throw new \Exception('Không tìm thấy Ban Cơ Đốc Giáo Dục');
         }
 
         $month = $request->input('month', date('m'));
@@ -540,7 +540,7 @@ class BanThanhTrangThanhVienController extends Controller
         $currentYear = (int) date('Y');
         $years = range($currentYear - 2, $currentYear + 1);
 
-        $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banThanhTrang->id)
+        $buoiNhomOptions = BuoiNhom::where('ban_nganh_id', $banCoDocGiaoDuc->id)
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->orderBy('ngay_dien_ra', 'desc')
@@ -551,7 +551,7 @@ class BanThanhTrangThanhVienController extends Controller
         $danhSachNhiemVu = NhiemVu::all();
 
         $thanhVienBan = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $banThanhTrang->id)
+            ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
             ->get();
 
         $nhiemVuPhanCong = [];
@@ -570,8 +570,8 @@ class BanThanhTrangThanhVienController extends Controller
             }
         }
 
-        return view('_ban_thanh_trang.phan_cong_chi_tiet', compact(
-            'banThanhTrang',
+        return view('_ban_co_doc_giao_duc.phan_cong_chi_tiet', compact(
+            'banCoDocGiaoDuc',
             'months',
             'years',
             'month',
@@ -608,23 +608,23 @@ class BanThanhTrangThanhVienController extends Controller
 
         try {
             $buoiNhom = BuoiNhom::find($request->buoi_nhom_id);
-            $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
+            $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
 
-            if (!$banThanhTrang || $buoiNhom->ban_nganh_id != $banThanhTrang->id) {
-                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Thanh Tráng.');
+            if (!$banCoDocGiaoDuc || $buoiNhom->ban_nganh_id != $banCoDocGiaoDuc->id) {
+                return $this->forbiddenResponse('Buổi nhóm không thuộc Ban Cơ Đốc Giáo Dục.');
             }
 
             $isMember = TinHuuBanNganh::where('tin_huu_id', $request->tin_huu_id)
-                ->where('ban_nganh_id', $banThanhTrang->id)
+                ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
                 ->exists();
 
             if (!$isMember) {
-                return $this->forbiddenResponse('Người được phân công không thuộc Ban Thanh Tráng.');
+                return $this->forbiddenResponse('Người được phân công không thuộc Ban Cơ Đốc Giáo Dục.');
             }
 
             $nhiemVu = NhiemVu::find($request->nhiem_vu_id);
-            if ($nhiemVu->id_ban_nganh != $banThanhTrang->id) {
-                return $this->forbiddenResponse('Nhiệm vụ không thuộc Ban Thanh Tráng.');
+            if ($nhiemVu->id_ban_nganh != $banCoDocGiaoDuc->id) {
+                return $this->forbiddenResponse('Nhiệm vụ không thuộc Ban Cơ Đốc Giáo Dục.');
             }
 
             $maxPosition = BuoiNhomNhiemVu::where('buoi_nhom_id', $request->buoi_nhom_id)
@@ -680,9 +680,9 @@ class BanThanhTrangThanhVienController extends Controller
             }
 
             $buoiNhom = BuoiNhom::find($phanCong->buoi_nhom_id);
-            $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
+            $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
 
-            if (!$banThanhTrang || $buoiNhom->ban_nganh_id != $banThanhTrang->id) {
+            if (!$banCoDocGiaoDuc || $buoiNhom->ban_nganh_id != $banCoDocGiaoDuc->id) {
                 return $this->forbiddenResponse('Không có quyền xóa phân công này.');
             }
 
@@ -704,13 +704,13 @@ class BanThanhTrangThanhVienController extends Controller
     public function dieuHanhList(Request $request): JsonResponse
     {
         try {
-            $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-            if (!$banThanhTrang) {
-                return $this->notFoundResponse('Không tìm thấy Ban Thanh Tráng.');
+            $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+            if (!$banCoDocGiaoDuc) {
+                return $this->notFoundResponse('Không tìm thấy Ban Cơ Đốc Giáo Dục.');
             }
 
             $query = TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $banThanhTrang->id)
+                ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
                 ->whereNotNull('chuc_vu')
                 ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên']);
 
@@ -753,13 +753,13 @@ class BanThanhTrangThanhVienController extends Controller
     public function banVienList(Request $request): JsonResponse
     {
         try {
-            $banThanhTrang = BanNganh::where('ten', 'Ban Thanh Tráng')->first();
-            if (!$banThanhTrang) {
-                return $this->notFoundResponse('Không tìm thấy Ban Thanh Tráng.');
+            $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Cơ Đốc Giáo Dục')->first();
+            if (!$banCoDocGiaoDuc) {
+                return $this->notFoundResponse('Không tìm thấy Ban Cơ Đốc Giáo Dục.');
             }
 
             $query = TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $banThanhTrang->id)
+                ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
                 ->where(function ($q) {
                     $q->whereNull('chuc_vu')
                         ->orWhere('chuc_vu', 'Thành viên')

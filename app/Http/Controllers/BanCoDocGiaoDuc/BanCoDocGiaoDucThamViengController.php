@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\BanTrungLao;
+namespace App\Http\Controllers\BanThanhTrang;
 
 use App\Http\Controllers\Controller;
 use App\Models\BanNganh;
@@ -13,30 +13,33 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class BanTrungLaoThamViengController extends Controller
+class BanCoDocGiaoDucThamViengController extends Controller
 {
-    private const BAN_TRUNG_LAO_ID = 1;
+    private const BAN_NGANH_ID = 2;
 
     /**
      * Hiển thị trang thăm viếng
      */
     public function thamVieng()
     {
-        $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
-        if (!$banTrungLao) {
+        $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Trung Lão')->first();
+        if (!$banCoDocGiaoDuc) {
             return redirect()->route('_ban_nganh.index')->with('error', 'Không tìm thấy Ban Trung Lão');
         }
 
-        $thanhVienBanTrungLao = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $banTrungLao->id)
+        $thanhVienBanThanhTrang = TinHuuBanNganh::with('tinHuu')
+            ->where('ban_nganh_id', $banCoDocGiaoDuc->id)
             ->get();
 
-        $danhSachTinHuu = TinHuu::orderBy('ho_ten')->get();
+        $danhSachTinHuu = TinHuu::orderBy('ho_ten')
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_NGANH_ID) // Sử dụng hằng số BAN_NGANH_ID
+            ->get();
 
         $deXuatThamVieng = TinHuu::select('*')
             ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [Carbon::now()])
             ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
-            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_NGANH_ID) // Sử dụng hằng số BAN_NGANH_ID
             ->where(function ($query) {
                 $query->whereNotNull('ngay_tham_vieng_gan_nhat')
                     ->orWhereNull('ngay_tham_vieng_gan_nhat');
@@ -56,8 +59,8 @@ class BanTrungLaoThamViengController extends Controller
         try {
             $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
                 ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
-                ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID)
-                ->where('id_ban', $banTrungLao->id)
+                ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_NGANH_ID)
+                ->where('id_ban', $banCoDocGiaoDuc->id)
                 ->where('trang_thai', 'da_tham')
                 ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60))
                 ->orderBy('ngay_tham', 'desc')
@@ -73,11 +76,11 @@ class BanTrungLaoThamViengController extends Controller
             $lichSuThamViengError = $e->getMessage();
         }
 
-        $thongKe = $this->getThongKeThamVieng($banTrungLao->id);
+        $thongKe = $this->getThongKeThamVieng($banCoDocGiaoDuc->id);
 
-        return view('_ban_trung_lao.tham_vieng', compact(
-            'banTrungLao',
-            'thanhVienBanTrungLao',
+        return view('_ban_co_doc_giao_duc.tham_vieng', compact(
+            'banCoDocGiaoDuc',
+            'thanhVienBanThanhTrang',
             'danhSachTinHuu',
             'deXuatThamVieng',
             'tinHuuWithLocations',
@@ -196,15 +199,15 @@ class BanTrungLaoThamViengController extends Controller
         $cutoffDate = Carbon::now()->subDays($days);
         $now = Carbon::now();
 
-        $tinHuuList = TinHuu::select('*')
-            ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
+        $tinHuuList = TinHuu::select('tin_huu.*')
+            ->selectRaw('DATEDIFF(?, tin_huu.ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
             ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
-            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_NGANH_ID) // Sử dụng hằng số BAN_NGANH_ID
             ->where(function ($query) use ($cutoffDate) {
-                $query->where('ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
-                    ->orWhereNull('ngay_tham_vieng_gan_nhat');
+                $query->where('tin_huu.ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
+                    ->orWhereNull('tin_huu.ngay_tham_vieng_gan_nhat');
             })
-            ->orderByRaw('ngay_tham_vieng_gan_nhat IS NULL DESC, ngay_tham_vieng_gan_nhat ASC')
+            ->orderByRaw('tin_huu.ngay_tham_vieng_gan_nhat IS NULL DESC, tin_huu.ngay_tham_vieng_gan_nhat ASC')
             ->limit(20)
             ->get();
 
@@ -228,7 +231,7 @@ class BanTrungLaoThamViengController extends Controller
     {
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date');
-        $banTrungLao = BanNganh::where('ten', 'Ban Trung Lão')->first();
+        $banCoDocGiaoDuc = BanNganh::where('ten', 'Ban Trung Lão')->first();
 
         if (!$fromDate || !$toDate) {
             return response()->json([
@@ -238,7 +241,7 @@ class BanTrungLaoThamViengController extends Controller
         }
 
         $thamViengs = ThamVieng::with(['tinHuu', 'nguoiTham'])
-            ->where('id_ban', $banTrungLao->id)
+            ->where('id_ban', $banCoDocGiaoDuc->id)
             ->whereDate('ngay_tham', '>=', $fromDate)
             ->whereDate('ngay_tham', '<=', $toDate)
             ->orderBy('ngay_tham', 'desc')
@@ -342,7 +345,7 @@ class BanTrungLaoThamViengController extends Controller
         $year = $request->input('year', date('Y'));
 
         $buoiNhoms = BuoiNhom::with(['dienGia'])
-            ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+            ->where('ban_nganh_id', self::BAN_NGANH_ID)
             ->whereMonth('ngay_dien_ra', $month)
             ->whereYear('ngay_dien_ra', $year)
             ->orderBy('ngay_dien_ra', 'desc')

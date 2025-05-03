@@ -31,10 +31,15 @@ class BanThanhTrangThamViengController extends Controller
             ->where('ban_nganh_id', $banThanhTrang->id)
             ->get();
 
-        $danhSachTinHuu = TinHuu::orderBy('ho_ten')->get();
+        $danhSachTinHuu = TinHuu::orderBy('ho_ten')
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_THANH_TRANG_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
+            ->get();
 
         $deXuatThamVieng = TinHuu::select('*')
             ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [Carbon::now()])
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_THANH_TRANG_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
             ->where(function ($query) {
                 $query->whereNotNull('ngay_tham_vieng_gan_nhat')
                     ->orWhereNull('ngay_tham_vieng_gan_nhat');
@@ -47,13 +52,29 @@ class BanThanhTrangThamViengController extends Controller
             ->whereNotNull('kinh_do')
             ->get();
 
-        $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
-            ->where('id_ban', $banThanhTrang->id)
-            ->where('trang_thai', 'da_tham')
-            ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60))
-            ->orderBy('ngay_tham', 'desc')
-            ->limit(50)
-            ->get();
+        // Khởi tạo biến $lichSuThamVieng với giá trị mặc định
+        $lichSuThamVieng = collect(); // Mặc định là một collection rỗng
+        $lichSuThamViengError = null; // Biến để lưu thông báo lỗi nếu có
+
+        try {
+            $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
+                ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
+                ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_THANH_TRANG_ID)
+                ->where('id_ban', $banThanhTrang->id)
+                ->where('trang_thai', 'da_tham')
+                ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60))
+                ->orderBy('ngay_tham', 'desc')
+                ->limit(50)
+                ->get();
+
+            // Kiểm tra nếu không có dữ liệu
+            if ($lichSuThamVieng->isEmpty()) {
+                throw new \Exception('Nội dung không có dữ liệu');
+            }
+        } catch (\Exception $e) {
+            // Gán thông báo lỗi để hiển thị trong view
+            $lichSuThamViengError = $e->getMessage();
+        }
 
         $thongKe = $this->getThongKeThamVieng($banThanhTrang->id);
 
@@ -178,13 +199,15 @@ class BanThanhTrangThamViengController extends Controller
         $cutoffDate = Carbon::now()->subDays($days);
         $now = Carbon::now();
 
-        $tinHuuList = TinHuu::select('*')
-            ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
+        $tinHuuList = TinHuu::select('tin_huu.*')
+            ->selectRaw('DATEDIFF(?, tin_huu.ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_THANH_TRANG_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
             ->where(function ($query) use ($cutoffDate) {
-                $query->where('ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
-                    ->orWhereNull('ngay_tham_vieng_gan_nhat');
+                $query->where('tin_huu.ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
+                    ->orWhereNull('tin_huu.ngay_tham_vieng_gan_nhat');
             })
-            ->orderByRaw('ngay_tham_vieng_gan_nhat IS NULL DESC, ngay_tham_vieng_gan_nhat ASC')
+            ->orderByRaw('tin_huu.ngay_tham_vieng_gan_nhat IS NULL DESC, tin_huu.ngay_tham_vieng_gan_nhat ASC')
             ->limit(20)
             ->get();
 
