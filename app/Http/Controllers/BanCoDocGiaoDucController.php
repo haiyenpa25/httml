@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\BanCoDocGiaoDuc\BanCoDocGiaoDucThanhVienController;
 use App\Http\Controllers\BanCoDocGiaoDuc\BanCoDocGiaoDucThamViengController;
 use App\Http\Controllers\BanCoDocGiaoDuc\BanCoDocGiaoDucBaoCaoController;
+use App\Http\Controllers\BanCoDocGiaoDuc\BaoCaoBanCoDocGiaoDucController;
 use App\Models\BuoiNhom;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
