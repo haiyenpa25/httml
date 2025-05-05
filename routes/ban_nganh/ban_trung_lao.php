@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::prefix('api/ban-trung-lao')
+    ->middleware(['auth', 'checkRole:quan_tri,truong_ban_trung_lao'])
     ->name('api.ban_trung_lao.')
     ->group(function () {
         // Quản lý thành viên
@@ -52,7 +53,7 @@ Route::prefix('api/ban-trung-lao')
 | Web routes cho Ban Trung Lão (giao diện quản lý)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])
+Route::middleware(['auth', 'checkRole:quan_tri,truong_ban_trung_lao'])
     ->prefix('ban-trung-lao')
     ->name('_ban_trung_lao.')
     ->group(function () {
@@ -80,7 +81,7 @@ Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])
 |--------------------------------------------------------------------------
 */
 Route::prefix('bao-cao')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'checkRole:quan_tri,truong_ban_trung_lao'])
     ->name('_bao_cao.')
     ->group(function () {
         Route::get('ban-trung-lao', [App\Http\Controllers\BanTrungLao\BaoCaoBanTrungLaoController::class, 'baoCaoBanTrungLao'])
