@@ -25,47 +25,8 @@
             </div>
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
-            <div class="action-buttons-container">
-                <!-- Hàng 1: Chức năng điều hướng chính -->
-                <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.index') }}" class="action-btn btn-primary-custom">
-                        <i class="fas fa-home"></i> Trang chính
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="action-btn btn-success-custom">
-                        <i class="fas fa-clipboard-check"></i> Điểm danh
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="action-btn btn-info-custom">
-                        <i class="fas fa-user-friends"></i> Thăm viếng
-                    </a>
-                </div>
-
-                <!-- Hàng 2: Chức năng phân công và báo cáo -->
-                <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="action-btn btn-warning-custom">
-                        <i class="fas fa-tasks"></i> Phân công
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
-                        <i class="fas fa-clipboard-list"></i> Chi tiết PC
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
-                        <i class="fas fa-file-alt"></i> Nhập báo cáo
-                    </a>
-                </div>
-
-                <!-- Hàng 3: Chức năng quản lý -->
-                <div class="button-row">
-                    <button type="button" class="action-btn btn-success-custom" data-toggle="modal"
-                        data-target="#modal-them-thanh-vien">
-                        <i class="fas fa-user-plus"></i> Thêm thành viên
-                    </button>
-                    <button type="button" class="action-btn btn-info-custom" id="btn-refresh">
-                        <i class="fas fa-sync"></i> Tải lại
-                    </button>
-                    <button type="button" class="action-btn btn-primary-custom" id="btn-export">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
-                    </button>
-                </div>
-            </div>
+            <!-- Thanh điều hướng nhanh -->
+            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
 
             <div class="row mb-2">
                 <div class="col-sm-6">
@@ -318,9 +279,11 @@
                         </div>
 
                         <!-- Tab: Đánh giá & Nhận xét -->
+                        <!-- Trong phần Đánh giá & Nhận xét -->
+                        <!-- Trong phần Đánh giá & Nhận xét -->
                         <div class="tab-pane fade" id="danhgia" role="tabpanel">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-12 mb-4"> <!-- Thay col-md-6 thành col-md-12 và thêm margin-bottom -->
                                     <div class="card card-outline card-success">
                                         <div class="card-header">
                                             <h3 class="card-title"><i class="fas fa-thumbs-up"></i> Điểm mạnh</h3>
@@ -334,10 +297,10 @@
                                             <table id="diem-manh-table" class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th width="5%">STT</th>
-                                                        <th width="60%">Nội dung</th>
-                                                        <th width="25%">Người đánh giá</th>
-                                                        <th width="10%">Thao tác</th>
+                                                        <th>STT</th>
+                                                        <th>Nội dung</th>
+                                                        <th>Người đánh giá</th>
+                                                        <th>Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -347,7 +310,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12"> <!-- Thay col-md-6 thành col-md-12 -->
                                     <div class="card card-outline card-danger">
                                         <div class="card-header">
                                             <h3 class="card-title"><i class="fas fa-thumbs-down"></i> Điểm cần cải thiện</h3>
@@ -361,10 +324,10 @@
                                             <table id="diem-yeu-table" class="table table-bordered table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th width="5%">STT</th>
-                                                        <th width="60%">Nội dung</th>
-                                                        <th width="25%">Người đánh giá</th>
-                                                        <th width="10%">Thao tác</th>
+                                                        <th>STT</th>
+                                                        <th>Nội dung</th>
+                                                        <th>Người đánh giá</th>
+                                                        <th>Thao tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -680,4 +643,4 @@
     </section>
 @endsection
 
-@include('scripts.ban_trung_lao.nhap_lieu_bao_cao_scripts')
+@include('_ban_trung_lao.scripts._scripts_nhap_lieu_bao_cao')

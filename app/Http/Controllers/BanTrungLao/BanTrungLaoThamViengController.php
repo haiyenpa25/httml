@@ -35,6 +35,8 @@ class BanTrungLaoThamViengController extends Controller
 
         $deXuatThamVieng = TinHuu::select('*')
             ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [Carbon::now()])
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
             ->where(function ($query) {
                 $query->whereNotNull('ngay_tham_vieng_gan_nhat')
                     ->orWhereNull('ngay_tham_vieng_gan_nhat');
@@ -47,13 +49,29 @@ class BanTrungLaoThamViengController extends Controller
             ->whereNotNull('kinh_do')
             ->get();
 
-        $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
-            ->where('id_ban', $banTrungLao->id)
-            ->where('trang_thai', 'da_tham')
-            ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60))
-            ->orderBy('ngay_tham', 'desc')
-            ->limit(50)
-            ->get();
+        // Khởi tạo biến $lichSuThamVieng với giá trị mặc định
+        $lichSuThamVieng = collect(); // Mặc định là một collection rỗng
+        $lichSuThamViengError = null; // Biến để lưu thông báo lỗi nếu có
+
+        try {
+            $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
+                ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
+                ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+                ->where('id_ban', $banTrungLao->id)
+                ->where('trang_thai', 'da_tham')
+                ->whereDate('ngay_tham', '>=', Carbon::now()->subDays(60))
+                ->orderBy('ngay_tham', 'desc')
+                ->limit(50)
+                ->get();
+
+            // Kiểm tra nếu không có dữ liệu
+            if ($lichSuThamVieng->isEmpty()) {
+                throw new \Exception('Nội dung không có dữ liệu');
+            }
+        } catch (\Exception $e) {
+            // Gán thông báo lỗi để hiển thị trong view
+            $lichSuThamViengError = $e->getMessage();
+        }
 
         $thongKe = $this->getThongKeThamVieng($banTrungLao->id);
 
@@ -71,6 +89,9 @@ class BanTrungLaoThamViengController extends Controller
     /**
      * Tạo thống kê thăm viếng
      */
+    /**
+     * Tạo thống kê thăm viếng
+     */
     private function getThongKeThamVieng($banNganhId)
     {
         $thongKe = [
@@ -80,28 +101,27 @@ class BanTrungLaoThamViengController extends Controller
             'counts' => []
         ];
 
+        // Tổng số lần thăm
         $thongKe['total_visits'] = ThamVieng::where('id_ban', $banNganhId)
             ->where('trang_thai', 'da_tham')
             ->count();
 
-        $monthlyStats = ThamVieng::selectRaw('MONTH(ngay_tham) as month, YEAR(ngay_tham) as year, COUNT(*) as count')
-            ->where('id_ban', $banNganhId)
+        // Số lần thăm trong tháng hiện tại
+        $thongKe['this_month'] = ThamVieng::where('id_ban', $banNganhId)
             ->where('trang_thai', 'da_tham')
-            ->whereBetween('ngay_tham', [Carbon::now()->subMonths(5), Carbon::now()])
-            ->groupBy('month', 'year')
-            ->orderBy('year', 'desc')
-            ->orderBy('month', 'desc')
-            ->get();
+            ->whereMonth('ngay_tham', Carbon::now()->month)
+            ->whereYear('ngay_tham', Carbon::now()->year)
+            ->count();
 
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
-        $thongKe['this_month'] = $monthlyStats->firstWhere('month', $currentMonth)
-            ?->where('year', $currentYear)->count ?? 0;
-
+        // Thống kê 6 tháng gần nhất
         for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $count = $monthlyStats->firstWhere('month', $month->month)
-                ?->where('year', $month->year)->count ?? 0;
+            $count = ThamVieng::where('id_ban', $banNganhId)
+                ->where('trang_thai', 'da_tham')
+                ->whereMonth('ngay_tham', $month->month)
+                ->whereYear('ngay_tham', $month->year)
+                ->count();
+
             $thongKe['months'][] = $month->format('m/Y');
             $thongKe['counts'][] = $count;
         }
@@ -178,6 +198,8 @@ class BanTrungLaoThamViengController extends Controller
 
         $tinHuuList = TinHuu::select('*')
             ->selectRaw('DATEDIFF(?, ngay_tham_vieng_gan_nhat) as so_ngay_chua_tham', [$now])
+            ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id') // Join với bảng tin_huu_ban_nganh
+            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_TRUNG_LAO_ID) // Sử dụng hằng số BAN_THANH_TRANG_ID
             ->where(function ($query) use ($cutoffDate) {
                 $query->where('ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
                     ->orWhereNull('ngay_tham_vieng_gan_nhat');
@@ -268,5 +290,67 @@ class BanTrungLaoThamViengController extends Controller
                 'message' => 'Không tìm thấy bản ghi thăm viếng hoặc lỗi hệ thống'
             ], 404);
         }
+    }
+
+    public function updateThamVieng(Request $request, $id): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'trang_thai' => 'required|in:da_tham,ke_hoach',
+            'ket_qua' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+            $thamVieng = ThamVieng::findOrFail($id);
+            $thamVieng->trang_thai = $request->trang_thai;
+            $thamVieng->ket_qua = $request->ket_qua;
+            $thamVieng->save();
+
+            if ($request->trang_thai == 'da_tham') {
+                TinHuu::where('id', $thamVieng->tin_huu_id)->update([
+                    'ngay_tham_vieng_gan_nhat' => $thamVieng->ngay_tham
+                ]);
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thăm viếng thành công',
+                'data' => $thamVieng
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi cập nhật thăm viếng: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getBuoiNhomList(Request $request): JsonResponse
+    {
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
+
+        $buoiNhoms = BuoiNhom::with(['dienGia'])
+            ->where('ban_nganh_id', self::BAN_TRUNG_LAO_ID)
+            ->whereMonth('ngay_dien_ra', $month)
+            ->whereYear('ngay_dien_ra', $year)
+            ->orderBy('ngay_dien_ra', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $buoiNhoms
+        ]);
     }
 }

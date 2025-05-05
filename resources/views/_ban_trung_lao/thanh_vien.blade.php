@@ -62,7 +62,12 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="form-group">
                                 <label>Họ tên</label>
+<<<<<<< HEAD
                                 <input type="text" class="form-control" id="filter-ho-ten" placeholder="Tìm kiếm theo họ tên">
+=======
+                                <input type="text" class="form-control" id="filter-ho-ten"
+                                    placeholder="Tìm kiếm theo họ tên">
+>>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
@@ -81,13 +86,23 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="form-group">
                                 <label>Số điện thoại</label>
+<<<<<<< HEAD
                                 <input type="text" class="form-control" id="filter-so-dien-thoai" placeholder="Tìm kiếm theo SĐT">
+=======
+                                <input type="text" class="form-control" id="filter-so-dien-thoai"
+                                    placeholder="Tìm kiếm theo SĐT">
+>>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="form-group">
                                 <label>Địa chỉ</label>
+<<<<<<< HEAD
                                 <input type="text" class="form-control" id="filter-dia-chi" placeholder="Tìm kiếm theo địa chỉ">
+=======
+                                <input type="text" class="form-control" id="filter-dia-chi"
+                                    placeholder="Tìm kiếm theo địa chỉ">
+>>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
                             </div>
                         </div>
                     </div>
@@ -95,6 +110,10 @@
             </div>
 
             <!-- Ban Điều Hành Table -->
+<<<<<<< HEAD
+=======
+            <!-- Ban Điều Hành Table -->
+>>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
             <div class="card card-primary card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-user-tie"></i> Ban Điều Hành</h3>
@@ -108,6 +127,10 @@
                     <table id="ban-dieu-hanh-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
+<<<<<<< HEAD
+=======
+                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
+>>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
                                 <th style="width: 50px" data-priority="1">STT</th>
                                 <th data-priority="3">Chức vụ</th>
                                 <th data-priority="1">Họ tên</th>
@@ -135,6 +158,10 @@
                     <table id="ban-vien-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
+<<<<<<< HEAD
+=======
+                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
+>>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
                                 <th style="width: 50px" data-priority="1">STT</th>
                                 <th data-priority="1">Họ tên</th>
                                 <th data-priority="3">Số điện thoại</th>

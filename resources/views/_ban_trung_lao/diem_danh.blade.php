@@ -25,47 +25,8 @@
             </div>
 
             <!-- Các nút chức năng - Bố cục được tối ưu hóa -->
-            <div class="action-buttons-container">
-                <!-- Hàng 1: Chức năng điều hướng chính -->
-                <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.index') }}" class="action-btn btn-primary-custom">
-                        <i class="fas fa-home"></i> Trang chính
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.diem_danh') }}" class="action-btn btn-success-custom">
-                        <i class="fas fa-clipboard-check"></i> Điểm danh
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.tham_vieng') }}" class="action-btn btn-info-custom">
-                        <i class="fas fa-user-friends"></i> Thăm viếng
-                    </a>
-                </div>
-
-                <!-- Hàng 2: Chức năng phân công và báo cáo -->
-                <div class="button-row">
-                    <a href="{{ route('_ban_trung_lao.phan_cong') }}" class="action-btn btn-warning-custom">
-                        <i class="fas fa-tasks"></i> Phân công
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
-                        <i class="fas fa-clipboard-list"></i> Chi tiết PC
-                    </a>
-                    <a href="{{ route('_ban_trung_lao.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
-                        <i class="fas fa-file-alt"></i> Nhập báo cáo
-                    </a>
-                </div>
-
-                <!-- Hàng 3: Chức năng quản lý -->
-                <div class="button-row">
-                    <button type="button" class="action-btn btn-success-custom" data-toggle="modal"
-                        data-target="#modal-them-thanh-vien">
-                        <i class="fas fa-user-plus"></i> Thêm thành viên
-                    </button>
-                    <button type="button" class="action-btn btn-info-custom" id="btn-refresh">
-                        <i class="fas fa-sync"></i> Tải lại
-                    </button>
-                    <button type="button" class="action-btn btn-primary-custom" id="btn-export">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
-                    </button>
-                </div>
-            </div>
+            <!-- Thanh điều hướng nhanh -->
+            @include('_ban_trung_lao.partials._ban_trung_lao_navigation')
 
             <!-- Filter Form -->
             <div class="card card-primary card-outline">
@@ -372,4 +333,4 @@
     </div>
 @endsection
 
-@include('scripts.ban_trung_lao.ban_trung_lao_diem_danh')
+@include('_ban_trung_lao.scripts._scripts_diem_danh')

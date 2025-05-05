@@ -115,4 +115,9 @@ class TinHuu extends Model
     {
         return $this->hasMany(BanNganh::class, 'truong_ban_id');
     }
+
+    public function quanLyQuy()
+    {
+        return $this->hasMany(QuyTaiChinh::class, 'nguoi_quan_ly_id');
+    }
 }
