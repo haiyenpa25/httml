@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::prefix('api/ban-co-doc-giao-duc')
-    ->name('api.ban_co_doc_giao_duc.')
+    ->name('api.ban_thanh_trang.')
     ->group(function () {
         // Quản lý thành viên
         Route::post('/them-thanh-vien', [BanCoDocGiaoDucController::class, 'themThanhVien'])->name('them_thanh_vien');
@@ -52,7 +52,7 @@ Route::prefix('api/ban-co-doc-giao-duc')
 */
 Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])
     ->prefix('ban-co-doc-giao-duc')
-    ->name('_ban_co_doc_giao_duc.')
+    ->name('_ban_thanh_trang.')
     ->group(function () {
         Route::get('/', [BanCoDocGiaoDucController::class, 'index'])->name('index');
         Route::get('diem-danh', [BanCoDocGiaoDucController::class, 'diemDanh'])->name('diem_danh');
@@ -60,7 +60,7 @@ Route::middleware(['auth', 'checkRole:quan_tri,truong_ban'])
         Route::get('phan-cong', [BanCoDocGiaoDucController::class, 'phanCong'])->name('phan_cong');
         Route::get('phan-cong-chi-tiet', [BanCoDocGiaoDucController::class, 'phanCongChiTiet'])->name('phan_cong_chi_tiet');
         Route::get('nhap-lieu-bao-cao', [BanCoDocGiaoDucController::class, 'formBaoCaoBanTrungLao'])->name('nhap_lieu_bao_cao');
-        Route::get('bao-cao-ban-co-doc-giao-duc', [BanCoDocGiaoDucController::class, 'baoCaoBanTrungLao'])->name('bao_cao_ban_co_doc_giao_duc');
+        Route::get('bao-cao-ban-co-doc-giao-duc', [BanCoDocGiaoDucController::class, 'baoCaoBanTrungLao'])->name('bao_cao_ban_thanh_trang');
 
         // Routes cho các chức năng lưu dữ liệu
         Route::post('save-thamdu-trung-lao', [BanCoDocGiaoDucController::class, 'saveThamDuTrungLao'])->name('save_thamdu_trung_lao');
@@ -82,5 +82,5 @@ Route::prefix('bao-cao')
     ->name('_bao_cao.')
     ->group(function () {
         Route::get('ban-co-doc-giao-duc', [App\Http\Controllers\BanCoDocGiaoDuc\BaoCaoBanCoDocGiaoDucController::class, 'baoCaoBanTrungLao'])
-            ->name('ban_co_doc_giao_duc');
+            ->name('ban_thanh_trang');
     });
