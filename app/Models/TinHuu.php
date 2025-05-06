@@ -5,12 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class TinHuu extends Model
 {
     use HasFactory;
 
     // QUAN TRỌNG: Đảm bảo tên bảng này khớp 100% với tên trong CSDL của bạn
     protected $table = 'tin_huu';
+
+
+
 
     protected $fillable = [
         'ho_ten',
@@ -21,6 +25,12 @@ class TinHuu extends Model
         'so_dien_thoai',
         'loai_tin_huu',
         'ngay_tin_chua',
+        'ngay_sinh_hoat_voi_hoi_thanh',
+        'ngay_nhan_bap_tem',
+        'hoan_thanh_bap_tem',
+        'noi_xuat_than',
+        'cccd',
+        'ma_dinh_danh_tinh',
         'ngay_tham_vieng_gan_nhat',
         'so_lan_vang_lien_tiep',
         'ho_gia_dinh_id',
@@ -28,16 +38,20 @@ class TinHuu extends Model
         'anh_dai_dien',
         'gioi_tinh',
         'tinh_trang_hon_nhan',
-        'trang_thai', // Thêm cột trạng thái nếu có (ví dụ: 1 = active, 0 = inactive)
+        'trang_thai',
     ];
 
-    // Các thuộc tính cần ép kiểu (ví dụ: date, boolean)
+    // Các thuộc tính cần ép kiểu (ví dụ: date, boolean)    
     protected $casts = [
         'ngay_sinh' => 'date',
         'ngay_tin_chua' => 'date',
+        'ngay_sinh_hoat_voi_hoi_thanh' => 'date',
+        'ngay_nhan_bap_tem' => 'date',
+        'hoan_thanh_bap_tem' => 'boolean',
         'ngay_tham_vieng_gan_nhat' => 'datetime',
-        'trang_thai' => 'boolean', // Nếu dùng trạng thái
+        'trang_thai' => 'boolean',
     ];
+
 
     /**
      * Quan hệ với Hộ gia đình
@@ -117,6 +131,41 @@ class TinHuu extends Model
     }
 
     public function quanLyQuy()
+    {
+        return $this->hasMany(QuyTaiChinh::class, 'nguoi_quan_ly_id');
+    }
+
+    public function nguoi_dung()
+    {
+        return $this->hasOne(NguoiDung::class, 'tin_huu_id');
+    }
+
+    public function thiet_bis()
+    {
+        return $this->hasMany(ThietBi::class, 'nguoi_quan_ly_id');
+    }
+
+    public function than_huu_gioi_thieu()
+    {
+        return $this->hasMany(ThanHuu::class, 'tin_huu_gioi_thieu_id');
+    }
+
+    public function tham_viengs()
+    {
+        return $this->hasMany(ThamVieng::class, 'nguoi_tham_id');
+    }
+
+    public function trinh_do_kinh_thanh()
+    {
+        return $this->hasMany(TinHuuTrinhDo::class, 'tin_huu_id');
+    }
+
+    public function ban_nganh_lam_truong_ban()
+    {
+        return $this->hasMany(BanNganh::class, 'truong_ban_id');
+    }
+
+    public function quan_ly_quy()
     {
         return $this->hasMany(QuyTaiChinh::class, 'nguoi_quan_ly_id');
     }
