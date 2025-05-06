@@ -13,7 +13,7 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('_ban_nganh.trung_lao.index') }}">{{ $banNganh->ten ?? 'Ban Ngành' }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('_ban_nganh.index', ['ban' => request()->segment(2)]) }}">{{ $banNganh->ten ?? 'Ban Ngành' }}</a></li>
                         <li class="breadcrumb-item active">Thành viên</li>
                     </ol>
                 </div><!-- /.col -->

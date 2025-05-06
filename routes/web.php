@@ -72,39 +72,6 @@ Route::prefix('quan-ly-tin-huu')->middleware($quanTriTruongBan)->group(function 
 Route::resource('nguoi-dung', NguoiDungController::class)->names('nguoi_dung');
 Route::resource('ho-gia-dinh', HoGiaDinhController::class)->names('_ho_gia_dinh');
 
-// ==== Quản lý Ban Ngành ====
-Route::prefix('quan-ly-ban-nganh')->middleware($quanTriTruongBan)->group(function () {
-    // Danh sách ban ngành tổng hợp
-    Route::resource('danh-sach', BanNganhController::class)->names('_ban_nganh');
-
-    // Ban chấp sự riêng
-    Route::resource('ban-chap-su', BanChapSuController::class)->names('_ban_chap_su');
-
-    // Các ban mục vụ
-    Route::prefix('ban-muc-vu')->group(function () {
-        Route::resource('ban-am-thuc', BanAmThucController::class)->names('_ban_am_thuc');
-        Route::resource('ban-cau-nguyen', BanCauNguyenController::class)->names('_ban_cau_nguyen');
-        Route::resource('ban-chung-dao', BanChungDaoController::class)->names('_ban_chung_dao');
-        Route::resource('ban-dan', BanDanController::class)->names('_ban_dan');
-        Route::resource('ban-hau-can', BanHauCanController::class)->names('_ban_hau_can');
-        Route::resource('ban-hat-tho-phuong', BanHatThoPhuongController::class)->names('_ban_hat_tho_phuong');
-        Route::resource('ban-khanh-tiet', BanKhanhTietController::class)->names('_ban_khanh_tiet');
-        Route::resource('ban-ky-thuat-am-thanh', BanKyThuatAmThanhController::class)->names('_ban_ky_thuat_am_thanh');
-        Route::resource('ban-le-tan', BanLeTanController::class)->names('_ban_le_tan');
-        Route::resource('ban-may-chieu', BanMayChieuController::class)->names('_ban_may_chieu');
-        Route::resource('ban-tham-vieng', BanThamViengController::class)->names('_ban_tham_vieng');
-        Route::resource('ban-trat-tu', BanTratTuController::class)->names('_ban_trat_tu');
-        Route::resource('ban-truyen-giang', BanTruyenGiangController::class)->names('_ban_truyen_giang');
-        Route::resource('ban-truyen-thong-may-chieu', BanTruyenThongMayChieuController::class)->names('_ban_truyen_thong_may_chieu');
-    });
-
-    // Các ban ngành khác
-    Route::prefix('ban-nganh')->group(function () {
-        Route::resource('ban-thanh-nien', BanThanhNienController::class)->names('_ban_thanh_nien');
-
-        Route::resource('ban-thieu-nhi-au', BanThieuNhiAuController::class)->names('_ban_thieu_nhi_au');
-    });
-});
 
 // ==== Quản lý Diễn Giả ====
 // --- Diễn Giả Routes ---
@@ -183,8 +150,6 @@ Route::prefix('bao-cao')->middleware($quanTri)->group(function () {
     Route::get('bao-cao-tai-chinh', [BaoCaoController::class, 'baoCaoTaiChinh'])->name('_bao_cao.tai_chinh');
     Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('_bao_cao.ban_nganh');
     Route::get('bao-cao-hoi-thanh', [BaoCaoController::class, 'baoCaoHoiThanh'])->name('_bao_cao.hoi_thanh');
-    Route::get('bao-cao-ban-trung-lao', [BaoCaoController::class, 'baoCaoBanTrungLao'])->name('_bao_cao.ban_trung_lao');
-    Route::get('bao-cao-ban-thanh-nien', [BaoCaoController::class, 'baoCaoBanThanhNien'])->name('_bao_cao.ban_thanh_nien');
     //Route::get('bao-cao-ban-co-doc-giao-duc', [BaoCaoController::class, 'baoCaoBanCoDocGiaoDuc'])->name('_bao_cao.ban_co_doc_giao_duc');
 });
 
@@ -251,73 +216,6 @@ Route::prefix('api/buoi-nhom')->name('api.buoi_nhom.')->group(function () {
 // API lấy Tín hữu theo Ban ngành
 Route::get('/api/tin-huu/by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::class, 'getTinHuuByBanNganh'])
     ->name('api.tin_huu.by_ban_nganh'); // <--- Tên khớp với JS: api.tin_huu.by_ban_nganh
-
-
-
-
-use App\Http\Controllers\BanMucVu\BanMucVuThamViengController;
-use App\Http\Controllers\BanMucVu\BanMucVuBaoCaoController;
-
-// Route web cho Ban Mục Vụ
-Route::prefix('ban-muc-vu')->name('ban_muc_vu.')->group(function () {
-    // Trang chính (quản lý thành viên)
-    Route::get('{ban_nganh_id}/index', [BanMucVuController::class, 'index'])->name('index');
-
-    // Điểm danh
-    Route::get('{ban_nganh_id}/diem-danh', [BanMucVuController::class, 'diemDanh'])->name('diem_danh');
-
-    // Thăm viếng
-    Route::get('{ban_nganh_id}/tham-vieng', [BanMucVuController::class, 'thamVieng'])->name('tham_vieng');
-
-    // Phân công
-    Route::get('{ban_nganh_id}/phan-cong', [BanMucVuController::class, 'phanCong'])->name('phan_cong');
-
-    // Phân công chi tiết
-    Route::get('{ban_nganh_id}/phan-cong-chi-tiet', [BanMucVuController::class, 'phanCongChiTiet'])->name('phan_cong_chi_tiet');
-
-    // Nhập liệu báo cáo
-    Route::get('{ban_nganh_id}/nhap-lieu-bao-cao', [BanMucVuController::class, 'formBaoCaoBanMucVu'])->name('nhap_lieu_bao_cao');
-
-    // Xem báo cáo
-    Route::get('{ban_nganh_id}/bao-cao', [BanMucVuController::class, 'baoCaoBanMucVu'])->name('bao_cao');
-});
-
-// Route API cho Ban Mục Vụ
-Route::prefix('api/ban-muc-vu')->name('api.ban_muc_vu.')->group(function () {
-    // Quản lý thành viên
-    Route::post('them-thanh-vien', [BanMucVuThanhVienController::class, 'themThanhVien'])->name('them_thanh_vien');
-    Route::post('cap-nhat-chuc-vu', [BanMucVuThanhVienController::class, 'capNhatChucVu'])->name('cap_nhat_chuc_vu');
-    Route::post('xoa-thanh-vien', [BanMucVuThanhVienController::class, 'xoaThanhVien'])->name('xoa_thanh_vien');
-    Route::get('{ban_nganh_id}/dieu-hanh-list', [BanMucVuThanhVienController::class, 'dieuHanhList'])->name('dieu_hanh_list');
-    Route::get('{ban_nganh_id}/ban-vien-list', [BanMucVuThanhVienController::class, 'banVienList'])->name('ban_vien_list');
-
-    // Điểm danh
-    Route::post('luu-diem-danh', [BanMucVuThanhVienController::class, 'luuDiemDanh'])->name('luu_diem_danh');
-    Route::post('them-buoi-nhom', [BanMucVuThanhVienController::class, 'themBuoiNhom'])->name('them_buoi_nhom');
-
-    // Thăm viếng
-    Route::post('them-tham-vieng/{ban_nganh_id}', [BanMucVuThamViengController::class, 'themThamVieng'])->name('them_tham_vieng');
-    Route::get('filter-de-xuat-tham-vieng', [BanMucVuThamViengController::class, 'filterDeXuatThamVieng'])->name('filter_de_xuat_tham_vieng');
-    Route::get('filter-tham-vieng', [BanMucVuThamViengController::class, 'filterThamVieng'])->name('filter_tham_vieng');
-    Route::get('chi-tiet-tham-vieng/{id}', [BanMucVuThamViengController::class, 'chiTietThamVieng'])->name('chi_tiet_tham_vieng');
-
-    // Phân công
-    Route::post('phan-cong-nhiem-vu', [BanMucVuThanhVienController::class, 'phanCongNhiemVu'])->name('phan_cong_nhiem_vu');
-    Route::delete('xoa-phan-cong/{id}', [BanMucVuThanhVienController::class, 'xoaPhanCong'])->name('xoa_phan_cong');
-    Route::post('update-buoi-nhom/{buoiNhom}', [BanMucVuThanhVienController::class, 'updateBuoiNhom'])->name('update_buoi_nhom');
-    Route::delete('delete-buoi-nhom/{buoiNhom}', [BanMucVuThanhVienController::class, 'deleteBuoiNhom'])->name('delete_buoi_nhom');
-
-    // Nhập liệu báo cáo
-    Route::post('update-tham-du', [BanMucVuBaoCaoController::class, 'updateThamDuBanMucVu'])->name('update_tham_du');
-    Route::post('save-tham-du', [BanMucVuBaoCaoController::class, 'saveThamDuBanMucVu'])->name('save_tham_du');
-    Route::post('save-danh-gia', [BanMucVuBaoCaoController::class, 'saveDanhGiaBanMucVu'])->name('save_danh_gia');
-    Route::post('save-ke-hoach', [BanMucVuBaoCaoController::class, 'saveKeHoachBanMucVu'])->name('save_ke_hoach');
-    Route::post('save-kien-nghi', [BanMucVuBaoCaoController::class, 'saveKienNghiBanMucVu'])->name('save_kien_nghi');
-    Route::delete('xoa-danh-gia/{id}', [BanMucVuBaoCaoController::class, 'xoaDanhGia'])->name('xoa_danh_gia');
-    Route::delete('xoa-kien-nghi/{id}', [BanMucVuBaoCaoController::class, 'xoaKienNghi'])->name('xoa_kien_nghi');
-});
-
-
 
 
 
@@ -391,6 +289,7 @@ Route::prefix('thu-quy')->name('_thu_quy.')->middleware(['auth'])->group(functio
 
 
 // Include router của từng ban ngành
+require __DIR__ . '/ban_nganh/ban_nganh.php';
 require __DIR__ . '/ban_nganh/ban_trung_lao.php';
 require __DIR__ . '/ban_nganh/ban_co_doc_giao_duc.php';
 require __DIR__ . '/ban_nganh/ban_thanh_trang.php';
