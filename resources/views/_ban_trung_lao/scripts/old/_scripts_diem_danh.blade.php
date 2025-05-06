@@ -3,7 +3,6 @@
     <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
-
     <!-- Select2 CSS -->
     <style>
         /* Select2 adjustments for better mobile compatibility */
@@ -172,27 +171,6 @@
             padding: 12px;
         }
 
-        /* Tùy chỉnh nút mở rộng của DataTables Responsive */
-        table.dataTable.dtr-column>tbody>tr>td.dtr-control:before,
-        table.dataTable.dtr-column>tbody>tr>th.dtr-control:before {
-            content: '+';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            text-align: center;
-            background-color: #007bff;
-            color: white;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        table.dataTable.dtr-column>tbody>tr.parent>td.dtr-control:before,
-        table.dataTable.dtr-column>tbody>tr.parent>th.dtr-control:before {
-            content: '-';
-            background-color: #dc3545;
-        }
-
         /* Modal adjustments for better mobile experience */
         .modal-content {
             border-radius: 10px;
@@ -301,8 +279,8 @@
     </style>
 @endsection
 
-
 @section('page-scripts')
+    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
     <script>
         // Biến toàn cục để theo dõi trạng thái khởi tạo DataTable
         if (typeof window.isDataTableInitialized === 'undefined') {
@@ -319,7 +297,7 @@
             // Đánh dấu rằng script đã được khởi tạo
             window.isDataTableInitialized = true;
 
-            // Khởi tạo Select2
+            // Khởi tạo Select2 (hợp nhất từ phần 1 và phần 2)
             if ($('.select2bs4').length) {
                 $('.select2bs4').each(function () {
                     const $select = $(this);
@@ -336,19 +314,16 @@
                 });
             }
 
-            // Hàm khởi tạo DataTable với kiểm tra tồn tại của table
+            // Hàm khởi tạo DataTable
             function initializeDataTable(tableId, ajaxUrl, columns, filterData) {
-                // Kiểm tra xem table element có tồn tại trong DOM không
                 if (!$(tableId).length) {
                     console.warn(`Table element ${tableId} not found in DOM. Skipping DataTable initialization.`);
                     return null;
                 }
 
-                // Kiểm tra và hủy DataTable nếu đã tồn tại
                 if ($.fn.DataTable.isDataTable(tableId)) {
                     try {
                         $(tableId).DataTable().destroy();
-                        // Xóa nội dung của table để đảm bảo không còn tham chiếu cũ
                         $(tableId).empty();
                     } catch (e) {
                         console.error(`Error destroying DataTable for ${tableId}:`, e);
@@ -377,37 +352,8 @@
                     language: {
                         url: '{{ asset("dist/js/Vietnamese.json") }}'
                     },
-                    responsive: {
-                        details: {
-                            type: 'column', // Sử dụng kiểu mở rộng dạng cột
-                            target: 0, // Cột đầu tiên là cột điều khiển
-                            renderer: function (api, rowIdx, columns) {
-                                var data = $.map(columns, function (col, i) {
-                                    // Lấy giá trị data-priority của cột
-                                    var priority = $(api.column(i).header()).attr('data-priority') || '0';
-                                    // Bỏ qua cột nếu không bị ẩn hoặc có data-priority="4" (cột Địa chỉ)
-                                    if (!col.hidden || priority === '4') return '';
-                                    return '<tr data-dt-row="' + col.rowIndex + '" data-dt-column="' + col.columnIndex + '">' +
-                                        '<td><strong>' + col.title + ':</strong></td>' +
-                                        '<td>' + col.data + '</td>' +
-                                        '</tr>';
-                                }).join('');
-                                return data ? $('<table class="table table-bordered"/>').append(data) : false;
-                            }
-                        }
-                    },
-                    autoWidth: false,
-                    columnDefs: [
-                        {
-                            className: 'dt-control', // Thêm class cho cột điều khiển
-                            orderable: false,
-                            searchable: false,
-                            targets: 0 // Cột đầu tiên là cột điều khiển
-                        },
-                        { targets: [0, 1, 4], responsivePriority: 1 }, // Ưu tiên hiển thị STT, Họ tên, Thao tác
-                        { targets: [2, 3], responsivePriority: 100 } // Ưu tiên thấp hơn cho Số điện thoại/Địa chỉ
-                    ],
-                    order: [] // Không sắp xếp mặc định
+                    responsive: true,
+                    autoWidth: false
                 });
             }
 
@@ -416,7 +362,6 @@
                 '#ban-dieu-hanh-table',
                 "{{ route('api.ban_trung_lao.dieu_hanh_list') }}",
                 [
-                    { data: null, defaultContent: '' }, // Cột điều khiển mở rộng
                     {
                         data: null,
                         render: function (data, type, row, meta) {
@@ -430,25 +375,19 @@
                         render: function (data, type, row) {
                             const chucVu = row.chuc_vu || '';
                             return `
-                                            <div class="btn-group">
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                        data-toggle="modal" 
-                                                        data-target="#modal-edit-chuc-vu"
-                                                        data-id="${row.tin_huu_id}" 
-                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                        data-ten="${row.ho_ten}" 
-                                                        data-chucvu="${chucVu}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                        data-id="${row.tin_huu_id}" 
-                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                        data-ten="${row.ho_ten}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>`;
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                                    data-toggle="modal" data-target="#modal-edit-chuc-vu"
+                                                                    data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
+                                                                    data-ten="${row.ho_ten}" data-chucvu="${chucVu}">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                                    data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
+                                                                    data-ten="${row.ho_ten}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>`;
                         }
                     }
                 ],
@@ -463,7 +402,6 @@
                 '#ban-vien-table',
                 "{{ route('api.ban_trung_lao.ban_vien_list') }}",
                 [
-                    { data: null, defaultContent: '' }, // Cột điều khiển mở rộng
                     {
                         data: null,
                         render: function (data, type, row, meta) {
@@ -478,25 +416,19 @@
                         render: function (data, type, row) {
                             const chucVu = row.chuc_vu || '';
                             return `
-                                            <div class="btn-group">
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-info btn-edit-chuc-vu" 
-                                                        data-toggle="modal" 
-                                                        data-target="#modal-edit-chuc-vu"
-                                                        data-id="${row.tin_huu_id}" 
-                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                        data-ten="${row.ho_ten}" 
-                                                        data-chucvu="${chucVu}">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
-                                                        data-id="${row.tin_huu_id}" 
-                                                        data-ban-id="{{ $banTrungLao->id }}"
-                                                        data-ten="${row.ho_ten}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>`;
+                                                        <div class="btn-group">
+                                                            <button type="button" class="btn btn-sm btn-info btn-edit-chuc-vu" 
+                                                                    data-toggle="modal" data-target="#modal-edit-chuc-vu"
+                                                                    data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
+                                                                    data-ten="${row.ho_ten}" data-chucvu="${chucVu}">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-danger btn-xoa-thanh-vien" 
+                                                                    data-id="${row.tin_huu_id}" data-ban-id="{{ $banTrungLao->id }}"
+                                                                    data-ten="${row.ho_ten}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>`;
                         }
                     }
                 ],
@@ -565,7 +497,7 @@
                 $.ajax({
                     url: $(this).attr('action'),
                     method: 'POST',
-                    data: $(this).serialize(),
+                    data: $(this).serialize() + '&_method=PUT',
                     dataType: 'json'
                 })
                     .done(response => {
@@ -691,12 +623,142 @@
                 };
             }
 
-            // Xử lý TurboLinks nếu có
-            document.addEventListener('turbolinks:load', function () {
-                window.isDataTableInitialized = false;
-                $(document).ready();
-            });
+            // Xử lý form điểm danh (từ view)
+            if ($('#attendance-form').length) {
+                $('#attendance-form').on('submit', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Form điểm danh submitted via AJAX');
 
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        beforeSend: function () {
+                            console.log('Sending AJAX request for điểm danh...');
+                            $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                        },
+                        success: function (response) {
+                            console.log('Success response:', response);
+                            if (response.success) {
+                                toastr.success('Đã lưu điểm danh thành công!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error('Lỗi: ' + response.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            console.log('Error response:', xhr.responseText, xhr.status);
+                            const errors = xhr.responseJSON ? xhr.responseJSON.errors : null;
+                            let errorMsg = 'Lỗi:\n';
+                            if (errors) {
+                                $.each(errors, function (key, value) {
+                                    errorMsg += `- ${value.join('\n')}\n`;
+                                });
+                            } else {
+                                errorMsg += xhr.responseText;
+                            }
+                            toastr.error(errorMsg);
+                        },
+                        complete: function () {
+                            console.log('AJAX request completed');
+                            $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save"></i> Lưu điểm danh');
+                        }
+                    });
+                });
+            }
+
+            // Xử lý form thêm buổi nhóm (từ view)
+            if ($('#add-buoi-nhom-form').length) {
+                $('#add-buoi-nhom-form').on('submit', function (e) {
+                    e.preventDefault();
+                    console.log('Form thêm buổi nhóm submitted via AJAX');
+
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: $(this).serialize(),
+                        dataType: 'json',
+                        success: function (response) {
+                            console.log('Success response:', response);
+                            if (response.success) {
+                                $('#modal-them-buoi-nhom').modal('hide');
+                                toastr.success('Buổi nhóm đã được tạo thành công!');
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                toastr.error('Lỗi: ' + response.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            console.log('Error response:', xhr.responseText, xhr.status);
+                            const errors = xhr.responseJSON ? xhr.responseJSON.errors : null;
+                            let errorMsg = 'Lỗi:\n';
+                            if (errors) {
+                                $.each(errors, function (key, value) {
+                                    errorMsg += `- ${value.join('\n')}\n`;
+                                });
+                            } else {
+                                errorMsg += xhr.responseText;
+                            }
+                            toastr.error(errorMsg);
+                        }
+                    });
+                });
+            }
+
+            // Xử lý thay đổi buổi nhóm (từ view)
+            if ($('#buoi-nhom-select').length) {
+                $('#buoi-nhom-select').on('change', function () {
+                    console.log('Buổi nhóm selected, submitting filter form');
+                    $('#filter-form').submit();
+                });
+            }
+
+            // Xử lý thay đổi màu dòng theo trạng thái điểm danh (từ view)
+            if ($('.attendance-status').length) {
+                $('.attendance-status').on('change', function () {
+                    const status = $(this).val();
+                    const row = $(this).closest('tr');
+                    row.removeClass('table-success table-danger table-warning');
+                    if (status === 'co_mat') {
+                        row.addClass('table-success');
+                    } else if (status === 'vang_mat') {
+                        row.addClass('table-danger');
+                    } else if (status === 'vang_co_phep') {
+                        row.addClass('table-warning');
+                    }
+                });
+                $('.attendance-status').trigger('change');
+            }
+
+            // Khởi tạo biểu đồ PieChart (từ view)
+            @if($selectedBuoiNhom && isset($stats))
+                if ($('#pieChart').length) {
+                    var pieChartCanvas = $('#pieChart').get(0).getContext('2d');
+                    var pieData = {
+                        labels: ['Có mặt', 'Vắng mặt', 'Vắng có phép'],
+                        datasets: [{
+                            data: [{{ $stats['co_mat'] }}, {{ $stats['vang_mat'] }}, {{ $stats['vang_co_phep'] }}],
+                            backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+                        }]
+                    };
+                    var pieOptions = {
+                        legend: {
+                            display: false
+                        },
+                        maintainAspectRatio: false,
+                        responsive: true,
+                    };
+                    new Chart(pieChartCanvas, {
+                        type: 'pie',
+                        data: pieData,
+                        options: pieOptions
+                    });
+                }
+            @endif
+
+            // Xử lý nút xóa thành viên
             $(document).on('click', '.btn-xoa-thanh-vien', function () {
                 const id = $(this).data('id');
                 const banId = $(this).data('ban-id');
@@ -705,6 +767,12 @@
                 $('#delete_ban_nganh_id').val(banId);
                 $('#delete_ten_tin_huu').text(ten);
                 $('#modal-xoa-thanh-vien').modal('show');
+            });
+
+            // Xử lý TurboLinks nếu có
+            document.addEventListener('turbolinks:load', function () {
+                window.isDataTableInitialized = false;
+                $(document).ready();
             });
         });
     </script>

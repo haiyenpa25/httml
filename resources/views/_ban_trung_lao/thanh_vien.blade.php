@@ -158,10 +158,6 @@
                     <table id="ban-vien-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
-<<<<<<< HEAD
-=======
-                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
->>>>>>> 8f78b1f135b3ddeb59dbbf12311ffd03c3ace501
                                 <th style="width: 50px" data-priority="1">STT</th>
                                 <th data-priority="1">Họ tên</th>
                                 <th data-priority="3">Số điện thoại</th>
