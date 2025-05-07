@@ -35,7 +35,7 @@ use App\Http\Controllers\{
     ThongBaoController,
     BaoCaoController,
     CaiDatController,
-    BanNganhController,
+    //BanNganhController,
     TinHuuBanNganhController,
     BuoiNhomController,
     ChiTietThamGiaController,
@@ -144,14 +144,14 @@ Route::get('quan-ly-thong-bao/thong-bao', [ThongBaoController::class, 'index'])
     ->name('_thong_bao.index');
 
 // ==== Báo Cáo ====
-Route::prefix('bao-cao')->middleware($quanTri)->group(function () {
-    Route::get('bao-cao-tho-phuong', [BaoCaoController::class, 'baoCaoThoPhuong'])->name('_bao_cao.tho_phuong');
-    Route::get('bao-cao-thiet-bi', [BaoCaoController::class, 'baoCaoThietBi'])->name('_bao_cao.thiet_bi');
-    Route::get('bao-cao-tai-chinh', [BaoCaoController::class, 'baoCaoTaiChinh'])->name('_bao_cao.tai_chinh');
-    Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('_bao_cao.ban_nganh');
-    Route::get('bao-cao-hoi-thanh', [BaoCaoController::class, 'baoCaoHoiThanh'])->name('_bao_cao.hoi_thanh');
-    //Route::get('bao-cao-ban-co-doc-giao-duc', [BaoCaoController::class, 'baoCaoBanCoDocGiaoDuc'])->name('_bao_cao.ban_co_doc_giao_duc');
-});
+// Route::prefix('bao-cao')->middleware($quanTri)->group(function () {
+//     Route::get('bao-cao-tho-phuong', [BaoCaoController::class, 'baoCaoThoPhuong'])->name('_bao_cao.tho_phuong');
+//     Route::get('bao-cao-thiet-bi', [BaoCaoController::class, 'baoCaoThietBi'])->name('_bao_cao.thiet_bi');
+//     Route::get('bao-cao-tai-chinh', [BaoCaoController::class, 'baoCaoTaiChinh'])->name('_bao_cao.tai_chinh');
+//     Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('_bao_cao.ban_nganh');
+//     Route::get('bao-cao-hoi-thanh', [BaoCaoController::class, 'baoCaoHoiThanh'])->name('_bao_cao.hoi_thanh');
+//     //Route::get('bao-cao-ban-co-doc-giao-duc', [BaoCaoController::class, 'baoCaoBanCoDocGiaoDuc'])->name('_bao_cao.ban_co_doc_giao_duc');
+// });
 
 
 Route::get('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'index'])->name('_tin_huu_ban_nganh.index');
@@ -290,8 +290,8 @@ Route::prefix('thu-quy')->name('_thu_quy.')->middleware(['auth'])->group(functio
 
 // Include router của từng ban ngành
 require __DIR__ . '/ban_nganh/ban_nganh.php';
-require __DIR__ . '/ban_nganh/ban_trung_lao.php';
-require __DIR__ . '/ban_nganh/ban_co_doc_giao_duc.php';
-require __DIR__ . '/ban_nganh/ban_thanh_trang.php';
+//require __DIR__ . '/ban_nganh/ban_trung_lao.php';
+//require __DIR__ . '/ban_nganh/ban_co_doc_giao_duc.php';
+//require __DIR__ . '/ban_nganh/ban_thanh_trang.php';
 require __DIR__ . '/quan_ly/thiet_bi.php';
 require __DIR__ . '/quan_ly/thong_bao.php';

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\TinHuuTrinhDo;
 
 
 class TinHuu extends Model
@@ -12,8 +13,6 @@ class TinHuu extends Model
 
     // QUAN TRỌNG: Đảm bảo tên bảng này khớp 100% với tên trong CSDL của bạn
     protected $table = 'tin_huu';
-
-
 
 
     protected $fillable = [
@@ -168,5 +167,14 @@ class TinHuu extends Model
     public function quan_ly_quy()
     {
         return $this->hasMany(QuyTaiChinh::class, 'nguoi_quan_ly_id');
+    }
+    public function tinHuu()
+    {
+        return $this->belongsTo(TinHuu::class, 'tin_huu_id', 'id');
+    }
+
+    public function banNganh()
+    {
+        return $this->belongsTo(BanNganh::class, 'ban_nganh_id', 'id');
     }
 }

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class BanNganhBaoCaoController extends Controller
@@ -124,29 +125,59 @@ class BanNganhBaoCaoController extends Controller
      */
     public function baoCaoBan(Request $request, array $config): View
     {
+        // Lấy và validate month, year
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
 
-        $banDieuHanh = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $config['id'])
-            ->whereNotNull('chuc_vu')
-            ->get();
+        if (!is_numeric($month) || $month < 1 || $month > 12) {
+            $month = date('m');
+        }
+        if (!is_numeric($year) || $year < 2020 || $year > date('Y') + 1) {
+            $year = date('Y');
+        }
 
-        $buoiNhomHT = BuoiNhom::with('dienGia')
+        // Tính nextMonth và nextYear
+        $nextMonth = $month == 12 ? 1 : $month + 1;
+        $nextYear = $month == 12 ? $year + 1 : $year;
+
+        // Cache ban điều hành
+        $banDieuHanh = Cache::remember("ban_dieu_hanh_{$config['id']}_{$month}_{$year}", now()->addHour(), function () use ($config) {
+            return TinHuuBanNganh::with(['tinHuu' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }])
+                ->select('id', 'tin_huu_id', 'ban_nganh_id', 'chuc_vu')
+                ->where('ban_nganh_id', $config['id'])
+                ->whereNotNull('chuc_vu')
+                ->get();
+        });
+
+        // Lấy buổi nhóm Hội Thánh
+        $buoiNhomHT = BuoiNhom::with(['dienGia' => function ($query) {
+            $query->select('id', 'ho_ten');
+        }])
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->where('ban_nganh_id', $config['hoi_thanh_id'])
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        $buoiNhomBN = BuoiNhom::with('dienGia')
+        // Lấy buổi nhóm Ban Ngành
+        $buoiNhomBN = BuoiNhom::with(['dienGia' => function ($query) {
+            $query->select('id', 'ho_ten');
+        }, 'giaoDichTaiChinh' => function ($query) {
+            $query->select('id', 'buoi_nhom_id', 'so_tien');
+        }])
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->where('ban_nganh_id', $config['id'])
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        $giaoDich = GiaoDichTaiChinh::whereYear('ngay_giao_dich', $year)
+        // Lấy giao dịch tài chính
+        $giaoDich = GiaoDichTaiChinh::select('id', 'ban_nganh_id', 'loai', 'so_tien', 'mo_ta', 'ngay_giao_dich')
+            ->whereYear('ngay_giao_dich', $year)
             ->whereMonth('ngay_giao_dich', $month)
             ->where('ban_nganh_id', $config['id'])
             ->orderBy('ngay_giao_dich')
@@ -163,39 +194,66 @@ class BanNganhBaoCaoController extends Controller
             'giaoDich' => $giaoDich,
         ];
 
-        $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
+        // Lấy dữ liệu thăm viếng
+        $thamVieng = ThamVieng::with([
+            'tinHuu' => function ($query) {
+                $query->select('id', 'ho_ten');
+            },
+            'nguoiTham' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }
+        ])
+            ->select('id', 'id_ban', 'tin_huu_id', 'nguoi_tham_id', 'ngay_tham', 'noi_dung')
             ->whereYear('ngay_tham', $year)
             ->whereMonth('ngay_tham', $month)
             ->where('id_ban', $config['id'])
             ->orderBy('ngay_tham')
             ->get();
 
-        $nextMonth = $month == 12 ? 1 : $month + 1;
-        $nextYear = $month == 12 ? $year + 1 : $year;
+        // Lấy kế hoạch
+        $keHoach = Cache::remember("ke_hoach_{$config['id']}_{$nextMonth}_{$nextYear}", now()->addHour(), function () use ($config, $nextMonth, $nextYear) {
+            return KeHoach::with(['nguoiPhuTrach' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }])
+                ->select('id', 'ban_nganh_id', 'hoat_dong', 'thoi_gian', 'nguoi_phu_trach_id', 'ghi_chu', 'thang', 'nam')
+                ->where('ban_nganh_id', $config['id'])
+                ->where('thang', $nextMonth)
+                ->where('nam', $nextYear)
+                ->get();
+        });
 
-        $keHoach = KeHoach::with('nguoiPhuTrach')
+        // Lấy đánh giá
+        $diemManh = DanhGia::with(['nguoiDanhGia' => function ($query) {
+            $query->select('id', 'ho_ten');
+        }])
+            ->select('id', 'ban_nganh_id', 'loai', 'noi_dung', 'nguoi_danh_gia_id', 'thang', 'nam')
             ->where('ban_nganh_id', $config['id'])
-            ->where('thang', $nextMonth)
-            ->where('nam', $nextYear)
-            ->get();
-
-        $diemManh = DanhGia::where('ban_nganh_id', $config['id'])
             ->where('loai', 'diem_manh')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        $diemYeu = DanhGia::where('ban_nganh_id', $config['id'])
+        $diemYeu = DanhGia::with(['nguoiDanhGia' => function ($query) {
+            $query->select('id', 'ho_ten');
+        }])
+            ->select('id', 'ban_nganh_id', 'loai', 'noi_dung', 'nguoi_danh_gia_id', 'thang', 'nam')
+            ->where('ban_nganh_id', $config['id'])
             ->where('loai', 'diem_yeu')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        $kienNghi = KienNghi::where('ban_nganh_id', $config['id'])
+        // Lấy kiến nghị
+        $kienNghi = KienNghi::with(['nguoiDeXuat' => function ($query) {
+            $query->select('id', 'ho_ten');
+        }])
+            ->select('id', 'ban_nganh_id', 'tieu_de', 'noi_dung', 'nguoi_de_xuat_id', 'trang_thai', 'thang', 'nam')
+            ->where('ban_nganh_id', $config['id'])
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
+        // Tính toán thống kê
         $totalMeetings = $buoiNhomBN->count();
         $avgAttendance = $totalMeetings > 0 ? round($buoiNhomBN->sum('so_luong_tin_huu') / $totalMeetings) : 0;
         $totalOffering = $tongThu;
@@ -208,9 +266,15 @@ class BanNganhBaoCaoController extends Controller
             'totalVisits' => $totalVisits,
         ];
 
+        // Logging để debug
+        Log::info("Rendering bao_cao view for ban_nganh_id: {$config['id']}, month: {$month}, year: {$year}");
+
+        // Render view chung _ban_nganh.bao_cao
         return view("{$config['view_prefix']}.bao_cao", compact(
             'month',
             'year',
+            'nextMonth', // Thêm nextMonth
+            'nextYear',  // Thêm nextYear
             'banDieuHanh',
             'buoiNhomHT',
             'buoiNhomBN',

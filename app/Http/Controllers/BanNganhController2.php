@@ -6,7 +6,7 @@ use App\Models\BanNganh;
 use App\Models\TinHuu;
 use Illuminate\Http\Request;
 
-class BanNganhController extends Controller
+class BanNganhController2 extends Controller
 {
     /**
      * Danh sách tất cả Ban Ngành

@@ -1,94 +1,68 @@
-@php
-    // Ánh xạ URL segment sang banType
-    $urlSegment = request()->segment(2);
-    $banTypeMap = [
-        'ban-trung-lao' => 'trung_lao',
-        'ban-thanh-trang' => 'thanh_trang',
-        'ban-thanh-nien' => 'thanh_nien',
-        'ban-thieu-nhi' => 'thieu_nhi',
-        'ban-thieu-nhi-au' => 'thieu_nhi_au',
-    ];
-    $banType = $banTypeMap[$urlSegment] ?? 'trung_lao'; // Mặc định là trung_lao nếu không tìm thấy
-@endphp
+<!-- Navigation for Ban Ngành management interface -->
+<!-- Assumes $banType is passed to the view (e.g., 'trung_lao', 'thanh_trang', 'thanh_nien', 'thieu_nhi_au') -->
+<!-- Ensure all route names match those defined in routes/ban_nganh.php -->
 
-@section('page-scripts')
-    <script>
-        $(document).ready(function () {
-            // Xử lý nút active dựa trên URL hiện tại
-            $('.action-btn').each(function () {
-                var href = $(this).attr('href');
-                var currentPath = window.location.pathname;
-                if (href === currentPath) {
-                    $(this).addClass('active');
-                }
-            });
-        });
-    </script>
-@endsection
+<ul class="nav nav-pills nav-sidebar flex-column" role="menu" data-accordion="false">
+    <!-- Dashboard -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.index') }}"
+           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.index') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-tachometer-alt"></i>
+            <p>Tổng quan</p>
+        </a>
+    </li>
 
-<div class="action-buttons-container">
-    <!-- Hàng 1: Chức năng điều hướng chính -->
-    <div class="button-row">
-        <a href="{{ route('_ban_nganh.index', ['ban' => $urlSegment]) }}" class="action-btn btn-primary-custom">
-            <i class="fas fa-home"></i> Trang chính
+    <!-- Attendance Management -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.diem_danh') }}"
+           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.diem_danh') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-check-square"></i>
+            <p>Điểm danh</p>
         </a>
-        <a href="{{ route('_ban_nganh.' . $banType . '.diem_danh') }}" class="action-btn btn-success-custom">
-            <i class="fas fa-clipboard-check"></i> Điểm danh
-        </a>
-        <a href="{{ route('_ban_nganh.' . $banType . '.tham_vieng') }}" class="action-btn btn-info-custom">
-            <i class="fas fa-user-friends"></i> Thăm viếng
-        </a>
-        <a href="{{ route('_ban_nganh.' . $banType . '.phan_cong') }}" class="action-btn btn-warning-custom">
-            <i class="fas fa-tasks"></i> Phân công
-        </a>
-    </div>
+    </li>
 
-    <!-- Hàng 2: Chức năng phân công và báo cáo -->
-    <div class="button-row">
-        <a href="{{ route('_ban_nganh.' . $banType . '.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
-            <i class="fas fa-clipboard-list"></i> Chi tiết PC
+    <!-- Visitation Management -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.tham_vieng') }}"
+           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.tham_vieng') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-handshake"></i>
+            <p>Thăm viếng</p>
         </a>
-        <a href="{{ route('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
-            <i class="fas fa-file-alt"></i> Nhập báo cáo
+    </li>
+
+    <!-- Task Assignment -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.phan_cong') }}"
+           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.phan_cong') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-tasks"></i>
+            <p>Phân công</p>
         </a>
-        <a href="{{ route('_bao_cao.ban_nganh.' . $banType) }}" class="action-btn btn-success-custom">
-            <i class="fas fa-file-alt"></i> Báo cáo
+    </li>
+
+    <!-- Detailed Task Assignment -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.phan_cong_chi_tiet') }}"
+           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.phan_cong_chi_tiet') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-list-alt"></i>
+            <p>Phân công chi tiết</p>
         </a>
-        <button type="button" class="action-btn btn-success-custom" data-toggle="modal" data-target="#modal-them-thanh-vien">
-            <i class="fas fa-user-plus"></i> Thêm thành viên
-        </button>
-    </div>
+    </li>
 
-    <!-- Hàng 3: Chức năng quản lý -->
-    <div class="button-row">
-    </div>
-</div>
+    <!-- Report Input -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') }}"
+           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-edit"></i>
+            <p>Nhập liệu báo cáo</p>
+        </a>
+    </li>
 
-<style>
-    /* Kiểu cho nút đang được active */
-    .action-btn.active {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        position: relative;
-    }
-
-    .action-btn.active:after {
-        content: '';
-        position: absolute;
-        bottom: -5px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40%;
-        height: 3px;
-        background-color: rgba(255, 255, 255, 0.7);
-        border-radius: 3px;
-    }
-
-    /* Tối ưu hóa cho thiết bị di động */
-    @media (max-width: 767px) {
-        .action-btn.active:after {
-            bottom: -3px;
-            height: 2px;
-        }
-    }
-</style>
+    <!-- Report Overview -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_nganh.' . $banType . '.bao_cao') }}"
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.bao_cao') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-chart-bar"></i>
+            <p>Báo cáo</p>
+        </a>
+    </li>
+</ul>

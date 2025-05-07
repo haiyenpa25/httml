@@ -34,6 +34,15 @@ class BanNganhController extends Controller
         $this->thamViengController = $thamViengController;
         $this->baoCaoController = $baoCaoController;
         $this->banConfig = config('ban_nganh');
+
+        // Middleware nội tuyến để share $banType tới tất cả view
+        $this->middleware(function ($request, $next) {
+            // Lấy banType đã defaults trong route
+            $banType = $request->route('banType');
+            // Share biến cho tất cả view
+            view()->share('banType', $banType);
+            return $next($request);
+        });
     }
 
     /**

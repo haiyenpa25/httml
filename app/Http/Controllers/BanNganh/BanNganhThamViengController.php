@@ -122,107 +122,107 @@ class BanNganhThamViengController extends Controller
     /**
      * Hiển thị báo cáo hoàn thiện của ban
      */
-    public function baoCaoBan(Request $request, array $config): View
-    {
-        $month = $request->get('month', date('m'));
-        $year = $request->get('year', date('Y'));
+    // public function baoCaoBan(Request $request, array $config): View
+    // {
+    //     $month = $request->get('month', date('m'));
+    //     $year = $request->get('year', date('Y'));
 
-        $banDieuHanh = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', $config['id'])
-            ->whereNotNull('chuc_vu')
-            ->get();
+    //     $banDieuHanh = TinHuuBanNganh::with('tinHuu')
+    //         ->where('ban_nganh_id', $config['id'])
+    //         ->whereNotNull('chuc_vu')
+    //         ->get();
 
-        $buoiNhomHT = BuoiNhom::with('dienGia')
-            ->whereYear('ngay_dien_ra', $year)
-            ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', $config['hoi_thanh_id'])
-            ->orderBy('ngay_dien_ra')
-            ->get();
+    //     $buoiNhomHT = BuoiNhom::with('dienGia')
+    //         ->whereYear('ngay_dien_ra', $year)
+    //         ->whereMonth('ngay_dien_ra', $month)
+    //         ->where('ban_nganh_id', $config['hoi_thanh_id'])
+    //         ->orderBy('ngay_dien_ra')
+    //         ->get();
 
-        $buoiNhomBN = BuoiNhom::with('dienGia')
-            ->whereYear('ngay_dien_ra', $year)
-            ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', $config['id'])
-            ->orderBy('ngay_dien_ra')
-            ->get();
+    //     $buoiNhomBN = BuoiNhom::with('dienGia')
+    //         ->whereYear('ngay_dien_ra', $year)
+    //         ->whereMonth('ngay_dien_ra', $month)
+    //         ->where('ban_nganh_id', $config['id'])
+    //         ->orderBy('ngay_dien_ra')
+    //         ->get();
 
-        $giaoDich = GiaoDichTaiChinh::whereYear('ngay_giao_dich', $year)
-            ->whereMonth('ngay_giao_dich', $month)
-            ->where('ban_nganh_id', $config['id'])
-            ->orderBy('ngay_giao_dich')
-            ->get();
+    //     $giaoDich = GiaoDichTaiChinh::whereYear('ngay_giao_dich', $year)
+    //         ->whereMonth('ngay_giao_dich', $month)
+    //         ->where('ban_nganh_id', $config['id'])
+    //         ->orderBy('ngay_giao_dich')
+    //         ->get();
 
-        $tongThu = $giaoDich->where('loai', 'thu')->sum('so_tien');
-        $tongChi = $giaoDich->where('loai', 'chi')->sum('so_tien');
-        $tongTon = $tongThu - $tongChi;
+    //     $tongThu = $giaoDich->where('loai', 'thu')->sum('so_tien');
+    //     $tongChi = $giaoDich->where('loai', 'chi')->sum('so_tien');
+    //     $tongTon = $tongThu - $tongChi;
 
-        $taiChinh = [
-            'tongThu' => $tongThu,
-            'tongChi' => $tongChi,
-            'tongTon' => $tongTon,
-            'giaoDich' => $giaoDich,
-        ];
+    //     $taiChinh = [
+    //         'tongThu' => $tongThu,
+    //         'tongChi' => $tongChi,
+    //         'tongTon' => $tongTon,
+    //         'giaoDich' => $giaoDich,
+    //     ];
 
-        $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
-            ->whereYear('ngay_tham', $year)
-            ->whereMonth('ngay_tham', $month)
-            ->where('id_ban', $config['id'])
-            ->orderBy('ngay_tham')
-            ->get();
+    //     $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
+    //         ->whereYear('ngay_tham', $year)
+    //         ->whereMonth('ngay_tham', $month)
+    //         ->where('id_ban', $config['id'])
+    //         ->orderBy('ngay_tham')
+    //         ->get();
 
-        $nextMonth = $month == 12 ? 1 : $month + 1;
-        $nextYear = $month == 12 ? $year + 1 : $year;
+    //     $nextMonth = $month == 12 ? 1 : $month + 1;
+    //     $nextYear = $month == 12 ? $year + 1 : $year;
 
-        $keHoach = KeHoach::with('nguoiPhuTrach')
-            ->where('ban_nganh_id', $config['id'])
-            ->where('thang', $nextMonth)
-            ->where('nam', $nextYear)
-            ->get();
+    //     $keHoach = KeHoach::with('nguoiPhuTrach')
+    //         ->where('ban_nganh_id', $config['id'])
+    //         ->where('thang', $nextMonth)
+    //         ->where('nam', $nextYear)
+    //         ->get();
 
-        $diemManh = DanhGia::where('ban_nganh_id', $config['id'])
-            ->where('loai', 'diem_manh')
-            ->where('thang', $month)
-            ->where('nam', $year)
-            ->get();
+    //     $diemManh = DanhGia::where('ban_nganh_id', $config['id'])
+    //         ->where('loai', 'diem_manh')
+    //         ->where('thang', $month)
+    //         ->where('nam', $year)
+    //         ->get();
 
-        $diemYeu = DanhGia::where('ban_nganh_id', $config['id'])
-            ->where('loai', 'diem_yeu')
-            ->where('thang', $month)
-            ->where('nam', $year)
-            ->get();
+    //     $diemYeu = DanhGia::where('ban_nganh_id', $config['id'])
+    //         ->where('loai', 'diem_yeu')
+    //         ->where('thang', $month)
+    //         ->where('nam', $year)
+    //         ->get();
 
-        $kienNghi = KienNghi::where('ban_nganh_id', $config['id'])
-            ->where('thang', $month)
-            ->where('nam', $year)
-            ->get();
+    //     $kienNghi = KienNghi::where('ban_nganh_id', $config['id'])
+    //         ->where('thang', $month)
+    //         ->where('nam', $year)
+    //         ->get();
 
-        $totalMeetings = $buoiNhomBN->count();
-        $avgAttendance = $totalMeetings > 0 ? round($buoiNhomBN->sum('so_luong_tin_huu') / $totalMeetings) : 0;
-        $totalOffering = $tongThu;
-        $totalVisits = $thamVieng->count();
+    //     $totalMeetings = $buoiNhomBN->count();
+    //     $avgAttendance = $totalMeetings > 0 ? round($buoiNhomBN->sum('so_luong_tin_huu') / $totalMeetings) : 0;
+    //     $totalOffering = $tongThu;
+    //     $totalVisits = $thamVieng->count();
 
-        $summary = [
-            'totalMeetings' => $totalMeetings,
-            'avgAttendance' => $avgAttendance,
-            'totalOffering' => $totalOffering,
-            'totalVisits' => $totalVisits,
-        ];
+    //     $summary = [
+    //         'totalMeetings' => $totalMeetings,
+    //         'avgAttendance' => $avgAttendance,
+    //         'totalOffering' => $totalOffering,
+    //         'totalVisits' => $totalVisits,
+    //     ];
 
-        return view("{$config['view_prefix']}.bao_cao", compact(
-            'month',
-            'year',
-            'banDieuHanh',
-            'buoiNhomHT',
-            'buoiNhomBN',
-            'taiChinh',
-            'thamVieng',
-            'keHoach',
-            'summary',
-            'diemManh',
-            'diemYeu',
-            'kienNghi'
-        ));
-    }
+    //     return view("{$config['view_prefix']}.bao_cao", compact(
+    //         'month',
+    //         'year',
+    //         'banDieuHanh',
+    //         'buoiNhomHT',
+    //         'buoiNhomBN',
+    //         'taiChinh',
+    //         'thamVieng',
+    //         'keHoach',
+    //         'summary',
+    //         'diemManh',
+    //         'diemYeu',
+    //         'kienNghi'
+    //     ));
+    // }
 
     /**
      * Cập nhật số lượng tham dự và dâng hiến cho một buổi nhóm

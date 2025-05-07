@@ -128,7 +128,7 @@ Route::prefix('ban-nganh/ban-trung-lao')
                     ->name('nhap_lieu_bao_cao'); // Report input form
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('bao_cao'); // Ban report overview
+                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
@@ -255,7 +255,7 @@ Route::prefix('ban-nganh/ban-thanh-trang')
                     ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'thanh_trang')
-                    ->name('bao_cao');
+                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
@@ -382,7 +382,7 @@ Route::prefix('ban-nganh/ban-thanh-nien')
                     ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'thanh_nien')
-                    ->name('bao_cao');
+                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
@@ -405,7 +405,7 @@ Route::prefix('ban-nganh/ban-thanh-nien')
 | Ban Thiếu Nhi Ấu Routes
 |--------------------------------------------------------------------------
 | Routes for managing Ban Thiếu Nhi Ấu, accessible to quan_tri and truong_ban_thieu_nhi roles.
-| Note: Aligned with sidebar naming (_ban_thieu_nhi_au).
+| Aligned with sidebar naming (_ban_thieu_nhi_au).
 */
 Route::prefix('ban-nganh/ban-thieu-nhi-au')
     ->middleware(['auth', 'checkRole:quan_tri,truong_ban_thieu_nhi'])
@@ -510,7 +510,7 @@ Route::prefix('ban-nganh/ban-thieu-nhi-au')
                     ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'thieu_nhi_au')
-                    ->name('bao_cao');
+                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
@@ -526,35 +526,4 @@ Route::prefix('ban-nganh/ban-thieu-nhi-au')
                     ->defaults('banType', 'thieu_nhi_au')
                     ->name('save_kien_nghi');
             });
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Báo Cáo Routes
-|--------------------------------------------------------------------------
-| Routes for generating reports for each Ban Ngành, accessible to quan_tri and respective ban leaders.
-*/
-Route::prefix('bao-cao')
-    ->middleware(['auth', 'checkRole:quan_tri'])
-    ->name('_bao_cao.')
-    ->group(function () {
-        Route::get('/ban-nganh/ban-trung-lao', [BanNganhController::class, 'baoCaoBan'])
-            ->defaults('banType', 'trung_lao')
-            ->name('ban_nganh.trung_lao')
-            ->middleware('checkRole:quan_tri,truong_ban_trung_lao');
-
-        Route::get('/ban-nganh/ban-thanh-trang', [BanNganhController::class, 'baoCaoBan'])
-            ->defaults('banType', 'thanh_trang')
-            ->name('ban_nganh.thanh_trang')
-            ->middleware('checkRole:quan_tri,truong_ban_thanh_trang');
-
-        Route::get('/ban-nganh/ban-thanh-nien', [BanNganhController::class, 'baoCaoBan'])
-            ->defaults('banType', 'thanh_nien')
-            ->name('ban_nganh.thanh_nien')
-            ->middleware('checkRole:quan_tri,truong_ban_thanh_nien');
-
-        Route::get('/ban-nganh/ban-thieu-nhi-au', [BanNganhController::class, 'baoCaoBan'])
-            ->defaults('banType', 'thieu_nhi_au')
-            ->name('ban_nganh.thieu_nhi_au')
-            ->middleware('checkRole:quan_tri,truong_ban_thieu_nhi');
     });

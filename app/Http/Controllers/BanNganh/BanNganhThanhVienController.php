@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
+use Yajra\DataTables\Facades\DataTables;
 
 class BanNganhThanhVienController extends Controller
 {
@@ -73,8 +74,211 @@ class BanNganhThanhVienController extends Controller
             ->orderBy('ho_ten', 'asc')
             ->get();
 
-        // Sử dụng view chung _ban_nganh.thanh_vien thay vì view riêng
+        // Sử dụng view chung _ban_nganh.thanh_vien
         return view('_ban_nganh.thanh_vien', compact('banNganh', 'banDieuHanh', 'banVien', 'tinHuuList'));
+    }
+
+    /**
+     * Lấy danh sách Ban Viên (JSON cho DataTables)
+     */
+    public function banVienList(Request $request, array $config): JsonResponse
+    {
+        try {
+            Log::info('Gọi banVienList với config:', $config);
+            Log::info('Request data:', $request->all());
+
+            $query = TinHuuBanNganh::with([
+                'tinHuu' => function ($query) {
+                    $query->select(
+                        'id',
+                        'ho_ten',
+                        'ngay_sinh',
+                        'dia_chi',
+                        'so_dien_thoai',
+                        'loai_tin_huu',
+                        'ngay_sinh_hoat_voi_hoi_thanh',
+                        'ngay_tin_chua',
+                        'hoan_thanh_bap_tem',
+                        'gioi_tinh',
+                        'tinh_trang_hon_nhan'
+                    );
+                },
+                'banNganh' => function ($query) {
+                    $query->select('id', 'ten');
+                }
+            ])
+                ->where('ban_nganh_id', $config['id'])
+                ->where(function ($q) {
+                    $q->whereNull('chuc_vu')
+                        ->orWhere('chuc_vu', 'Thành viên')
+                        ->orWhere('chuc_vu', '');
+                });
+
+            // Áp dụng bộ lọc
+            if ($hoTen = $request->input('ho_ten')) {
+                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
+                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
+                });
+            }
+            if ($loaiTinHuu = $request->input('loai_tin_huu')) {
+                $query->whereHas('tinHuu', function ($q) use ($loaiTinHuu) {
+                    $q->where('loai_tin_huu', $loaiTinHuu);
+                });
+            }
+            if ($soDienThoai = $request->input('so_dien_thoai')) {
+                $query->whereHas('tinHuu', function ($q) use ($soDienThoai) {
+                    $q->where('so_dien_thoai', 'like', '%' . $soDienThoai . '%');
+                });
+            }
+            if ($ngaySinh = $request->input('ngay_sinh')) {
+                $query->whereHas('tinHuu', function ($q) use ($ngaySinh) {
+                    $q->where('ngay_sinh', $ngaySinh);
+                });
+            }
+            if ($gioiTinh = $request->input('gioi_tinh')) {
+                $query->whereHas('tinHuu', function ($q) use ($gioiTinh) {
+                    $q->where('gioi_tinh', $gioiTinh);
+                });
+            }
+            if ($tinhTrangHonNhan = $request->input('tinh_trang_hon_nhan')) {
+                $query->whereHas('tinHuu', function ($q) use ($tinhTrangHonNhan) {
+                    $q->where('tinh_trang_hon_nhan', $tinhTrangHonNhan);
+                });
+            }
+            if ($hoanThanhBapTem = $request->input('hoan_thanh_bap_tem')) {
+                $query->whereHas('tinHuu', function ($q) use ($hoanThanhBapTem) {
+                    $q->where('hoan_thanh_bap_tem', $hoanThanhBapTem);
+                });
+            }
+            if ($tuoi = $request->input('tuoi')) {
+                $query->whereHas('tinHuu', function ($q) use ($tuoi) {
+                    if ($tuoi === 'under_15') {
+                        $q->whereRaw('YEAR(CURDATE()) - YEAR(ngay_sinh) < 15');
+                    } elseif ($tuoi === '15') {
+                        $q->whereRaw('YEAR(CURDATE()) - YEAR(ngay_sinh) = 15');
+                    } elseif ($tuoi === '18') {
+                        $q->whereRaw('YEAR(CURDATE()) - YEAR(ngay_sinh) = 18');
+                    } elseif ($tuoi === '21') {
+                        $q->whereRaw('YEAR(CURDATE()) - YEAR(ngay_sinh) = 21');
+                    } elseif ($tuoi === 'above_21') {
+                        $q->whereRaw('YEAR(CURDATE()) - YEAR(ngay_sinh) > 21');
+                    }
+                });
+            }
+            if ($thoiGianSinhHoat = $request->input('thoi_gian_sinh_hoat')) {
+                $query->whereHas('tinHuu', function ($q) use ($thoiGianSinhHoat) {
+                    if ($thoiGianSinhHoat === '6_months') {
+                        $q->whereRaw('TIMESTAMPDIFF(MONTH, ngay_sinh_hoat_voi_hoi_thanh, CURDATE()) = 6');
+                    } elseif ($thoiGianSinhHoat === '1_year') {
+                        $q->whereRaw('TIMESTAMPDIFF(MONTH, ngay_sinh_hoat_voi_hoi_thanh, CURDATE()) = 12');
+                    } elseif ($thoiGianSinhHoat === '2_years_plus') {
+                        $q->whereRaw('TIMESTAMPDIFF(MONTH, ngay_sinh_hoat_voi_hoi_thanh, CURDATE()) >= 24');
+                    }
+                });
+            }
+
+            $dataTable = DataTables::of($query)
+                ->addColumn('id', function ($row) {
+                    return $row->tin_huu_id;
+                })
+                ->addColumn('ho_ten', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->ho_ten ?? 'N/A';
+                })
+                ->addColumn('ngay_sinh', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->ngay_sinh;
+                })
+                ->addColumn('dia_chi', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->dia_chi ?? 'N/A';
+                })
+                ->addColumn('so_dien_thoai', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->so_dien_thoai ?? 'N/A';
+                })
+                ->addColumn('ban_nganh', function ($row) {
+                    return $row->banNganh->ten ?? 'N/A';
+                })
+                ->addColumn('loai_tin_huu', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->loai_tin_huu ?? 'N/A';
+                })
+                ->addColumn('ngay_sinh_hoat_voi_hoi_thanh', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return null;
+                    }
+                    return $row->tinHuu->ngay_sinh_hoat_voi_hoi_thanh;
+                })
+                ->addColumn('ngay_tin_chua', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return null;
+                    }
+                    return $row->tinHuu->ngay_tin_chua;
+                })
+                ->addColumn('hoan_thanh_bap_tem', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return null;
+                    }
+                    return $row->tinHuu->hoan_thanh_bap_tem;
+                })
+                ->addColumn('gioi_tinh', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->gioi_tinh ?? 'N/A';
+                })
+                ->addColumn('tinh_trang_hon_nhan', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->tinh_trang_hon_nhan ?? 'N/A';
+                })
+                ->addColumn('action', function ($row) {
+                    $tinHuuId = $row->tin_huu_id;
+                    $banNganhId = $row->ban_nganh_id;
+                    $hoTen = $row->tinHuu ? ($row->tinHuu->ho_ten ?? 'N/A') : 'N/A';
+                    $chucVu = $row->chuc_vu ?? 'Thành viên';
+                    return '<div class="btn-group">' .
+                        '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu">' .
+                        '<i class="fas fa-edit"></i> Sửa' .
+                        '</button>' .
+                        '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien">' .
+                        '<i class="fas fa-trash"></i> Xóa' .
+                        '</button>' .
+                        '</div>';
+                });
+
+            // Log dữ liệu trả về để kiểm tra (chuyển stdClass thành mảng)
+            $response = $dataTable->make(true);
+            $responseData = $response->getData();
+            Log::info('Dữ liệu trả về từ DataTables:', json_decode(json_encode($responseData), true));
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error("Lỗi lấy danh sách Ban Viên: {$e->getMessage()}", ['exception' => $e]);
+            return $this->errorResponse("Lỗi hệ thống: {$e->getMessage()}", 500);
+        }
     }
 
     /**
@@ -264,7 +468,8 @@ class BanNganhThanhVienController extends Controller
 
         $dienGias = DienGia::orderBy('ho_ten')->get();
 
-        return view("{$config['view_prefix']}.diem_danh", compact(
+        // Sử dụng view chung _ban_nganh.diem_danh
+        return view('_ban_nganh.diem_danh', compact(
             'banNganh',
             'months',
             'years',
@@ -404,7 +609,8 @@ class BanNganhThanhVienController extends Controller
             $years[$i] = $i;
         }
 
-        return view("{$config['view_prefix']}.phan_cong", compact(
+        // Sử dụng view chung _ban_nganh.phan_cong
+        return view('_ban_nganh.phan_cong', compact(
             'banNganh',
             'buoiNhoms',
             'dienGias',
@@ -530,7 +736,8 @@ class BanNganhThanhVienController extends Controller
             }
         }
 
-        return view("{$config['view_prefix']}.phan_cong_chi_tiet", compact(
+        // Sử dụng view chung _ban_nganh.phan_cong_chi_tiet
+        return view('_ban_nganh.phan_cong_chi_tiet', compact(
             'banNganh',
             'months',
             'years',
@@ -651,6 +858,9 @@ class BanNganhThanhVienController extends Controller
     public function dieuHanhList(Request $request, array $config): JsonResponse
     {
         try {
+            Log::info('Gọi dieuHanhList với config:', $config);
+            Log::info('Request data:', $request->all());
+
             $query = TinHuuBanNganh::with('tinHuu')
                 ->where('ban_nganh_id', $config['id'])
                 ->whereNotNull('chuc_vu')
@@ -666,76 +876,40 @@ class BanNganhThanhVienController extends Controller
                 $query->where('chuc_vu', $chucVu);
             }
 
-            $data = $query->get()->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'tin_huu_id' => $item->tin_huu_id,
-                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
-                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
-                ];
-            });
-
-            if ($data->isEmpty()) {
-                return $this->successResponse("Không có thành viên Ban Điều Hành.", []);
-            }
-
-            return $this->successResponse("Lấy danh sách Ban Điều Hành thành công.", $data);
+            return DataTables::of($query)
+                ->addColumn('id', function ($row) {
+                    return $row->id;
+                })
+                ->addColumn('tin_huu_id', function ($row) {
+                    return $row->tin_huu_id;
+                })
+                ->addColumn('ho_ten', function ($row) {
+                    if (!$row->tinHuu) {
+                        Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
+                        return 'N/A';
+                    }
+                    return $row->tinHuu->ho_ten ?? 'N/A';
+                })
+                ->addColumn('chuc_vu', function ($row) {
+                    return $row->chuc_vu ?? 'Thành viên';
+                })
+                ->addColumn('action', function ($row) {
+                    $tinHuuId = $row->tin_huu_id;
+                    $banNganhId = $row->ban_nganh_id;
+                    $hoTen = $row->tinHuu ? ($row->tinHuu->ho_ten ?? 'N/A') : 'N/A';
+                    $chucVu = $row->chuc_vu ?? 'Thành viên';
+                    return '<div class="btn-group">' .
+                        '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu">' .
+                        '<i class="fas fa-edit"></i> Sửa' .
+                        '</button>' .
+                        '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien">' .
+                        '<i class="fas fa-trash"></i> Xóa' .
+                        '</button>' .
+                        '</div>';
+                })
+                ->make(true);
         } catch (\Exception $e) {
-            Log::error("Lỗi lấy danh sách Ban Điều Hành: {$e->getMessage()}");
-            return $this->errorResponse("Lỗi hệ thống: {$e->getMessage()}", 500);
-        }
-    }
-
-    /**
-     * Lấy danh sách Ban Viên (JSON cho DataTables)
-     */
-    public function banVienList(Request $request, array $config): JsonResponse
-    {
-        try {
-            $query = TinHuuBanNganh::with('tinHuu')
-                ->where('ban_nganh_id', $config['id'])
-                ->where(function ($q) {
-                    $q->whereNull('chuc_vu')
-                        ->orWhere('chuc_vu', 'Thành viên')
-                        ->orWhere('chuc_vu', '');
-                });
-
-            if ($hoTen = $request->input('ho_ten')) {
-                $query->whereHas('tinHuu', function ($q) use ($hoTen) {
-                    $q->where('ho_ten', 'like', '%' . $hoTen . '%');
-                });
-            }
-
-            if ($soDienThoai = $request->input('so_dien_thoai')) {
-                $query->whereHas('tinHuu', function ($q) use ($soDienThoai) {
-                    $q->where('so_dien_thoai', 'like', '%' . $soDienThoai . '%');
-                });
-            }
-
-            if ($diaChi = $request->input('dia_chi')) {
-                $query->whereHas('tinHuu', function ($q) use ($diaChi) {
-                    $q->where('dia_chi', 'like', '%' . $diaChi . '%');
-                });
-            }
-
-            $data = $query->get()->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'tin_huu_id' => $item->tin_huu_id,
-                    'ho_ten' => $item->tinHuu->ho_ten ?? 'N/A',
-                    'so_dien_thoai' => $item->tinHuu->so_dien_thoai ?? 'N/A',
-                    'dia_chi' => $item->tinHuu->dia_chi ?? 'N/A',
-                    'chuc_vu' => $item->chuc_vu ?? 'Thành viên'
-                ];
-            });
-
-            if ($data->isEmpty()) {
-                return $this->successResponse("Không có Ban Viên.", []);
-            }
-
-            return $this->successResponse("Lấy danh sách Ban Viên thành công.", $data);
-        } catch (\Exception $e) {
-            Log::error("Lỗi lấy danh sách Ban Viên: {$e->getMessage()}");
+            Log::error("Lỗi lấy danh sách Ban Điều Hành: {$e->getMessage()}", ['exception' => $e]);
             return $this->errorResponse("Lỗi hệ thống: {$e->getMessage()}", 500);
         }
     }
