@@ -55,7 +55,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <form id="filter-form" method="GET" action="{{ route('_ban_nganh.trung_lao.nhap_lieu_bao_cao') }}">
+                <form id="filter-form" method="GET" action="{{ route('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') }}">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
@@ -136,7 +136,7 @@
                     <!-- Tab: Số lượng tham dự -->
                     <div class="tab-pane fade show active" id="buoinhom" role="tabpanel">
                         <!-- Form cho số lượng tham dự -->
-                        <form id="thamdu-form" method="POST" action="{{ route('_ban_nganh.trung_lao.save_tham_du') }}">
+                        <form id="thamdu-form" method="POST" action="{{ route('_ban_nganh.' . $banType . '.save_tham_du') }}">
                             @csrf
                             <input type="hidden" name="month" value="{{ $month }}">
                             <input type="hidden" name="year" value="{{ $year }}">
@@ -405,7 +405,7 @@
 
                     <!-- Tab: Kế hoạch tháng tới -->
                     <div class="tab-pane fade" id="kehoach" role="tabpanel">
-                        <form id="kehoach-form" method="POST" action="{{ route('_ban_nganh.trung_lao.save_ke_hoach') }}">
+                        <form id="kehoach-form" method="POST" action="{{ route('_ban_nganh.' . $banType . '.save_ke_hoach') }}">
                             @csrf
                             <input type="hidden" name="month" value="{{ $nextMonth }}">
                             <input type="hidden" name="year" value="{{ $nextYear }}">
@@ -521,7 +521,7 @@
 
                     <!-- Tab: Ý kiến & Kiến nghị -->
                     <div class="tab-pane fade" id="kiennghi" role="tabpanel">
-                        <form id="kiennghi-form" method="POST" action="{{ route('_ban_nganh.trung_lao.save_kien_nghi') }}">
+                        <form id="kiennghi-form" method="POST" action="{{ route('_ban_nganh.' . $banType . '.save_kien_nghi') }}">
                             @csrf
                             <input type="hidden" name="month" value="{{ $month }}">
                             <input type="hidden" name="year" value="{{ $year }}">

@@ -418,7 +418,7 @@
                 console.log('Gửi yêu cầu cập nhật số lượng tham dự:', data);
 
                 $.ajax({
-                    url: '{{ route("_ban_nganh.trung_lao.update_tham_du") }}',
+                    url: '{{ route("api.ban_nganh." . $banType . ".update_tham_du") }}',
                     type: 'POST',
                     data: data,
                     dataType: 'json',
@@ -656,7 +656,7 @@
                 console.log('Gửi yêu cầu thêm điểm mạnh:', formData);
 
                 $.ajax({
-                    url: '{{ route("_ban_nganh.trung_lao.save_danh_gia") }}',
+                    url: '{{ route("_ban_nganh." . $banType . ".save_danh_gia") }}',
                     method: 'POST',
                     data: formData,
                     dataType: 'json',
@@ -694,7 +694,7 @@
                 console.log('Gửi yêu cầu thêm điểm yếu:', formData);
 
                 $.ajax({
-                    url: '{{ route("_ban_nganh.trung_lao.save_danh_gia") }}',
+                    url: '{{ route("_ban_nganh." . $banType . ".save_danh_gia") }}',
                     method: 'POST',
                     data: formData,
                     dataType: 'json',
@@ -735,7 +735,7 @@
                 console.log('Gửi yêu cầu xóa đánh giá:', { id: id });
 
                 $.ajax({
-                    url: '{{ route("api.ban_nganh.trung_lao.xoa_danh_gia", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                    url: '{{ route("api.ban_nganh." . $banType . ".xoa_danh_gia", ["id" => "__ID__"]) }}'.replace('__ID__', id),
                     method: 'DELETE',
                     data: {
                         _token: '{{ csrf_token() }}'
@@ -766,41 +766,41 @@
             $('#add-kehoach').on('click', function () {
                 let count = $('.kehoach-row').length;
                 let html = `
-                            <tr class="kehoach-row">
-                                <td>${count + 1}</td>
-                                <td>
-                                    <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" 
-                                           value="" required>
-                                    <input type="hidden" name="kehoach[${count}][id]" value="0">
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" 
-                                           value="">
-                                </td>
-                                <td>
-                                    <select class="form-control" name="kehoach[${count}][nguoi_phu_trach_id]">
-                                        <option value="">-- Chọn người phụ trách --</option>
-                                        @if ($tinHuuBan->isEmpty())
-                                            <option value="">Không có tín hữu nào trong {{ $banNganh->ten ?? 'Ban Ngành' }}</option>
-                                        @else
-                                            @foreach($tinHuuBan as $tinHuu)
-                                                @if ($tinHuu)
-                                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                @endif
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                </td>
-                                <td>
-                                    <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm remove-kehoach">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
+                                                                    <tr class="kehoach-row">
+                                                                        <td>${count + 1}</td>
+                                                                        <td>
+                                                                            <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" 
+                                                                                   value="" required>
+                                                                            <input type="hidden" name="kehoach[${count}][id]" value="0">
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" 
+                                                                                   value="">
+                                                                        </td>
+                                                                        <td>
+                                                                            <select class="form-control" name="kehoach[${count}][nguoi_phu_trach_id]">
+                                                                                <option value="">-- Chọn người phụ trách --</option>
+                                                                                @if ($tinHuuBan->isEmpty())
+                                                                                    <option value="">Không có tín hữu nào trong {{ $banNganh->ten ?? 'Ban Ngành' }}</option>
+                                                                                @else
+                                                                                    @foreach($tinHuuBan as $tinHuu)
+                                                                                        @if ($tinHuu)
+                                                                                            <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                                        @endif
+                                                                                    @endforeach
+                                                                                @endif
+                                                                            </select>
+                                                                        </td>
+                                                                        <td>
+                                                                            <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
+                                                                        </td>
+                                                                        <td>
+                                                                            <button type="button" class="btn btn-danger btn-sm remove-kehoach">
+                                                                                <i class="fas fa-trash"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                `;
                 $('#kehoach-tbody').append(html);
                 reindexKehoach();
             });
@@ -883,49 +883,49 @@
             $('#add-kiennghi').on('click', function () {
                 let count = $('.kiennghi-card').length;
                 let html = `
-                            <div class="card mb-3 kiennghi-card">
-                                <div class="card-header bg-light">
-                                    <div class="row">
-                                        <div class="col">
-                                            <h6 class="m-0">Kiến nghị #${count + 1}</h6>
-                                        </div>
-                                        <div class="col-auto">
-                                            <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-group">
-                                        <label>Tiêu đề:</label>
-                                        <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" 
-                                               value="" required>
-                                        <input type="hidden" name="kiennghi[${count}][id]" value="0">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Nội dung:</label>
-                                        <textarea class="form-control" name="kiennghi[${count}][noi_dung]" 
-                                                  rows="3" required></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Người đề xuất:</label>
-                                        <select class="form-control" name="kiennghi[${count}][nguoi_de_xuat_id]">
-                                            <option value="">-- Chọn người đề xuất --</option>
-                                            @if ($tinHuuBan->isEmpty())
-                                                <option value="">Không có tín hữu nào trong {{ $banNganh->ten ?? 'Ban Ngành' }}</option>
-                                            @else
-                                                @foreach($tinHuuBan as $tinHuu)
-                                                    @if ($tinHuu)
-                                                        <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                    @endif
-                                                @endforeach
-                                            @endif
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                                                                    <div class="card mb-3 kiennghi-card">
+                                                                        <div class="card-header bg-light">
+                                                                            <div class="row">
+                                                                                <div class="col">
+                                                                                    <h6 class="m-0">Kiến nghị #${count + 1}</h6>
+                                                                                </div>
+                                                                                <div class="col-auto">
+                                                                                    <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
+                                                                                        <i class="fas fa-times"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="card-body">
+                                                                            <div class="form-group">
+                                                                                <label>Tiêu đề:</label>
+                                                                                <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" 
+                                                                                       value="" required>
+                                                                                <input type="hidden" name="kiennghi[${count}][id]" value="0">
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Nội dung:</label>
+                                                                                <textarea class="form-control" name="kiennghi[${count}][noi_dung]" 
+                                                                                          rows="3" required></textarea>
+                                                                            </div>
+                                                                            <div class="form-group">
+                                                                                <label>Người đề xuất:</label>
+                                                                                <select class="form-control" name="kiennghi[${count}][nguoi_de_xuat_id]">
+                                                                                    <option value="">-- Chọn người đề xuất --</option>
+                                                                                    @if ($tinHuuBan->isEmpty())
+                                                                                        <option value="">Không có tín hữu nào trong {{ $banNganh->ten ?? 'Ban Ngành' }}</option>
+                                                                                    @else
+                                                                                        @foreach($tinHuuBan as $tinHuu)
+                                                                                            @if ($tinHuu)
+                                                                                                <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                                            @endif
+                                                                                        @endforeach
+                                                                                    @endif
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                `;
                 $('#kiennghi-container').append(html);
                 reindexKiennghi();
             });
@@ -942,7 +942,7 @@
                     console.log('Gửi yêu cầu xóa kiến nghị:', { id: id });
 
                     $.ajax({
-                        url: '{{ route("api.ban_nganh.trung_lao.xoa_kien_nghi", ["id" => "__ID__"]) }}'.replace('__ID__', id),
+                        url: '{{ route("api.ban_nganh." . $banType . ".xoa_kien_nghi", ["id" => "__ID__"]) }}'.replace('__ID__', id),
                         method: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}'

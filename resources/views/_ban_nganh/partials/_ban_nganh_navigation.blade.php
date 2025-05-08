@@ -6,7 +6,7 @@
     <!-- Dashboard -->
     <li class="nav-item">
         <a href="{{ route('_ban_nganh.' . $banType . '.index') }}"
-           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.index') ? 'active' : '' }}">
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.index') ? 'active' : '' }}">
             <i class="nav-icon fas fa-tachometer-alt"></i>
             <p>Tổng quan</p>
         </a>
@@ -15,7 +15,7 @@
     <!-- Attendance Management -->
     <li class="nav-item">
         <a href="{{ route('_ban_nganh.' . $banType . '.diem_danh') }}"
-           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.diem_danh') ? 'active' : '' }}">
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.diem_danh') ? 'active' : '' }}">
             <i class="nav-icon fas fa-check-square"></i>
             <p>Điểm danh</p>
         </a>
@@ -24,7 +24,7 @@
     <!-- Visitation Management -->
     <li class="nav-item">
         <a href="{{ route('_ban_nganh.' . $banType . '.tham_vieng') }}"
-           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.tham_vieng') ? 'active' : '' }}">
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.tham_vieng') ? 'active' : '' }}">
             <i class="nav-icon fas fa-handshake"></i>
             <p>Thăm viếng</p>
         </a>
@@ -33,7 +33,7 @@
     <!-- Task Assignment -->
     <li class="nav-item">
         <a href="{{ route('_ban_nganh.' . $banType . '.phan_cong') }}"
-           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.phan_cong') ? 'active' : '' }}">
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.phan_cong') ? 'active' : '' }}">
             <i class="nav-icon fas fa-tasks"></i>
             <p>Phân công</p>
         </a>
@@ -42,7 +42,7 @@
     <!-- Detailed Task Assignment -->
     <li class="nav-item">
         <a href="{{ route('_ban_nganh.' . $banType . '.phan_cong_chi_tiet') }}"
-           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.phan_cong_chi_tiet') ? 'active' : '' }}">
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.phan_cong_chi_tiet') ? 'active' : '' }}">
             <i class="nav-icon fas fa-list-alt"></i>
             <p>Phân công chi tiết</p>
         </a>
@@ -51,7 +51,7 @@
     <!-- Report Input -->
     <li class="nav-item">
         <a href="{{ route('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') }}"
-           class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') ? 'active' : '' }}">
+            class="nav-link {{ request()->routeIs('_ban_nganh.' . $banType . '.nhap_lieu_bao_cao') ? 'active' : '' }}">
             <i class="nav-icon fas fa-edit"></i>
             <p>Nhập liệu báo cáo</p>
         </a>
