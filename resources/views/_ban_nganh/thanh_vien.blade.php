@@ -18,9 +18,31 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Nội dung chính: bộ lọc -->
     <section class="content">
         <div class="container-fluid">
+            <!-- Thông báo -->
+            <div id="alert-container">
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h5><i class="icon fas fa-check"></i> Thành công!</h5>
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h5><i class="icon fas fa-ban"></i> Lỗi!</h5>
+                        {{ session('error') }}
+                    </div>
+                @endif
+            </div>
+
+            <!-- Thanh điều hướng nhanh -->
+            @include('_ban_nganh.partials._ban_nganh_navigation', ['banType' => $banType])
+
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -120,6 +142,7 @@
                                     <table id="ban-dieu-hanh-table" class="table table-bordered table-hover">
                                         <thead>
                                             <tr>
+                                                <th></th> <!-- Cột cho nút mở rộng -->
                                                 <th>STT</th>
                                                 <th>Họ tên</th>
                                                 <th>Chức vụ</th>
@@ -138,6 +161,7 @@
                                     <table id="ban-vien-table" class="table table-bordered table-hover">
                                         <thead>
                                             <tr>
+                                                <th></th> <!-- Cột cho nút mở rộng -->
                                                 <th>STT</th>
                                                 <th>Họ tên</th>
                                                 <th>Ngày sinh</th>
@@ -165,7 +189,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Thêm Thành Viên</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <form id="form-them-thanh-vien">
@@ -197,7 +221,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Chỉnh sửa chức vụ</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <form id="form-sua-chuc-vu">
@@ -233,7 +257,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Xóa Thành Viên</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -250,6 +274,5 @@
     </div>
 @endsection
 
-@section('page-scripts')
-    @include('_ban_nganh.scripts._scripts_index')
-@endsection
+
+@include('_ban_nganh.scripts._scripts_index')

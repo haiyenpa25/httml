@@ -77,6 +77,8 @@ class BanNganhThanhVienController extends Controller
         return view('_ban_nganh.thanh_vien', compact('banNganh', 'banDieuHanh', 'banVien', 'tinHuuList', 'config'));
     }
 
+
+
     /**
      * Lấy danh sách Ban Viên (JSON cho DataTables)
      */
@@ -190,7 +192,7 @@ class BanNganhThanhVienController extends Controller
                 ->addColumn('ngay_sinh', function ($row) {
                     if (!$row->tinHuu) {
                         Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
-                        return 'N/A';
+                        return null;
                     }
                     return $row->tinHuu->ngay_sinh;
                 })
@@ -235,7 +237,7 @@ class BanNganhThanhVienController extends Controller
                 ->addColumn('hoan_thanh_bap_tem', function ($row) {
                     if (!$row->tinHuu) {
                         Log::warning('Không tìm thấy tinHuu cho tin_huu_id: ' . $row->tin_huu_id);
-                        return null;
+                        return false;
                     }
                     return $row->tinHuu->hoan_thanh_bap_tem;
                 })
@@ -267,7 +269,7 @@ class BanNganhThanhVienController extends Controller
 
             $response = $dataTable->make(true);
             $responseData = $response->getData();
-            Log::info('Dữ liệu trả về từ DataTables:', json_decode(json_encode($responseData), true));
+            Log::info('Dữ liệu trả về từ DataTables (banVienList):', json_decode(json_encode($responseData), true));
 
             return $response;
         } catch (\Exception $e) {

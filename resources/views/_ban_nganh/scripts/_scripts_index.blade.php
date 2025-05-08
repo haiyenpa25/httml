@@ -1,49 +1,9 @@
 @section('page-styles')
-    {{-- <style>
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        .btn-group .btn {
-            margin: 0 2px;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .table td, .table th {
-            vertical-align: middle;
-        }
-        .child-row-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .child-row-table td {
-            padding: 5px;
-            vertical-align: top;
-        }
-        .child-row-table td:first-child {
-            font-weight: bold;
-            width: 150px;
-        }
-        .swal2-content table {
-            width: 100%;
-            margin-bottom: 0;
-        }
-        .swal2-content table td {
-            padding: 8px;
-            border: 1px solid #dee2e6;
-        }
-        .swal2-content table td:first-child {
-            font-weight: bold;
-            width: 200px;
-            background-color: #f8f9fa;
-        }
-    </style> --}}
-
     <style>
         /* CSS cho bảng dữ liệu */
         .table-responsive {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
     
         .table {
@@ -77,9 +37,9 @@
     
         /* Tùy chỉnh nút thao tác */
         .action-btns .btn {
-            margin: 0 2px;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
+            margin: 0 4px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
         }
     
         .btn-icon {
@@ -129,32 +89,6 @@
             margin-bottom: 0.5rem;
         }
     
-        /* CSS cho DataTables Responsive */
-        /* Luôn hiển thị nút mở rộng, ngay cả khi không có cột bị ẩn */
-        table.dataTable > tbody > tr > td.dtr-control:before,
-        table.dataTable > tbody > tr > th.dtr-control:before {
-            content: '\f0d7'; /* Font Awesome caret-down icon */
-            font-family: "Font Awesome 5 Free";
-            font-weight: 900;
-            background-color: #007bff;
-            border: 1.5px solid #fff;
-            box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.5);
-            display: inline-block;
-            margin-right: 5px;
-            color: #fff;
-            width: 1em;
-            height: 1em;
-            text-align: center;
-            line-height: 1em;
-            border-radius: 50%;
-        }
-    
-        table.dataTable > tbody > tr.parent > td.dtr-control:before,
-        table.dataTable > tbody > tr.parent > th.dtr-control:before {
-            content: '\f0d8'; /* Font Awesome caret-up icon */
-            background-color: #dc3545;
-        }
-    
         /* Chi tiết mở rộng */
         .child-row-info {
             padding: 12px;
@@ -162,24 +96,24 @@
             border-radius: 4px;
             margin: 8px 0;
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
-            overflow-x: auto; /* Xử lý tràn nội dung trên mobile */
+            overflow-x: auto;
         }
     
         .child-row-table {
             width: 100%;
-            border-collapse: collapse; /* Đảm bảo nội dung nằm gọn */
+            border-collapse: collapse;
             border-spacing: 0;
         }
     
         .child-row-table td {
             padding: 5px 10px;
-            word-break: break-word; /* Ngắt từ để tránh tràn nội dung */
+            word-break: break-word;
         }
     
         .child-row-table td:first-child {
             font-weight: 600;
             width: 180px;
-            white-space: nowrap; /* Giữ tiêu đề không ngắt dòng */
+            white-space: nowrap;
         }
     
         /* Badges và status indicators */
@@ -210,23 +144,16 @@
             .card-title {
                 font-size: 1.1rem;
             }
-    
             .btn {
-                padding: 0.25rem 0.5rem;
+                padding: 0.5rem 0.75rem;
                 font-size: 0.875rem;
             }
-    
             .child-row-table td:first-child {
                 width: 120px;
             }
-    
-            /* Ẩn các cột không ưu tiên trên mobile */
-            table.dataTable.dtr-column > tbody > tr > td:not(.dtr-control):not([data-dt-column="2"]):not([data-dt-column="5"]) {
-                display: none !important;
-            }
-    
-            table.dataTable.dtr-column > thead > tr > th:not(.dtr-control):not([data-dt-column="2"]):not([data-dt-column="5"]) {
-                display: none !important;
+            table.dataTable {
+                width: 100% !important;
+                min-width: 0 !important;
             }
         }
     
@@ -267,7 +194,7 @@
                 return;
             }
             if (typeof Swal === 'undefined') {
-                console.error('SweetAlert2 chưa được tải! Vui lòng kiểm tra file layout hoặc thư mục public/plugins/sweetalert2.');
+                console.error('SweetAlert2 chưa được tải!');
                 toastr.error('Không thể hiển thị chi tiết thành viên do thiếu thư viện SweetAlert2.');
                 return;
             }
@@ -314,14 +241,39 @@
 
             // Hàm format chi tiết mở rộng
             function formatChildRow(data) {
-                return '<table class="child-row-table">' +
-                    '<tr><td>Địa chỉ:</td><td>' + (data.dia_chi || 'N/A') + '</td></tr>' +
-                    '<tr><td>Ngày sinh hoạt:</td><td>' + (data.ngay_sinh_hoat_voi_hoi_thanh ? moment(data.ngay_sinh_hoat_voi_hoi_thanh).format('DD/MM/YYYY') : 'N/A') + '</td></tr>' +
-                    '<tr><td>Ngày tin Chúa:</td><td>' + (data.ngay_tin_chua ? moment(data.ngay_tin_chua).format('DD/MM/YYYY') : 'N/A') + '</td></tr>' +
-                    '<tr><td>Hoàn thành báp têm:</td><td>' + (data.hoan_thanh_bap_tem ? 'Có' : 'Không') + '</td></tr>' +
-                    '<tr><td>Giới tính:</td><td>' + (data.gioi_tinh === 'nam' ? 'Nam' : data.gioi_tinh === 'nu' ? 'Nữ' : 'N/A') + '</td></tr>' +
-                    '<tr><td>Tình trạng hôn nhân:</td><td>' + (data.tinh_trang_hon_nhan === 'doc_than' ? 'Độc thân' : data.tinh_trang_hon_nhan === 'ket_hon' ? 'Kết hôn' : 'N/A') + '</td></tr>' +
-                    '</table>';
+                if (!data) {
+                    console.error('Dữ liệu child row không hợp lệ:', data);
+                    return '<div class="child-row-info"><p class="text-danger">Không có dữ liệu để hiển thị</p></div>';
+                }
+
+                return '<div class="child-row-info">' +
+                    '<table class="child-row-table">' +
+                    '<tr>' +
+                    '<td><i class="fas fa-map-marker-alt text-primary mr-1"></i> Địa chỉ:</td>' +
+                    '<td>' + (data.dia_chi || 'Chưa cập nhật') + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td><i class="fas fa-calendar-check text-success mr-1"></i> Ngày sinh hoạt:</td>' +
+                    '<td>' + (data.ngay_sinh_hoat_voi_hoi_thanh ? moment(data.ngay_sinh_hoat_voi_hoi_thanh).format('DD/MM/YYYY') : 'Chưa cập nhật') + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td><i class="fas fa-pray text-info mr-1"></i> Ngày tin Chúa:</td>' +
+                    '<td>' + (data.ngay_tin_chua ? moment(data.ngay_tin_chua).format('DD/MM/YYYY') : 'Chưa cập nhật') + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td><i class="fas fa-water text-primary mr-1"></i> Hoàn thành báp têm:</td>' +
+                    '<td>' + (data.hoan_thanh_bap_tem ? '<span class="badge badge-success">Có</span>' : '<span class="badge badge-secondary">Không</span>') + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td><i class="fas fa-venus-mars text-warning mr-1"></i> Giới tính:</td>' +
+                    '<td>' + (data.gioi_tinh === 'nam' ? '<i class="fas fa-male text-primary mr-1"></i> Nam' : data.gioi_tinh === 'nu' ? '<i class="fas fa-female text-danger mr-1"></i> Nữ' : 'Chưa cập nhật') + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td><i class="fas fa-heart text-danger mr-1"></i> Tình trạng hôn nhân:</td>' +
+                    '<td>' + (data.tinh_trang_hon_nhan === 'doc_than' ? 'Độc thân' : data.tinh_trang_hon_nhan === 'ket_hon' ? 'Kết hôn' : 'Chưa cập nhật') + '</td>' +
+                    '</tr>' +
+                    '</table>' +
+                    '</div>';
             }
 
             // Khởi tạo DataTable cho bảng Ban Điều Hành
@@ -375,6 +327,7 @@
                         { targets: [2, 3], responsivePriority: 100 }
                     ],
                     order: [],
+                    pageLength: 10,
                     drawCallback: function (settings) {
                         console.log('DataTables Ban Điều Hành loaded:', settings.oInstance.api().data().count());
                     }
@@ -462,6 +415,7 @@
                         { targets: [2, 3, 4, 5, 6], responsivePriority: 100 }
                     ],
                     order: [],
+                    pageLength: 10,
                     drawCallback: function (settings) {
                         console.log('DataTables Ban Viên loaded:', settings.oInstance.api().data().count());
                     }
@@ -648,10 +602,27 @@
                 });
             });
 
-            // Xử lý nút xem chi tiết
+            // Xử lý xem chi tiết thành viên
             $('#ban-dieu-hanh-table, #ban-vien-table').on('click', '.btn-view', function () {
                 var tinHuuId = $(this).data('tin-huu-id');
                 console.log('Yêu cầu xem chi tiết thành viên:', tinHuuId);
+
+                // Kiểm tra phụ thuộc
+                if (typeof Swal === 'undefined') {
+                    console.error('SweetAlert2 chưa được tải!');
+                    toastr.error('Không thể hiển thị chi tiết thành viên do thiếu SweetAlert2.');
+                    return;
+                }
+                if (typeof moment === 'undefined') {
+                    console.error('Moment.js chưa được tải!');
+                    toastr.error('Không thể định dạng ngày tháng do thiếu Moment.js.');
+                    return;
+                }
+                if (typeof $().tab === 'undefined') {
+                    console.error('Bootstrap tabs chưa được tải!');
+                    toastr.error('Không thể khởi tạo tabs chi tiết.');
+                    return;
+                }
 
                 $.ajax({
                     url: '{{ route("api.ban_nganh." . $banType . ".chi_tiet_thanh_vien") }}',
@@ -671,44 +642,324 @@
                         console.log('Phản hồi từ server (xem chi tiết):', response);
                         if (response.success) {
                             var data = response.data;
+
+                            // Nội dung modal
                             var content = `
-                                <table>
-                                    <tr><td>Mã tín hữu:</td><td>${data.ma_tin_huu || 'N/A'}</td></tr>
-                                    <tr><td>Họ tên:</td><td>${data.ho_ten || 'N/A'}</td></tr>
-                                    <tr><td>Ngày sinh:</td><td>${data.ngay_sinh ? moment(data.ngay_sinh).format('DD/MM/YYYY') : 'N/A'}</td></tr>
-                                    <tr><td>Tuổi:</td><td>${data.tuoi || 'N/A'}</td></tr>
-                                    <tr><td>Số điện thoại:</td><td>${data.so_dien_thoai ? '<a href="tel:' + data.so_dien_thoai + '">' + data.so_dien_thoai + '</a>' : 'N/A'}</td></tr>
-                                    <tr><td>Email:</td><td>${data.email || 'N/A'}</td></tr>
-                                    <tr><td>Địa chỉ:</td><td>${data.dia_chi || 'N/A'}</td></tr>
-                                    <tr><td>Giới tính:</td><td>${data.gioi_tinh === 'nam' ? 'Nam' : data.gioi_tinh === 'nu' ? 'Nữ' : 'N/A'}</td></tr>
-                                    <tr><td>Tình trạng hôn nhân:</td><td>${data.tinh_trang_hon_nhan === 'doc_than' ? 'Độc thân' : data.tinh_trang_hon_nhan === 'ket_hon' ? 'Kết hôn' : 'N/A'}</td></tr>
-                                    <tr><td>Loại tín hữu:</td><td>${{
-                                        'tin_huu_chinh_thuc': 'Tín hữu chính thức',
-                                        'tan_tin_huu': 'Tân tín hữu',
-                                        'tin_huu_ht_khac': 'Tín hữu Hội Thánh khác'
-                                    }[data.loai_tin_huu] || data.loai_tin_huu || 'N/A'}</td></tr>
-                                    <tr><td>Ngày tin Chúa:</td><td>${data.ngay_tin_chua ? moment(data.ngay_tin_chua).format('DD/MM/YYYY') : 'N/A'}</td></tr>
-                                    <tr><td>Ngày báp têm:</td><td>${data.ngay_bap_tem ? moment(data.ngay_bap_tem).format('DD/MM/YYYY') : 'N/A'}</td></tr>
-                                    <tr><td>Hoàn thành báp têm:</td><td>${data.hoan_thanh_bap_tem ? 'Có' : 'Không'}</td></tr>
-                                    <tr><td>Ngày sinh hoạt:</td><td>${data.ngay_sinh_hoat_voi_hoi_thanh ? moment(data.ngay_sinh_hoat_voi_hoi_thanh).format('DD/MM/YYYY') : 'N/A'}</td></tr>
-                                    <tr><td>Ban ngành:</td><td>${data.ban_nganh || 'N/A'}</td></tr>
-                                    <tr><td>Chức vụ:</td><td>${data.chuc_vu || 'N/A'}</td></tr>
-                                    <tr><td>Nghề nghiệp:</td><td>${data.nghe_nghiep || 'N/A'}</td></tr>
-                                    <tr><td>Nơi làm việc:</td><td>${data.noi_lam_viec || 'N/A'}</td></tr>
-                                    <tr><td>Trình độ học vấn:</td><td>${data.trinh_do_hoc_van || 'N/A'}</td></tr>
-                                    <tr><td>Chức vụ xã hội:</td><td>${data.chuc_vu_xa_hoi || 'N/A'}</td></tr>
-                                    <tr><td>Người thân:</td><td>${data.nguoi_than || 'N/A'}</td></tr>
-                                    <tr><td>Quan hệ:</td><td>${data.quan_he || 'N/A'}</td></tr>
-                                    <tr><td>SĐT người thân:</td><td>${data.so_dien_thoai_nguoi_than ? '<a href="tel:' + data.so_dien_thoai_nguoi_than + '">' + data.so_dien_thoai_nguoi_than + '</a>' : 'N/A'}</td></tr>
-                                </table>
+                                <div class="modal-detail-content">
+                                    <div class="member-profile mb-3">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4 col-12 text-center mb-3 mb-md-0">
+                                                <img src="{{ asset('dist/img/user2-160x160.jpg') }}" alt="Ảnh đại diện" class="img-fluid rounded-circle shadow" style="width: 100px; height: 100px; object-fit: cover;">
+                                                <h5 class="mt-2 mb-1">${data.ho_ten || 'N/A'}</h5>
+                                                <p class="text-muted small">${data.ma_tin_huu || 'Chưa có mã'}</p>
+                                                <div class="member-status">
+                                                    <span class="badge badge-${
+                                                        data.loai_tin_huu === 'tin_huu_chinh_thuc' ? 'success' :
+                                                        data.loai_tin_huu === 'tan_tin_huu' ? 'info' : 'secondary'
+                                                    } p-2 mb-2">
+                                                        ${
+                                                            {
+                                                                'tin_huu_chinh_thuc': 'Tín hữu chính thức',
+                                                                'tan_tin_huu': 'Tân tín hữu',
+                                                                'tin_huu_ht_khac': 'Tín hữu Hội Thánh khác'
+                                                            }[data.loai_tin_huu] || data.loai_tin_huu || 'N/A'
+                                                        }
+                                                    </span>
+                                                    ${
+                                                        data.chuc_vu ? `<span class="badge badge-primary p-2">${data.chuc_vu}</span>` : ''
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8 col-12">
+                                                <div class="quick-info bg-light p-2 rounded shadow-sm">
+                                                    <div class="row">
+                                                        <div class="col-6 mb-2">
+                                                            <i class="fas fa-phone text-primary mr-1"></i>
+                                                            <small class="text-muted d-block">Số điện thoại</small>
+                                                            ${
+                                                                data.so_dien_thoai ?
+                                                                `<a href="tel:${data.so_dien_thoai}">${data.so_dien_thoai}</a>` :
+                                                                '<span class="text-muted">Chưa cập nhật</span>'
+                                                            }
+                                                        </div>
+                                                        <div class="col-6 mb-2">
+                                                            <i class="fas fa-envelope text-warning mr-1"></i>
+                                                            <small class="text-muted d-block">Email</small>
+                                                            ${
+                                                                data.email ?
+                                                                `<a href="mailto:${data.email}">${data.email}</a>` :
+                                                                '<span class="text-muted">Chưa cập nhật</span>'
+                                                            }
+                                                        </div>
+                                                        <div class="col-6 mb-2">
+                                                            <i class="fas fa-birthday-cake text-danger mr-1"></i>
+                                                            <small class="text-muted d-block">Ngày sinh</small>
+                                                            ${
+                                                                data.ngay_sinh ?
+                                                                moment(data.ngay_sinh).format('DD/MM/YYYY') + (data.tuoi ? ` (${data.tuoi} tuổi)` : '') :
+                                                                '<span class="text-muted">Chưa cập nhật</span>'
+                                                            }
+                                                        </div>
+                                                        <div class="col-6 mb-2">
+                                                            <i class="fas fa-venus-mars text-info mr-1"></i>
+                                                            <small class="text-muted d-block">Giới tính</small>
+                                                            ${
+                                                                data.gioi_tinh === 'nam' ? '<i class="fas fa-male text-primary mr-1"></i> Nam' :
+                                                                data.gioi_tinh === 'nu' ? '<i class="fas fa-female text-danger mr-1"></i> Nữ' :
+                                                                '<span class="text-muted">Chưa cập nhật</span>'
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <ul class="nav nav-tabs nav-tabs-custom" id="member-detail-tabs" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info-content" role="tab" aria-controls="info-content" aria-selected="true">
+                                                <i class="fas fa-user-circle mr-1"></i> Cá nhân
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="church-tab" data-toggle="tab" href="#church-content" role="tab" aria-controls="church-content" aria-selected="false">
+                                                <i class="fas fa-church mr-1"></i> Hội Thánh
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="family-tab" data-toggle="tab" href="#family-content" role="tab" aria-controls="family-content" aria-selected="false">
+                                                <i class="fas fa-users mr-1"></i> Gia đình
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content p-3 border border-top-0 rounded-bottom" id="member-detail-tab-content">
+                                        <div class="tab-pane fade show active" id="info-content" role="tabpanel" aria-labelledby="info-tab">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <tr>
+                                                    <th style="width: 40%"><i class="fas fa-map-marker-alt text-danger mr-1"></i> Địa chỉ</th>
+                                                    <td>${data.dia_chi || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-heart text-danger mr-1"></i> Tình trạng hôn nhân</th>
+                                                    <td>${
+                                                        data.tinh_trang_hon_nhan === 'doc_than' ? 'Độc thân' :
+                                                        data.tinh_trang_hon_nhan === 'ket_hon' ? 'Kết hôn' :
+                                                        '<span class="text-muted">Chưa cập nhật</span>'
+                                                    }</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-briefcase text-dark mr-1"></i> Nghề nghiệp</th>
+                                                    <td>${data.nghe_nghiep || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-building text-primary mr-1"></i> Nơi làm việc</th>
+                                                    <td>${data.noi_lam_viec || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-graduation-cap text-success mr-1"></i> Trình độ học vấn</th>
+                                                    <td>${data.trinh_do_hoc_van || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-id-badge text-info mr-1"></i> Chức vụ xã hội</th>
+                                                    <td>${data.chuc_vu_xa_hoi || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="tab-pane fade" id="church-content" role="tabpanel" aria-labelledby="church-tab">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <tr>
+                                                    <th style="width: 40%"><i class="fas fa-pray text-success mr-1"></i> Ngày tin Chúa</th>
+                                                    <td>${
+                                                        data.ngay_tin_chua ?
+                                                        moment(data.ngay_tin_chua).format('DD/MM/YYYY') :
+                                                        '<span class="text-muted">Chưa cập nhật</span>'
+                                                    }</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-water text-primary mr-1"></i> Ngày báp têm</th>
+                                                    <td>${
+                                                        data.ngay_bap_tem ?
+                                                        moment(data.ngay_bap_tem).format('DD/MM/YYYY') :
+                                                        '<span class="text-muted">Chưa cập nhật</span>'
+                                                    }</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-check-circle text-success mr-1"></i> Hoàn thành báp têm</th>
+                                                    <td>${
+                                                        data.hoan_thanh_bap_tem ?
+                                                        '<span class="badge badge-success">Có</span>' :
+                                                        '<span class="badge badge-secondary">Không</span>'
+                                                    }</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-calendar-check text-info mr-1"></i> Ngày sinh hoạt</th>
+                                                    <td>${
+                                                        data.ngay_sinh_hoat_voi_hoi_thanh ?
+                                                        moment(data.ngay_sinh_hoat_voi_hoi_thanh).format('DD/MM/YYYY') :
+                                                        '<span class="text-muted">Chưa cập nhật</span>'
+                                                    }</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-users-cog text-warning mr-1"></i> Ban ngành</th>
+                                                    <td>${
+                                                        data.ban_nganh ?
+                                                        `<span class="badge badge-info p-2">${data.ban_nganh}</span>` :
+                                                        '<span class="text-muted">Chưa tham gia ban ngành</span>'
+                                                    }</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-user-tie text-primary mr-1"></i> Chức vụ</th>
+                                                    <td>${
+                                                        data.chuc_vu ?
+                                                        `<span class="badge badge-primary p-2">${data.chuc_vu}</span>` :
+                                                        '<span class="text-muted">Không có chức vụ</span>'
+                                                    }</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="tab-pane fade" id="family-content" role="tabpanel" aria-labelledby="family-tab">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <tr>
+                                                    <th style="width: 40%"><i class="fas fa-user-friends text-info mr-1"></i> Người thân</th>
+                                                    <td>${data.nguoi_than || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-link text-warning mr-1"></i> Quan hệ</th>
+                                                    <td>${data.quan_he || '<span class="text-muted">Chưa cập nhật</span>'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="fas fa-phone-alt text-success mr-1"></i> SĐT người thân</th>
+                                                    <td>${
+                                                        data.so_dien_thoai_nguoi_than ?
+                                                        `<a href="tel:${data.so_dien_thoai_nguoi_than}">${data.so_dien_thoai_nguoi_than}</a>` :
+                                                        '<span class="text-muted">Chưa cập nhật</span>'
+                                                    }</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+
+                            // CSS tùy chỉnh cho modal
+                            var modalStyle = `
+                                <style>
+                                    .swal2-popup.detail-modal {
+                                        padding: 0;
+                                        max-width: 90%;
+                                        width: 700px;
+                                    }
+                                    .swal2-title {
+                                        margin: 0;
+                                        padding: 10px 15px;
+                                        background-color: #f8f9fa;
+                                        border-bottom: 1px solid #dee2e6;
+                                        font-size: 1.1rem;
+                                        color: #495057;
+                                    }
+                                    .swal2-html-container {
+                                        margin: 0;
+                                        padding: 0;
+                                        overflow-y: auto;
+                                        max-height: 60vh;
+                                    }
+                                    .modal-detail-content {
+                                        padding: 15px;
+                                        font-size: 0.9rem;
+                                    }
+                                    .member-profile img {
+                                        transition: transform 0.2s;
+                                    }
+                                    .member-profile img:hover {
+                                        transform: scale(1.05);
+                                    }
+                                    .quick-info {
+                                        border: 1px solid #e9ecef;
+                                    }
+                                    .nav-tabs-custom {
+                                        border-bottom: 1px solid #dee2e6;
+                                        margin-bottom: 10px;
+                                    }
+                                    .nav-tabs-custom .nav-link {
+                                        color: #495057;
+                                        border: 1px solid transparent;
+                                        border-radius: 0.25rem 0.25rem 0 0;
+                                        padding: 0.5rem 0.75rem;
+                                        font-size: 0.85rem;
+                                    }
+                                    .nav-tabs-custom .nav-link:hover {
+                                        border-color: #e9ecef #e9ecef #dee2e6;
+                                    }
+                                    .nav-tabs-custom .nav-link.active {
+                                        color: #007bff;
+                                        background-color: #fff;
+                                        border-color: #dee2e6 #dee2e6 #fff;
+                                        font-weight: 600;
+                                    }
+                                    .table th {
+                                        background-color: rgba(0,0,0,.03);
+                                        font-weight: 600;
+                                        color: #495057;
+                                        vertical-align: middle;
+                                    }
+                                    .table td {
+                                        vertical-align: middle;
+                                    }
+                                    @media (max-width: 576px) {
+                                        .swal2-popup.detail-modal {
+                                            width: 95%;
+                                        }
+                                        .swal2-title {
+                                            font-size: 1rem;
+                                        }
+                                        .modal-detail-content {
+                                            font-size: 0.8rem;
+                                            padding: 10px;
+                                        }
+                                        .member-profile img {
+                                            width: 80px;
+                                            height: 80px;
+                                        }
+                                        .quick-info .col-6 {
+                                            width: 100%;
+                                        }
+                                        .table th {
+                                            font-size: 0.8rem;
+                                            width: 50% !important;
+                                        }
+                                        .table td {
+                                            font-size: 0.8rem;
+                                        }
+                                    }
+                                </style>
                             `;
 
                             Swal.fire({
-                                title: 'Chi tiết thành viên',
-                                html: content,
-                                width: '800px',
+                                title: 'Thông tin chi tiết thành viên',
+                                html: modalStyle + content,
                                 showConfirmButton: false,
-                                showCloseButton: true
+                                showCloseButton: true,
+                                allowEscapeKey: true,
+                                customClass: {
+                                    popup: 'detail-modal'
+                                },
+                                didOpen: () => {
+                                    // Khởi tạo tabs
+                                    try {
+                                        $('#member-detail-tabs a').on('click', function(e) {
+                                            e.preventDefault();
+                                            $(this).tab('show');
+                                        });
+                                    } catch (e) {
+                                        console.error('Lỗi khởi tạo tabs:', e);
+                                        toastr.error('Không thể khởi tạo tabs chi tiết.');
+                                    }
+                                },
+                                willClose: () => {
+                                    // Dọn dẹp sự kiện
+                                    $('#member-detail-tabs a').off('click');
+                                }
                             });
                         } else {
                             toastr.error(response.message || 'Không thể tải chi tiết thành viên!');
