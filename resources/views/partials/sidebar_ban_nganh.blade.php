@@ -1,5 +1,5 @@
 <!-- Navigation for Ban Ngành management interface -->
-<!-- Assumes $banType is passed to the view (e.g., 'trung_lao', 'thanh_trang', 'thanh_nien', 'thieu_nhi_au') -->
+<!-- Assumes $banType is passed to the view (e.g., 'trung_lao', 'thanh_trang', 'thanh_nien', 'thieu_nhi') -->
 <ul class="nav nav-treeview">
     <!-- Tổng quan -->
     <li class="nav-item">

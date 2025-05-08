@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Routes for Ban Ngành
 |--------------------------------------------------------------------------
-| Defines routes for managing Ban Ngành (Trung Lão, Thanh Tráng, Thanh Niên, Thiếu Nhi Ấu).
+| Defines routes for managing Ban Ngành (Trung Lão, Thanh Tráng, Thanh Niên, Thiếu Nhi).
 | Routes are grouped by ban for clarity, with separate sections for API and web routes.
 | Middleware ensures only authorized roles (quan_tri or specific ban leaders) can access.
 */
@@ -35,74 +35,77 @@ Route::prefix('ban-nganh/ban-trung-lao')
                 // Member Management
                 Route::post('/them-thanh-vien', [BanNganhController::class, 'themThanhVien'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('them_thanh_vien'); // Add a member
+                    ->name('them_thanh_vien');
                 Route::delete('/xoa-thanh-vien', [BanNganhController::class, 'xoaThanhVien'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('xoa_thanh_vien'); // Remove a member
+                    ->name('xoa_thanh_vien');
                 Route::put('/cap-nhat-chuc-vu', [BanNganhController::class, 'capNhatChucVu'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('cap_nhat_chuc_vu'); // Update member role
+                    ->name('cap_nhat_chuc_vu');
+                Route::get('/chi-tiet-thanh-vien', [BanNganhController::class, 'chiTietThanhVien'])
+                    ->defaults('banType', 'trung_lao')
+                    ->name('chi_tiet_thanh_vien');
 
                 // Member Lists
                 Route::get('/dieu-hanh-list', [BanNganhController::class, 'dieuHanhList'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('dieu_hanh_list'); // List of leadership members
+                    ->name('dieu_hanh_list');
                 Route::get('/ban-vien-list', [BanNganhController::class, 'banVienList'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('ban_vien_list'); // List of regular members
+                    ->name('ban_vien_list');
 
                 // Meeting Management
                 Route::post('/buoi-nhom', [BanNganhController::class, 'themBuoiNhom'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('them_buoi_nhom'); // Create a meeting
+                    ->name('them_buoi_nhom');
                 Route::put('/buoi-nhom/{buoiNhom}', [BanNganhController::class, 'updateBuoiNhom'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('update_buoi_nhom'); // Update a meeting
+                    ->name('update_buoi_nhom');
                 Route::delete('/buoi-nhom/{buoiNhom}', [BanNganhController::class, 'deleteBuoiNhom'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('delete_buoi_nhom'); // Delete a meeting
+                    ->name('delete_buoi_nhom');
                 Route::post('/luu-diem-danh', [BanNganhController::class, 'luuDiemDanh'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('luu_diem_danh'); // Save attendance
+                    ->name('luu_diem_danh');
 
                 // Visitation Management
                 Route::post('/them-tham-vieng', [BanNganhController::class, 'themThamVieng'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('them_tham_vieng'); // Add a visitation
+                    ->name('them_tham_vieng');
                 Route::put('/tham-vieng/{id}', [BanNganhController::class, 'updateThamVieng'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('update_tham_vieng'); // Update a visitation
+                    ->name('update_tham_vieng');
                 Route::get('/chi-tiet-tham-vieng/{id}', [BanNganhController::class, 'chiTietThamVieng'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('chi_tiet_tham_vieng'); // View visitation details
+                    ->name('chi_tiet_tham_vieng');
                 Route::get('/filter-de-xuat-tham-vieng', [BanNganhController::class, 'filterDeXuatThamVieng'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('filter_de_xuat_tham_vieng'); // Filter visitation suggestions
+                    ->name('filter_de_xuat_tham_vieng');
                 Route::get('/filter-tham-vieng', [BanNganhController::class, 'filterThamVieng'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('filter_tham_vieng'); // Filter visitations
+                    ->name('filter_tham_vieng');
 
                 // Task Assignment
                 Route::post('/phan-cong-nhiem-vu', [BanNganhController::class, 'phanCongNhiemVu'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('phan_cong_nhiem_vu'); // Assign a task
+                    ->name('phan_cong_nhiem_vu');
                 Route::delete('/xoa-phan-cong/{id}', [BanNganhController::class, 'xoaPhanCong'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('xoa_phan_cong'); // Delete a task assignment
+                    ->name('xoa_phan_cong');
 
                 // Reports and Statistics
                 Route::post('/luu-bao-cao', [BanNganhController::class, 'luuBaoCao'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('luu_bao_cao'); // Save a report
+                    ->name('luu_bao_cao');
                 Route::post('/update-tham-du', [BanNganhController::class, 'updateThamDu'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('update_tham_du'); // Update attendance data
+                    ->name('update_tham_du');
                 Route::delete('/xoa-danh-gia/{id}', [BanNganhController::class, 'xoaDanhGia'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('xoa_danh_gia'); // Delete an evaluation
+                    ->name('xoa_danh_gia');
                 Route::delete('/xoa-kien-nghi/{id}', [BanNganhController::class, 'xoaKienNghi'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('xoa_kien_nghi'); // Delete a suggestion
+                    ->name('xoa_kien_nghi');
             });
 
         // Web Routes for management interface
@@ -110,39 +113,39 @@ Route::prefix('ban-nganh/ban-trung-lao')
             ->group(function () {
                 Route::get('/', [BanNganhController::class, 'index'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('index'); // Ban Trung Lão dashboard
+                    ->name('index');
                 Route::get('/diem-danh', [BanNganhController::class, 'diemDanh'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('diem_danh'); // Attendance management
+                    ->name('diem_danh');
                 Route::get('/tham-vieng', [BanNganhController::class, 'thamVieng'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('tham_vieng'); // Visitation management
+                    ->name('tham_vieng');
                 Route::get('/phan-cong', [BanNganhController::class, 'phanCong'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('phan_cong'); // Task assignment overview
+                    ->name('phan_cong');
                 Route::get('/phan-cong-chi-tiet', [BanNganhController::class, 'phanCongChiTiet'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('phan_cong_chi_tiet'); // Detailed task assignment
+                    ->name('phan_cong_chi_tiet');
                 Route::get('/nhap-lieu-bao-cao', [BanNganhController::class, 'formBaoCaoBan'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('nhap_lieu_bao_cao'); // Report input form
+                    ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
+                    ->name('bao_cao');
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('save_tham_du'); // Save attendance data
+                    ->name('save_tham_du');
                 Route::post('/save-danh-gia', [BanNganhController::class, 'saveDanhGia'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('save_danh_gia'); // Save evaluation
+                    ->name('save_danh_gia');
                 Route::post('/save-ke-hoach', [BanNganhController::class, 'saveKeHoach'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('save_ke_hoach'); // Save plan
+                    ->name('save_ke_hoach');
                 Route::post('/save-kien-nghi', [BanNganhController::class, 'saveKienNghi'])
                     ->defaults('banType', 'trung_lao')
-                    ->name('save_kien_nghi'); // Save suggestion
+                    ->name('save_kien_nghi');
             });
     });
 
@@ -169,6 +172,9 @@ Route::prefix('ban-nganh/ban-thanh-trang')
                 Route::put('/cap-nhat-chuc-vu', [BanNganhController::class, 'capNhatChucVu'])
                     ->defaults('banType', 'thanh_trang')
                     ->name('cap_nhat_chuc_vu');
+                Route::get('/chi-tiet-thanh-vien', [BanNganhController::class, 'chiTietThanhVien'])
+                    ->defaults('banType', 'thanh_trang')
+                    ->name('chi_tiet_thanh_vien');
 
                 // Member Lists
                 Route::get('/dieu-hanh-list', [BanNganhController::class, 'dieuHanhList'])
@@ -255,7 +261,7 @@ Route::prefix('ban-nganh/ban-thanh-trang')
                     ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'thanh_trang')
-                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
+                    ->name('bao_cao');
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
@@ -296,6 +302,9 @@ Route::prefix('ban-nganh/ban-thanh-nien')
                 Route::put('/cap-nhat-chuc-vu', [BanNganhController::class, 'capNhatChucVu'])
                     ->defaults('banType', 'thanh_nien')
                     ->name('cap_nhat_chuc_vu');
+                Route::get('/chi-tiet-thanh-vien', [BanNganhController::class, 'chiTietThanhVien'])
+                    ->defaults('banType', 'thanh_nien')
+                    ->name('chi_tiet_thanh_vien');
 
                 // Member Lists
                 Route::get('/dieu-hanh-list', [BanNganhController::class, 'dieuHanhList'])
@@ -382,7 +391,7 @@ Route::prefix('ban-nganh/ban-thanh-nien')
                     ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
                     ->defaults('banType', 'thanh_nien')
-                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
+                    ->name('bao_cao');
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
@@ -402,128 +411,130 @@ Route::prefix('ban-nganh/ban-thanh-nien')
 
 /*
 |--------------------------------------------------------------------------
-| Ban Thiếu Nhi Ấu Routes
+| Ban Thiếu Nhi Routes
 |--------------------------------------------------------------------------
-| Routes for managing Ban Thiếu Nhi Ấu, accessible to quan_tri and truong_ban_thieu_nhi roles.
-| Aligned with sidebar naming (_ban_thieu_nhi_au).
+| Routes for managing Ban Thiếu Nhi, accessible to quan_tri and truong_ban_thieu_nhi roles.
 */
-Route::prefix('ban-nganh/ban-thieu-nhi-au')
+Route::prefix('ban-nganh/ban-thieu-nhi')
     ->middleware(['auth', 'checkRole:quan_tri,truong_ban_thieu_nhi'])
     ->group(function () {
         // API Routes for data operations
         Route::prefix('api')
-            ->name('api.ban_nganh.thieu_nhi_au.')
+            ->name('api.ban_nganh.thieu_nhi.')
             ->group(function () {
                 // Member Management
                 Route::post('/them-thanh-vien', [BanNganhController::class, 'themThanhVien'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('them_thanh_vien');
                 Route::delete('/xoa-thanh-vien', [BanNganhController::class, 'xoaThanhVien'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('xoa_thanh_vien');
                 Route::put('/cap-nhat-chuc-vu', [BanNganhController::class, 'capNhatChucVu'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('cap_nhat_chuc_vu');
+                Route::get('/chi-tiet-thanh-vien', [BanNganhController::class, 'chiTietThanhVien'])
+                    ->defaults('banType', 'thieu_nhi')
+                    ->name('chi_tiet_thanh_vien');
 
                 // Member Lists
                 Route::get('/dieu-hanh-list', [BanNganhController::class, 'dieuHanhList'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('dieu_hanh_list');
                 Route::get('/ban-vien-list', [BanNganhController::class, 'banVienList'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('ban_vien_list');
 
                 // Meeting Management
                 Route::post('/buoi-nhom', [BanNganhController::class, 'themBuoiNhom'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('them_buoi_nhom');
                 Route::put('/buoi-nhom/{buoiNhom}', [BanNganhController::class, 'updateBuoiNhom'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('update_buoi_nhom');
                 Route::delete('/buoi-nhom/{buoiNhom}', [BanNganhController::class, 'deleteBuoiNhom'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('delete_buoi_nhom');
                 Route::post('/luu-diem-danh', [BanNganhController::class, 'luuDiemDanh'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('luu_diem_danh');
 
                 // Visitation Management
                 Route::post('/them-tham-vieng', [BanNganhController::class, 'themThamVieng'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('them_tham_vieng');
                 Route::put('/tham-vieng/{id}', [BanNganhController::class, 'updateThamVieng'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('update_tham_vieng');
                 Route::get('/chi-tiet-tham-vieng/{id}', [BanNganhController::class, 'chiTietThamVieng'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('chi_tiet_tham_vieng');
                 Route::get('/filter-de-xuat-tham-vieng', [BanNganhController::class, 'filterDeXuatThamVieng'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('filter_de_xuat_tham_vieng');
                 Route::get('/filter-tham-vieng', [BanNganhController::class, 'filterThamVieng'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('filter_tham_vieng');
 
                 // Task Assignment
                 Route::post('/phan-cong-nhiem-vu', [BanNganhController::class, 'phanCongNhiemVu'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('phan_cong_nhiem_vu');
                 Route::delete('/xoa-phan-cong/{id}', [BanNganhController::class, 'xoaPhanCong'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('xoa_phan_cong');
 
                 // Reports and Statistics
                 Route::post('/luu-bao-cao', [BanNganhController::class, 'luuBaoCao'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('luu_bao_cao');
                 Route::post('/update-tham-du', [BanNganhController::class, 'updateThamDu'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('update_tham_du');
                 Route::delete('/xoa-danh-gia/{id}', [BanNganhController::class, 'xoaDanhGia'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('xoa_danh_gia');
                 Route::delete('/xoa-kien-nghi/{id}', [BanNganhController::class, 'xoaKienNghi'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('xoa_kien_nghi');
             });
 
         // Web Routes for management interface
-        Route::name('_ban_nganh.thieu_nhi_au.')
+        Route::name('_ban_nganh.thieu_nhi.')
             ->group(function () {
                 Route::get('/', [BanNganhController::class, 'index'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('index');
                 Route::get('/diem-danh', [BanNganhController::class, 'diemDanh'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('diem_danh');
                 Route::get('/tham-vieng', [BanNganhController::class, 'thamVieng'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('tham_vieng');
                 Route::get('/phan-cong', [BanNganhController::class, 'phanCong'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('phan_cong');
                 Route::get('/phan-cong-chi-tiet', [BanNganhController::class, 'phanCongChiTiet'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('phan_cong_chi_tiet');
                 Route::get('/nhap-lieu-bao-cao', [BanNganhController::class, 'formBaoCaoBan'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('nhap_lieu_bao_cao');
                 Route::get('/bao-cao', [BanNganhController::class, 'baoCaoBan'])
-                    ->defaults('banType', 'thieu_nhi_au')
-                    ->name('bao_cao'); // Ban report overview, renders _ban_nganh/bao_cao.blade.php
+                    ->defaults('banType', 'thieu_nhi')
+                    ->name('bao_cao');
 
                 // Data Saving Routes
                 Route::post('/save-tham-du', [BanNganhController::class, 'saveThamDu'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('save_tham_du');
                 Route::post('/save-danh-gia', [BanNganhController::class, 'saveDanhGia'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('save_danh_gia');
                 Route::post('/save-ke-hoach', [BanNganhController::class, 'saveKeHoach'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('save_ke_hoach');
                 Route::post('/save-kien-nghi', [BanNganhController::class, 'saveKienNghi'])
-                    ->defaults('banType', 'thieu_nhi_au')
+                    ->defaults('banType', 'thieu_nhi')
                     ->name('save_kien_nghi');
             });
     });

@@ -177,4 +177,9 @@ class TinHuu extends Model
     {
         return $this->belongsTo(BanNganh::class, 'ban_nganh_id', 'id');
     }
+
+    public function banNganhTinHuu()
+    {
+        return $this->hasMany(TinHuuBanNganh::class, 'tin_huu_id', 'id');
+    }
 }

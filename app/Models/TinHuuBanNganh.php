@@ -43,4 +43,14 @@ class TinHuuBanNganh extends Model // Hoặc dùng Model bình thường
     {
         return $this->belongsTo(BanNganh::class, 'ban_nganh_id'); // Khóa ngoại trong bảng này
     }
+
+    public function ban_nganh()
+    {
+        return $this->belongsTo(BanNganh::class, 'ban_nganh_id', 'id');
+    }
+
+    public function tin_huu()
+    {
+        return $this->belongsTo(TinHuu::class, 'tin_huu_id', 'id');
+    }
 }

@@ -26,6 +26,7 @@ class BanNganhThanhVienController extends Controller
 {
     use ApiResponseTrait;
 
+
     /**
      * Hiển thị trang chính của ban
      */
@@ -74,7 +75,6 @@ class BanNganhThanhVienController extends Controller
             ->orderBy('ho_ten', 'asc')
             ->get();
 
-        // Sử dụng view chung _ban_nganh.thanh_vien
         return view('_ban_nganh.thanh_vien', compact('banNganh', 'banDieuHanh', 'banVien', 'tinHuuList'));
     }
 
@@ -260,16 +260,12 @@ class BanNganhThanhVienController extends Controller
                     $hoTen = $row->tinHuu ? ($row->tinHuu->ho_ten ?? 'N/A') : 'N/A';
                     $chucVu = $row->chuc_vu ?? 'Thành viên';
                     return '<div class="btn-group">' .
-                        '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu">' .
-                        '<i class="fas fa-edit"></i> Sửa' .
-                        '</button>' .
-                        '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien">' .
-                        '<i class="fas fa-trash"></i> Xóa' .
-                        '</button>' .
+                        '<button class="btn btn-sm btn-info btn-view" data-tin-huu-id="' . $tinHuuId . '" title="Xem chi tiết"><i class="fas fa-eye"></i></button>' .
+                        '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu" title="Chỉnh sửa chức vụ"><i class="fas fa-edit"></i></button>' .
+                        '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien" title="Xóa"><i class="fas fa-trash"></i></button>' .
                         '</div>';
                 });
 
-            // Log dữ liệu trả về để kiểm tra (chuyển stdClass thành mảng)
             $response = $dataTable->make(true);
             $responseData = $response->getData();
             Log::info('Dữ liệu trả về từ DataTables:', json_decode(json_encode($responseData), true));
@@ -405,6 +401,54 @@ class BanNganhThanhVienController extends Controller
     }
 
     /**
+     * Lấy chi tiết thông tin thành viên
+     */
+    public function chiTietThanhVien(Request $request, array $config): JsonResponse
+    {
+        try {
+            $tinHuuId = $request->query('tin_huu_id');
+
+            if (!$tinHuuId) {
+                return $this->errorResponse('Thiếu tham số tin_huu_id', 400);
+            }
+
+            $tinHuu = TinHuu::with(['banNganhTinHuu.ban_nganh'])
+                ->findOrFail($tinHuuId);
+
+            $data = [
+                'ma_tin_huu' => $tinHuu->ma_tin_huu,
+                'ho_ten' => $tinHuu->ho_ten,
+                'ngay_sinh' => $tinHuu->ngay_sinh,
+                'tuoi' => now()->year - ($tinHuu->ngay_sinh ? date('Y', strtotime($tinHuu->ngay_sinh)) : now()->year),
+                'so_dien_thoai' => $tinHuu->so_dien_thoai,
+                'email' => $tinHuu->email,
+                'dia_chi' => $tinHuu->dia_chi,
+                'gioi_tinh' => $tinHuu->gioi_tinh,
+                'tinh_trang_hon_nhan' => $tinHuu->tinh_trang_hon_nhan,
+                'loai_tin_huu' => $tinHuu->loai_tin_huu,
+                'ngay_tin_chua' => $tinHuu->ngay_tin_chua,
+                'ngay_bap_tem' => $tinHuu->ngay_bap_tem,
+                'hoan_thanh_bap_tem' => $tinHuu->hoan_thanh_bap_tem,
+                'ngay_sinh_hoat_voi_hoi_thanh' => $tinHuu->ngay_sinh_hoat_voi_hoi_thanh,
+                'ban_nganh' => $tinHuu->banNganhTinHuu->first()->ban_nganh->ten ?? 'N/A',
+                'chuc_vu' => $tinHuu->banNganhTinHuu->first()->chuc_vu ?? 'Thành viên',
+                'nghe_nghiep' => $tinHuu->nghe_nghiep,
+                'noi_lam_viec' => $tinHuu->noi_lam_viec,
+                'trinh_do_hoc_van' => $tinHuu->trinh_do_hoc_van,
+                'chuc_vu_xa_hoi' => $tinHuu->chuc_vu_xa_hoi,
+                'nguoi_than' => $tinHuu->nguoi_than,
+                'quan_he' => $tinHuu->quan_he,
+                'so_dien_thoai_nguoi_than' => $tinHuu->so_dien_thoai_nguoi_than,
+            ];
+
+            return $this->successResponse('Lấy chi tiết thành viên thành công', $data);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi lấy chi tiết thành viên: ' . $e->getMessage());
+            return $this->errorResponse('Có lỗi xảy ra: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Hiển thị trang điểm danh của ban
      */
     public function diemDanh(Request $request, array $config): View
@@ -468,7 +512,6 @@ class BanNganhThanhVienController extends Controller
 
         $dienGias = DienGia::orderBy('ho_ten')->get();
 
-        // Sử dụng view chung _ban_nganh.diem_danh
         return view('_ban_nganh.diem_danh', compact(
             'banNganh',
             'months',
@@ -609,7 +652,6 @@ class BanNganhThanhVienController extends Controller
             $years[$i] = $i;
         }
 
-        // Sử dụng view chung _ban_nganh.phan_cong
         return view('_ban_nganh.phan_cong', compact(
             'banNganh',
             'buoiNhoms',
@@ -736,7 +778,6 @@ class BanNganhThanhVienController extends Controller
             }
         }
 
-        // Sử dụng view chung _ban_nganh.phan_cong_chi_tiet
         return view('_ban_nganh.phan_cong_chi_tiet', compact(
             'banNganh',
             'months',
@@ -899,12 +940,9 @@ class BanNganhThanhVienController extends Controller
                     $hoTen = $row->tinHuu ? ($row->tinHuu->ho_ten ?? 'N/A') : 'N/A';
                     $chucVu = $row->chuc_vu ?? 'Thành viên';
                     return '<div class="btn-group">' .
-                        '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu">' .
-                        '<i class="fas fa-edit"></i> Sửa' .
-                        '</button>' .
-                        '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien">' .
-                        '<i class="fas fa-trash"></i> Xóa' .
-                        '</button>' .
+                        '<button class="btn btn-sm btn-info btn-view" data-tin-huu-id="' . $tinHuuId . '" title="Xem chi tiết"><i class="fas fa-eye"></i></button>' .
+                        '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu" title="Chỉnh sửa chức vụ"><i class="fas fa-edit"></i></button>' .
+                        '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien" title="Xóa"><i class="fas fa-trash"></i></button>' .
                         '</div>';
                 })
                 ->make(true);

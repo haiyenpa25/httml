@@ -97,6 +97,15 @@ class BanNganhController extends Controller
     }
 
     /**
+     * Lấy chi tiết thông tin thành viên
+     */
+    public function chiTietThanhVien(Request $request, string $banType): JsonResponse
+    {
+        $config = $this->getBanConfig($banType);
+        return $this->thanhVienController->chiTietThanhVien($request, $config);
+    }
+
+    /**
      * Hiển thị trang điểm danh của ban
      */
     public function diemDanh(Request $request, string $banType): View

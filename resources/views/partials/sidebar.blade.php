@@ -109,11 +109,11 @@
                                     'trung_lao' => 'Ban Trung Lão',
                                     'thanh_trang' => 'Ban Thanh Tráng',
                                     'thanh_nien' => 'Ban Thanh Niên',
-                                    'thieu_nhi_au' => 'Ban Thiếu Nhi Ấu',
+                                    'thieu_nhi' => 'Ban Thiếu Nhi Ấu',
                                 ];
                             @endphp
                             
-                            @foreach(['trung_lao', 'thanh_trang', 'thanh_nien', 'thieu_nhi_au'] as $ban)
+                            @foreach(['trung_lao', 'thanh_trang', 'thanh_nien', 'thieu_nhi'] as $ban)
                                 <li class="nav-item">
                                     <a href="{{ route('_ban_nganh.' . $ban . '.index') }}"
                                     class="nav-link {{ request()->routeIs('_ban_nganh.' . $ban . '.*') ? 'active' : '' }}">
