@@ -26,7 +26,6 @@ class BanNganhThanhVienController extends Controller
 {
     use ApiResponseTrait;
 
-
     /**
      * Hiển thị trang chính của ban
      */
@@ -75,7 +74,7 @@ class BanNganhThanhVienController extends Controller
             ->orderBy('ho_ten', 'asc')
             ->get();
 
-        return view('_ban_nganh.thanh_vien', compact('banNganh', 'banDieuHanh', 'banVien', 'tinHuuList'));
+        return view('_ban_nganh.thanh_vien', compact('banNganh', 'banDieuHanh', 'banVien', 'tinHuuList', 'config'));
     }
 
     /**
