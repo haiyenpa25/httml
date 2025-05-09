@@ -37,20 +37,20 @@ class TinHuu extends Model
         'anh_dai_dien',
         'gioi_tinh',
         'tinh_trang_hon_nhan',
-        'trang_thai',
     ];
 
-    // Các thuộc tính cần ép kiểu (ví dụ: date, boolean)    
     protected $casts = [
+        'loai_tin_huu' => 'string',
+        'gioi_tinh' => 'string',
+        'tinh_trang_hon_nhan' => 'string',
+        'moi_quan_he' => 'string',
+        'hoan_thanh_bap_tem' => 'boolean',
         'ngay_sinh' => 'date',
         'ngay_tin_chua' => 'date',
         'ngay_sinh_hoat_voi_hoi_thanh' => 'date',
         'ngay_nhan_bap_tem' => 'date',
-        'hoan_thanh_bap_tem' => 'boolean',
-        'ngay_tham_vieng_gan_nhat' => 'datetime',
-        'trang_thai' => 'boolean',
+        'ngay_tham_vieng_gan_nhat' => 'date',
     ];
-
 
     /**
      * Quan hệ với Hộ gia đình

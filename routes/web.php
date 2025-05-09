@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     AuthController,
-    TinHuuController,
     HoGiaDinhController,
     NguoiDungController,
     BanChapSuController,
@@ -35,8 +34,6 @@ use App\Http\Controllers\{
     ThongBaoController,
     BaoCaoController,
     CaiDatController,
-    //BanNganhController,
-    TinHuuBanNganhController,
     BuoiNhomController,
     ChiTietThamGiaController,
     ThongBao\GuiThongBaoController,
@@ -61,56 +58,29 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware($quanTri)->get('/trang-chu', fn() => view('dashboard'))->name('dashboard');
 
 // ==== Quản lý Tín Hữu ====
-Route::prefix('quan-ly-tin-huu')->middleware($quanTriTruongBan)->group(function () {
-    Route::resource('tin-huu', TinHuuController::class)->names('_tin_huu');
-    Route::get('/api/tin-huu', [TinHuuController::class, 'getTinHuus'])->name('api.tin_huu.list');
-    Route::get('danh-sach-nhan-su', [TinHuuController::class, 'danhSachNhanSu'])->name('_tin_huu.nhan_su');
-});
-
+require __DIR__ . '/quan_ly/tin_huu.php';
 
 // ==== Quản lý Người Dùng & Hộ Gia Đình ====
 Route::resource('nguoi-dung', NguoiDungController::class)->names('nguoi_dung');
 Route::resource('ho-gia-dinh', HoGiaDinhController::class)->names('_ho_gia_dinh');
 
-
 // ==== Quản lý Diễn Giả ====
-// --- Diễn Giả Routes ---
-// ===== Các Route trả về VIEW (dùng cho tải trang lần đầu) =====
 Route::prefix('dien-gia')->name('_dien_gia.')->group(function () {
-    // GET /dien-gia -> Hiển thị trang danh sách diễn giả
     Route::get('/', [DienGiaController::class, 'index'])->name('index');
-
-    // GET /dien-gia/create -> Hiển thị form tạo mới diễn giả
     Route::get('/create', [DienGiaController::class, 'create'])->name('create');
-
-    // GET /dien-gia/{dienGia}/edit -> Hiển thị form sửa diễn giả
     Route::get('/{dienGia}/edit', [DienGiaController::class, 'edit'])->name('edit');
-
-    // GET /dien-gia/{dienGia} -> Xem chi tiết diễn giả
     Route::get('/{dienGia}', [DienGiaController::class, 'show'])->name('show');
 });
 
-// ===== Các Route API trả về JSON (dùng cho các request AJAX) =====
 Route::prefix('api/dien-gia')->name('api.dien_gia.')->group(function () {
-    // GET /api/dien-gia -> Lấy danh sách diễn giả (JSON)
     Route::get('/', [DienGiaController::class, 'getDienGias'])->name('list');
-
-    // GET /api/dien-gia/{dienGia} -> Lấy thông tin chi tiết 1 diễn giả (JSON)
     Route::get('/{dienGia}', [DienGiaController::class, 'getDienGiaJson'])->name('details');
-
-    // POST /api/dien-gia -> Lưu diễn giả mới
     Route::post('/', [DienGiaController::class, 'store'])->name('store');
-
-    // PUT /api/dien-gia/{dienGia} -> Cập nhật diễn giả
     Route::put('/{dienGia}', [DienGiaController::class, 'update'])->name('update');
-
-    // DELETE /api/dien-gia/{dienGia} -> Xóa diễn giả
     Route::delete('/{dienGia}', [DienGiaController::class, 'destroy'])->name('destroy');
 });
 
-
-
-// ==== Quản lý / Thân Hữu / Thiết Bị ====
+// ==== Quản lý Thân Hữu / Thiết Bị ====
 Route::prefix('quan-ly-than-huu')->middleware($quanTriTruongBan)->group(function () {
     Route::resource('than-huu', ThanHuuController::class)->names('_than_huu');
 });
@@ -143,155 +113,36 @@ Route::get('quan-ly-thong-bao/thong-bao', [ThongBaoController::class, 'index'])
     ->middleware($quanTriTruongBan)
     ->name('_thong_bao.index');
 
-// ==== Báo Cáo ====
-// Route::prefix('bao-cao')->middleware($quanTri)->group(function () {
-//     Route::get('bao-cao-tho-phuong', [BaoCaoController::class, 'baoCaoThoPhuong'])->name('_bao_cao.tho_phuong');
-//     Route::get('bao-cao-thiet-bi', [BaoCaoController::class, 'baoCaoThietBi'])->name('_bao_cao.thiet_bi');
-//     Route::get('bao-cao-tai-chinh', [BaoCaoController::class, 'baoCaoTaiChinh'])->name('_bao_cao.tai_chinh');
-//     Route::get('bao-cao-ban-nganh', [BaoCaoController::class, 'baoCaoBanNganh'])->name('_bao_cao.ban_nganh');
-//     Route::get('bao-cao-hoi-thanh', [BaoCaoController::class, 'baoCaoHoiThanh'])->name('_bao_cao.hoi_thanh');
-//     //Route::get('bao-cao-ban-co-doc-giao-duc', [BaoCaoController::class, 'baoCaoBanCoDocGiaoDuc'])->name('_bao_cao.ban_co_doc_giao_duc');
-// });
-
-
-Route::get('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'index'])->name('_tin_huu_ban_nganh.index');
-Route::post('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'store'])->name('_tin_huu_ban_nganh.store');
-Route::get('/tin-huu-ban-nganh/members', [TinHuuBanNganhController::class, 'getMembers'])->name('_tin_huu_ban_nganh.members');
-Route::delete('/tin-huu-ban-nganh', [TinHuuBanNganhController::class, 'destroy'])->name('_tin_huu_ban_nganh.destroy');
-Route::get('/tin-huu-ban-nganh/edit', [TinHuuBanNganhController::class, 'edit'])->name('_tin_huu_ban_nganh.edit');
-Route::put('/tin-huu-ban-nganh/update', [TinHuuBanNganhController::class, 'update'])->name('_tin_huu_ban_nganh.update');
-
-
-
-
-
 // ==== Cài Đặt ====
 Route::get('cai-dat/cai-dat-he-thong', [CaiDatController::class, 'index'])->middleware($quanTri)->name('_cai_dat.he_thong');
 
-
-// --- Buổi Nhóm Routes ---
-// ===== Các Route trả về VIEW (dùng cho tải trang lần đầu) =====
+// ==== Buổi Nhóm ====
 Route::prefix('buoi-nhom')->name('buoi_nhom.')->group(function () {
-    // GET /buoi-nhom -> Hiển thị trang danh sách buổi nhóm
     Route::get('/', [BuoiNhomController::class, 'index'])->name('index');
-
-    // GET /buoi-nhom/create -> Hiển thị form tạo mới buổi nhóm
     Route::get('/create', [BuoiNhomController::class, 'create'])->name('create');
-
-    // GET /buoi-nhom/{buoi_nhom}/edit -> Hiển thị form sửa buổi nhóm
     Route::get('/{buoi_nhom}/edit', [BuoiNhomController::class, 'edit'])->name('edit');
-
-    // Add a new route for filtering
-    Route::get('/filter', [BuoiNhomController::class, 'filter'])
-        ->name('filter');
-
-    // Route::get('/{buoi_nhom}', [BuoiNhomController::class, 'show'])->name('show'); // Nếu có trang show
+    Route::get('/filter', [BuoiNhomController::class, 'filter'])->name('filter');
 });
 
-
-// ===== Các Route API trả về JSON (dùng cho các request AJAX) =====
-
-// API liên quan đến Buổi Nhóm
 Route::prefix('api/buoi-nhom')->name('api.buoi_nhom.')->group(function () {
-    // GET /api/buoi-nhom -> Lấy danh sách buổi nhóm (JSON) cho bảng
-    Route::get('/', [BuoiNhomController::class, 'getBuoiNhoms'])->name('list'); // <--- Tên khớp với JS: api.buoi_nhom.list
-
-    // GET /api/buoi-nhom/{buoi_nhom} -> Lấy thông tin chi tiết 1 buổi nhóm (JSON) cho form edit
-    Route::get('/{buoi_nhom}', [BuoiNhomController::class, 'getBuoiNhomJson'])->name('details'); // <--- Tên khớp với JS: api.buoi_nhom.details (Nếu JS dùng tên này)
-
-    // POST /api/buoi-nhom -> Lưu buổi nhóm mới (trả về JSON)
-    Route::post('/', [BuoiNhomController::class, 'store'])->name('store'); // <--- Tên khớp với JS: api.buoi_nhom.store
-
-    // PUT/PATCH /api/buoi-nhom/{buoi_nhom} -> Cập nhật buổi nhóm (trả về JSON)
-    Route::put('/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('update'); // <--- Tên khớp với JS: api.buoi_nhom.update
-    // Route::patch('/{buoi_nhom}', [BuoiNhomController::class, 'update']);
-
-    // DELETE /api/buoi-nhom/{buoi_nhom} -> Xóa buổi nhóm (trả về JSON)
-    Route::delete('/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('destroy'); // <--- Tên khớp với JS: api.buoi_nhom.destroy
-
-    // PUT /api/buoi-nhom/{buoi_nhom}/update-counts -> Cập nhật số lượng (trả về JSON)
+    Route::get('/', [BuoiNhomController::class, 'getBuoiNhoms'])->name('list');
+    Route::get('/{buoi_nhom}', [BuoiNhomController::class, 'getBuoiNhomJson'])->name('details');
+    Route::post('/', [BuoiNhomController::class, 'store'])->name('store');
+    Route::put('/{buoi_nhom}', [BuoiNhomController::class, 'update'])->name('update');
+    Route::delete('/{buoi_nhom}', [BuoiNhomController::class, 'destroy'])->name('destroy');
     Route::put('/{buoi_nhom}/update-counts', [BuoiNhomController::class, 'updateCounts'])->name('update_counts');
 });
 
-// API lấy Tín hữu theo Ban ngành
 Route::get('/api/tin-huu/by-ban-nganh/{ban_nganh_id}', [BuoiNhomController::class, 'getTinHuuByBanNganh'])
-    ->name('api.tin_huu.by_ban_nganh'); // <--- Tên khớp với JS: api.tin_huu.by_ban_nganh
-
-
-
-
-
-use App\Http\Controllers\ThuQuy\DashboardController;
-use App\Http\Controllers\ThuQuy\QuyTaiChinhController;
-use App\Http\Controllers\ThuQuy\GiaoDichTaiChinhController;
-use App\Http\Controllers\ThuQuy\GiaoDichTaoController;
-use App\Http\Controllers\ThuQuy\GiaoDichDuyetController;
-use App\Http\Controllers\ThuQuy\GiaoDichSearchController;
-use App\Http\Controllers\ThuQuy\ChiDinhKyController;
-use App\Http\Controllers\ThuQuy\BaoCaoTaiChinhController;
-use App\Http\Controllers\ThuQuy\LichSuThaoTacController;
-
-Route::prefix('thu-quy')->name('_thu_quy.')->middleware(['auth'])->group(function () {
-    // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Thông báo
-    Route::put('/thong-bao/{id}/danh-dau-da-doc', [DashboardController::class, 'danhDauThongBaoDaDoc'])->name('thong_bao.danh_dau_da_doc');
-    Route::put('/thong-bao/danh-dau-tat-ca', [DashboardController::class, 'danhDauTatCaDaDoc'])->name('thong_bao.danh_dau_tat_ca');
-    Route::get('/thong-bao', [DashboardController::class, 'tatCaThongBao'])->name('thong_bao.index');
-    Route::get('/thong-bao/so-luong', [DashboardController::class, 'soLuongThongBaoChuaDoc'])->name('thong_bao.so_luong');
-
-    // Quản lý Quỹ tài chính
-    Route::get('/quy/data', [QuyTaiChinhController::class, 'getDanhSachQuy'])->name('quy.data');
-    Route::get('/quy/{id}/giao-dich', [QuyTaiChinhController::class, 'giaoDichQuy'])->name('quy.giao_dich');
-    Route::get('/quy/{id}/giao-dich/data', [QuyTaiChinhController::class, 'getGiaoDichQuy'])->name('quy.giao_dich.data');
-    Route::resource('quy', QuyTaiChinhController::class)->parameters(['quy' => 'id']);
-
-    // Quản lý Giao dịch tài chính
-    Route::get('/giao-dich/data', [GiaoDichTaiChinhController::class, 'getDanhSachGiaoDich'])->name('giao_dich.data');
-    Route::resource('giao-dich', GiaoDichTaiChinhController::class)->only(['index', 'show'])->parameters(['giao-dich' => 'id']);
-
-    // Tạo và cập nhật giao dịch
-    Route::get('/giao-dich/create', [GiaoDichTaoController::class, 'create'])->name('giao_dich.create');
-    Route::post('/giao-dich', [GiaoDichTaoController::class, 'store'])->name('giao_dich.store');
-    Route::get('/giao-dich/{id}/edit', [GiaoDichTaoController::class, 'edit'])->name('giao_dich.edit');
-    Route::put('/giao-dich/{id}', [GiaoDichTaoController::class, 'update'])->name('giao_dich.update');
-    Route::delete('/giao-dich/{id}', [GiaoDichTaoController::class, 'destroy'])->name('giao_dich.destroy');
-
-    // Duyệt giao dịch
-    Route::get('/giao-dich/{id}/duyet', [GiaoDichDuyetController::class, 'show'])->name('giao_dich.duyet.show');
-    Route::put('/giao-dich/{id}/duyet', [GiaoDichDuyetController::class, 'update'])->name('giao_dich.duyet.update');
-    Route::get('/giao-dich/duyet/danh-sach', [GiaoDichDuyetController::class, 'danhSachChoDuyet'])->name('giao_dich.duyet.danh_sach');
-    Route::get('/giao-dich/duyet/data', [GiaoDichDuyetController::class, 'getDanhSachChoDuyet'])->name('giao_dich.duyet.data');
-
-    // Tìm kiếm và xuất giao dịch
-    Route::get('/giao-dich/tim-kiem', [GiaoDichSearchController::class, 'index'])->name('giao_dich.search');
-    Route::post('/giao-dich/tim-kiem', [GiaoDichSearchController::class, 'search'])->name('giao_dich.search.results');
-    Route::get('/giao-dich/xuat-pdf', [GiaoDichSearchController::class, 'xuatPDF'])->name('giao_dich.xuat_pdf');
-    Route::get('/giao-dich/xuat-excel', [GiaoDichSearchController::class, 'xuatExcel'])->name('giao_dich.xuat_excel');
-
-    // Quản lý Chi định kỳ
-    Route::get('/chi-dinh-ky/data', [ChiDinhKyController::class, 'getDanhSachChiDinhKy'])->name('chi_dinh_ky.data');
-    Route::get('/chi-dinh-ky/{id}/tao-giao-dich', [ChiDinhKyController::class, 'taoGiaoDich'])->name('chi_dinh_ky.tao_giao_dich');
-    Route::get('/chi-dinh-ky/kiem-tra-tu-dong', [ChiDinhKyController::class, 'kiemTraVaTaoGiaoDichTuDong'])->name('chi_dinh_ky.kiem_tra_tu_dong');
-    Route::resource('chi-dinh-ky', ChiDinhKyController::class)->parameters(['chi-dinh-ky' => 'id']);
-
-    // Quản lý Báo cáo tài chính
-    Route::get('/bao-cao/data', [BaoCaoTaiChinhController::class, 'getDanhSachBaoCao'])->name('bao_cao.data');
-    Route::get('/bao-cao/{id}/download', [BaoCaoTaiChinhController::class, 'download'])->name('bao_cao.download');
-    Route::resource('bao-cao', BaoCaoTaiChinhController::class)->parameters(['bao-cao' => 'id']);
-
-    // Lịch sử thao tác
-    Route::get('/lich-su', [LichSuThaoTacController::class, 'index'])->name('lich_su.index');
-    Route::get('/lich-su/data', [LichSuThaoTacController::class, 'getData'])->name('lich_su.data');
-});
+    ->name('api.tin_huu.by_ban_nganh');
 
 
 // Include router của từng ban ngành
+require __DIR__ . '/quan_ly/tin_huu.php';
 require __DIR__ . '/ban_nganh/ban_nganh.php';
 //require __DIR__ . '/ban_nganh/ban_trung_lao.php';
 //require __DIR__ . '/ban_nganh/ban_co_doc_giao_duc.php';
 //require __DIR__ . '/ban_nganh/ban_thanh_trang.php';
+require __DIR__ . '/tai_chinh/tai_chinh.php';
 require __DIR__ . '/quan_ly/thiet_bi.php';
 require __DIR__ . '/quan_ly/thong_bao.php';
