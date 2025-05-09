@@ -54,4 +54,11 @@ class BanNganh extends Model
     {
         return $this->hasMany(NhiemVu::class, 'id_ban_nganh');
     }
+
+    public function tinHuu()
+    {
+        return $this->belongsToMany(TinHuu::class, 'tin_huu_ban_nganh', 'ban_nganh_id', 'tin_huu_id')
+            ->withPivot('chuc_vu')
+            ->withTimestamps();
+    }
 }

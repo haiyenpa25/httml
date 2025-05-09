@@ -10,11 +10,6 @@ class NguoiDung extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * Tên bảng tương ứng với model.
-     *
-     * @var string
-     */
     protected $table = 'nguoi_dung';
     protected $fillable = [
         'tin_huu_id',
@@ -28,73 +23,78 @@ class NguoiDung extends Authenticatable
         'remember_token',
     ];
 
-    protected $casts = [
-        'mat_khau' => 'hashed',
-    ];
-
     public function tinHuu()
     {
         return $this->belongsTo(TinHuu::class, 'tin_huu_id');
     }
+
     public function getAuthPassword()
     {
-        return $this->MatKhau; // Trả về 'MatKhau' thay vì 'mat_khau'
+        return $this->mat_khau;
     }
 
-
-
-    /**
-     * Lấy các thông báo đã gửi.
-     */
     public function thongBaoDaGui()
     {
         return $this->hasMany(ThongBao::class, 'nguoi_gui_id');
     }
 
-    /**
-     * Lấy các thông báo đã nhận.
-     */
     public function thongBaoDaNhan()
     {
         return $this->hasMany(ThongBao::class, 'nguoi_nhan_id');
     }
 
-    /**
-     * Kiểm tra xem người dùng có phải là quản trị viên không.
-     */
     public function isAdmin()
     {
         return $this->vai_tro === 'quan_tri';
     }
 
-    /**
-     * Kiểm tra xem người dùng có phải là trưởng ban không.
-     */
     public function isTruongBan()
     {
         return $this->vai_tro === 'truong_ban';
     }
 
-    /**
-     * Lấy các ban ngành mà người dùng tham gia.
-     */
     public function cacBanNganh()
     {
         return $this->hasManyThrough(
             BanNganh::class,
             TinHuuBanNganh::class,
-            'tin_huu_id', // Khóa ngoại ở TinHuuBanNganh
-            'id', // Khóa chính ở BanNganh
-            'tin_huu_id', // Khóa chính ở NguoiDung
-            'ban_nganh_id' // Khóa ngoại ở TinHuuBanNganh
+            'tin_huu_id',
+            'id',
+            'tin_huu_id',
+            'ban_nganh_id'
         );
     }
 
-    /**
-     * Lấy các ban ngành mà người dùng làm trưởng ban.
-     */
     public function banNganhLamTruongBan()
     {
         return BanNganh::where('truong_ban_id', $this->tin_huu_id)->get();
+    }
+
+    public function banNganhs()
+    {
+        return $this->tinHuu ? $this->tinHuu->banNganhs : collect();
+    }
+
+    public function getBanNganhIds()
+    {
+        if (!$this->tinHuu) {
+            return [];
+        }
+        return $this->tinHuu->banNganhs()->pluck('ban_nganh_id')->toArray();
+    }
+
+    public function quyen()
+    {
+        return $this->hasMany(NguoiDungPhanQuyen::class, 'nguoi_dung_id');
+    }
+
+    public function hasPermission($permission, $banNganhId = null)
+    {
+        return $this->quyen()->where('quyen', $permission)
+            ->where(function ($query) use ($banNganhId) {
+                $query->where('id_ban_nganh', $banNganhId)
+                    ->orWhereNull('id_ban_nganh');
+            })
+            ->exists();
     }
 }

@@ -13,56 +13,146 @@ use App\Http\Controllers\ThuQuy\LichSuThaoTacController;
 
 Route::prefix('thu-quy')->name('_thu_quy.')->middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])
+        ->middleware('checkPermission:view-thu-quy-dashboard')
+        ->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('checkPermission:view-thu-quy-dashboard')
+        ->name('dashboard');
 
     // Thông báo
-    Route::put('/thong-bao/{id}/danh-dau-da-doc', [DashboardController::class, 'danhDauThongBaoDaDoc'])->name('thong_bao.danh_dau_da_doc');
-    Route::put('/thong-bao/danh-dau-tat-ca', [DashboardController::class, 'danhDauTatCaDaDoc'])->name('thong_bao.danh_dau_tat_ca');
-    Route::get('/thong-bao', [DashboardController::class, 'tatCaThongBao'])->name('thong_bao.index');
-    Route::get('/thong-bao/so-luong', [DashboardController::class, 'soLuongThongBaoChuaDoc'])->name('thong_bao.so_luong');
+    Route::put('/thong-bao/{id}/danh-dau-da-doc', [DashboardController::class, 'danhDauThongBaoDaDoc'])
+        ->middleware('checkPermission:view-thu-quy-thong-bao')
+        ->name('thong_bao.danh_dau_da_doc');
+    Route::put('/thong-bao/danh-dau-tat-ca', [DashboardController::class, 'danhDauTatCaDaDoc'])
+        ->middleware('checkPermission:view-thu-quy-thong-bao')
+        ->name('thong_bao.danh_dau_tat_ca');
+    Route::get('/thong-bao', [DashboardController::class, 'tatCaThongBao'])
+        ->middleware('checkPermission:view-thu-quy-thong-bao')
+        ->name('thong_bao.index');
+    Route::get('/thong-bao/so-luong', [DashboardController::class, 'soLuongThongBaoChuaDoc'])
+        ->middleware('checkPermission:view-thu-quy-thong-bao')
+        ->name('thong_bao.so_luong');
 
     // Quản lý Quỹ tài chính
-    Route::get('/quy/data', [QuyTaiChinhController::class, 'getDanhSachQuy'])->name('quy.data');
-    Route::get('/quy/{id}/giao-dich', [QuyTaiChinhController::class, 'giaoDichQuy'])->name('quy.giao_dich');
-    Route::get('/quy/{id}/giao-dich/data', [QuyTaiChinhController::class, 'getGiaoDichQuy'])->name('quy.giao_dich.data');
-    Route::resource('quy', QuyTaiChinhController::class)->parameters(['quy' => 'id']);
+    Route::get('/quy/data', [QuyTaiChinhController::class, 'getDanhSachQuy'])
+        ->middleware('checkPermission:view-thu-quy-quy')
+        ->name('quy.data');
+    Route::get('/quy/{id}/giao-dich', [QuyTaiChinhController::class, 'giaoDichQuy'])
+        ->middleware('checkPermission:view-thu-quy-quy')
+        ->name('quy.giao_dich');
+    Route::get('/quy/{id}/giao-dich/data', [QuyTaiChinhController::class, 'getGiaoDichQuy'])
+        ->middleware('checkPermission:view-thu-quy-quy')
+        ->name('quy.giao_dich.data');
+    Route::resource('quy', QuyTaiChinhController::class)->parameters(['quy' => 'id'])
+        ->middleware('checkPermission:manage-thu-quy-quy');
 
     // Quản lý Giao dịch tài chính
-    Route::get('/giao-dich/data', [GiaoDichTaiChinhController::class, 'getDanhSachGiaoDich'])->name('giao_dich.data');
-    Route::resource('giao-dich', GiaoDichTaiChinhController::class)->only(['index', 'show'])->parameters(['giao-dich' => 'id']);
+    Route::get('/giao-dich/data', [GiaoDichTaiChinhController::class, 'getDanhSachGiaoDich'])
+        ->middleware('checkPermission:view-thu-quy-giao-dich')
+        ->name('giao_dich.data');
+    Route::resource('giao-dich', GiaoDichTaiChinhController::class)
+        ->only(['index', 'show'])
+        ->parameters(['giao-dich' => 'id'])
+        ->middleware('checkPermission:view-thu-quy-giao-dich')
+        ->names([
+            'index' => 'giao_dich.index',
+            'show' => 'giao_dich.show',
+        ]);
 
     // Tạo và cập nhật giao dịch
-    Route::get('/giao-dich/create', [GiaoDichTaoController::class, 'create'])->name('giao_dich.create');
-    Route::post('/giao-dich', [GiaoDichTaoController::class, 'store'])->name('giao_dich.store');
-    Route::get('/giao-dich/{id}/edit', [GiaoDichTaoController::class, 'edit'])->name('giao_dich.edit');
-    Route::put('/giao-dich/{id}', [GiaoDichTaoController::class, 'update'])->name('giao_dich.update');
-    Route::delete('/giao-dich/{id}', [GiaoDichTaoController::class, 'destroy'])->name('giao_dich.destroy');
+    Route::get('/giao-dich/create', [GiaoDichTaoController::class, 'create'])
+        ->middleware('checkPermission:manage-thu-quy-giao-dich')
+        ->name('giao_dich.create');
+    Route::post('/giao-dich', [GiaoDichTaoController::class, 'store'])
+        ->middleware('checkPermission:manage-thu-quy-giao-dich')
+        ->name('giao_dich.store');
+    Route::get('/giao-dich/{id}/edit', [GiaoDichTaoController::class, 'edit'])
+        ->middleware('checkPermission:manage-thu-quy-giao-dich')
+        ->name('giao_dich.edit');
+    Route::put('/giao-dich/{id}', [GiaoDichTaoController::class, 'update'])
+        ->middleware('checkPermission:manage-thu-quy-giao-dich')
+        ->name('giao_dich.update');
+    Route::delete('/giao-dich/{id}', [GiaoDichTaoController::class, 'destroy'])
+        ->middleware('checkPermission:manage-thu-quy-giao-dich')
+        ->name('giao_dich.destroy');
 
     // Duyệt giao dịch
-    Route::get('/giao-dich/{id}/duyet', [GiaoDichDuyetController::class, 'show'])->name('giao_dich.duyet.show');
-    Route::put('/giao-dich/{id}/duyet', [GiaoDichDuyetController::class, 'update'])->name('giao_dich.duyet.update');
-    Route::get('/giao-dich/duyet/danh-sach', [GiaoDichDuyetController::class, 'danhSachChoDuyet'])->name('giao_dich.duyet.danh_sach');
-    Route::get('/giao-dich/duyet/data', [GiaoDichDuyetController::class, 'getDanhSachChoDuyet'])->name('giao_dich.duyet.data');
+    Route::get('/giao-dich/{id}/duyet', [GiaoDichDuyetController::class, 'show'])
+        ->middleware('checkPermission:duyet-thu-quy-giao-dich')
+        ->name('giao_dich.duyet.show');
+    Route::put('/giao-dich/{id}/duyet', [GiaoDichDuyetController::class, 'update'])
+        ->middleware('checkPermission:duyet-thu-quy-giao-dich')
+        ->name('giao_dich.duyet.update');
+    Route::get('/giao-dich/duyet/danh-sach', [GiaoDichDuyetController::class, 'danhSachChoDuyet'])
+        ->middleware('checkPermission:duyet-thu-quy-giao-dich')
+        ->name('giao_dich.duyet.danh_sach');
+    Route::get('/giao-dich/duyet/data', [GiaoDichDuyetController::class, 'getDanhSachChoDuyet'])
+        ->middleware('checkPermission:duyet-thu-quy-giao-dich')
+        ->name('giao_dich.duyet.data');
 
     // Tìm kiếm và xuất giao dịch
-    Route::get('/giao-dich/tim-kiem', [GiaoDichSearchController::class, 'index'])->name('giao_dich.search');
-    Route::post('/giao-dich/tim-kiem', [GiaoDichSearchController::class, 'search'])->name('giao_dich.search.results');
-    Route::get('/giao-dich/xuat-pdf', [GiaoDichSearchController::class, 'xuatPDF'])->name('giao_dich.xuat_pdf');
-    Route::get('/giao-dich/xuat-excel', [GiaoDichSearchController::class, 'xuatExcel'])->name('giao_dich.xuat_excel');
+    Route::get('/giao-dich/tim-kiem', [GiaoDichSearchController::class, 'index'])
+        ->middleware('checkPermission:search-thu-quy-giao-dich')
+        ->name('giao_dich.search');
+    Route::post('/giao-dich/tim-kiem', [GiaoDichSearchController::class, 'search'])
+        ->middleware('checkPermission:search-thu-quy-giao-dich')
+        ->name('giao_dich.search.results');
+    Route::get('/giao-dich/xuat-pdf', [GiaoDichSearchController::class, 'xuatPDF'])
+        ->middleware('checkPermission:export-thu-quy-giao-dich')
+        ->name('giao_dich.xuat_pdf');
+    Route::get('/giao-dich/xuat-excel', [GiaoDichSearchController::class, 'xuatExcel'])
+        ->middleware('checkPermission:export-thu-quy-giao-dich')
+        ->name('giao_dich.xuat_excel');
 
     // Quản lý Chi định kỳ
-    Route::get('/chi-dinh-ky/data', [ChiDinhKyController::class, 'getDanhSachChiDinhKy'])->name('chi_dinh_ky.data');
-    Route::get('/chi-dinh-ky/{id}/tao-giao-dich', [ChiDinhKyController::class, 'taoGiaoDich'])->name('chi_dinh_ky.tao_giao_dich');
-    Route::get('/chi-dinh-ky/kiem-tra-tu-dong', [ChiDinhKyController::class, 'kiemTraVaTaoGiaoDichTuDong'])->name('chi_dinh_ky.kiem_tra_tu_dong');
-    Route::resource('chi-dinh-ky', ChiDinhKyController::class)->parameters(['chi-dinh-ky' => 'id']);
+    Route::get('/chi-dinh-ky/data', [ChiDinhKyController::class, 'getDanhSachChiDinhKy'])
+        ->middleware('checkPermission:view-thu-quy-chi-dinh-ky')
+        ->name('chi_dinh_ky.data');
+    Route::get('/chi-dinh-ky/{id}/tao-giao-dich', [ChiDinhKyController::class, 'taoGiaoDich'])
+        ->middleware('checkPermission:manage-thu-quy-chi-dinh-ky')
+        ->name('chi_dinh_ky.tao_giao_dich');
+    Route::get('/chi-dinh-ky/kiem-tra-tu-dong', [ChiDinhKyController::class, 'kiemTraVaTaoGiaoDichTuDong'])
+        ->middleware('checkPermission:manage-thu-quy-chi-dinh-ky')
+        ->name('chi_dinh_ky.kiem_tra_tu_dong');
+    Route::resource('chi-dinh-ky', ChiDinhKyController::class)
+        ->parameters(['chi-dinh-ky' => 'id'])
+        ->middleware('checkPermission:manage-thu-quy-chi-dinh-ky')
+        ->names([
+            'index' => 'chi_dinh_ky.index',
+            'create' => 'chi_dinh_ky.create',
+            'store' => 'chi_dinh_ky.store',
+            'show' => 'chi_dinh_ky.show',
+            'edit' => 'chi_dinh_ky.edit',
+            'update' => 'chi_dinh_ky.update',
+            'destroy' => 'chi_dinh_ky.destroy',
+        ]);
 
     // Quản lý Báo cáo tài chính
-    Route::get('/bao-cao/data', [BaoCaoTaiChinhController::class, 'getDanhSachBaoCao'])->name('bao_cao.data');
-    Route::get('/bao-cao/{id}/download', [BaoCaoTaiChinhController::class, 'download'])->name('bao_cao.download');
-    Route::resource('bao-cao', BaoCaoTaiChinhController::class)->parameters(['bao-cao' => 'id']);
+    Route::get('/bao-cao/data', [BaoCaoTaiChinhController::class, 'getDanhSachBaoCao'])
+        ->middleware('checkPermission:view-thu-quy-bao-cao')
+        ->name('bao_cao.data');
+    Route::get('/bao-cao/{id}/download', [BaoCaoTaiChinhController::class, 'download'])
+        ->middleware('checkPermission:view-thu-quy-bao-cao')
+        ->name('bao_cao.download');
+    Route::resource('bao-cao', BaoCaoTaiChinhController::class)
+        ->parameters(['bao-cao' => 'id'])
+        ->middleware('checkPermission:manage-thu-quy-bao-cao')
+        ->names([
+            'index' => 'bao_cao.index',
+            'create' => 'bao_cao.create',
+            'store' => 'bao_cao.store',
+            'show' => 'bao_cao.show',
+            'edit' => 'bao_cao.edit',
+            'update' => 'bao_cao.update',
+            'destroy' => 'bao_cao.destroy',
+        ]);
 
     // Lịch sử thao tác
-    Route::get('/lich-su', [LichSuThaoTacController::class, 'index'])->name('lich_su.index');
-    Route::get('/lich-su/data', [LichSuThaoTacController::class, 'getData'])->name('lich_su.data');
+    Route::get('/lich-su', [LichSuThaoTacController::class, 'index'])
+        ->middleware('checkPermission:view-thu-quy-lich-su')
+        ->name('lich_su.index');
+    Route::get('/lich-su/data', [LichSuThaoTacController::class, 'getData'])
+        ->middleware('checkPermission:view-thu-quy-lich-su')
+        ->name('lich_su.data');
 });

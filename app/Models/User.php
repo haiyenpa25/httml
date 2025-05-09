@@ -12,6 +12,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+
     /**
      * The attributes that are mass assignable.
      *
@@ -44,5 +45,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    // Other methods and properties
+
+    public function hasPermission($permission, $banNganhId = null)
+    {
+        // Example logic for checking permissions
+        if ($this->is_admin) {
+            return true;
+        }
+
+        // Check specific permissions
+        return $this->permissions()
+            ->where('name', $permission)
+            ->when($banNganhId, function ($query) use ($banNganhId) {
+                $query->where('ban_nganh_id', $banNganhId);
+            })
+            ->exists();
     }
 }

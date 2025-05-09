@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <g opacity="0.4" stroke="#2196F3" stroke-width="1" fill="none">
+    <!-- Main Cross -->
+    <path d="M200,100 L200,400 M100,250 L300,250" stroke-width="2" stroke-dasharray="5,5"/>
+    <path d="M195,95 L205,105 M195,105 L205,95" stroke-width="1"/>
+    <path d="M195,395 L205,405 M195,405 L205,395" stroke-width="1"/>
+    <path d="M95,245 L105,255 M95,255 L105,245" stroke-width="1"/>
+    <path d="M295,245 L305,255 M295,255 L305,245" stroke-width="1"/>
+    
+    <!-- Secondary Cross 1 -->
+    <path d="M100,150 L100,350 M50,250 L150,250" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <path d="M95,145 L105,155 M95,155 L105,145" stroke-width="0.8"/>
+    <path d="M95,345 L105,355 M95,355 L105,345" stroke-width="0.8"/>
+    <path d="M45,245 L55,255 M45,255 L55,245" stroke-width="0.8"/>
+    <path d="M145,245 L155,255 M145,255 L155,245" stroke-width="0.8"/>
+    
+    <!-- Secondary Cross 2 -->
+    <path d="M350,180 L350,320 M300,250 L400,250" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <path d="M345,175 L355,185 M345,185 L355,175" stroke-width="0.8"/>
+    <path d="M345,315 L355,325 M345,325 L355,315" stroke-width="0.8"/>
+    <path d="M295,245 L305,255 M295,255 L305,245" stroke-width="0.8"/>
+    <path d="M395,245 L405,255 M395,255 L405,245" stroke-width="0.8"/>
+    
+    <!-- Connecting Lines -->
+    <path d="M100,150 L200,100" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <path d="M100,350 L200,400" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <path d="M300,250 L350,250" stroke-width="0.5" stroke-dasharray="2,2"/>
+    
+    <!-- Network Lines -->
+    <path d="M200,100 L350,180" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <path d="M200,400 L350,320" stroke-width="0.5" stroke-dasharray="3,3"/>
+    <path d="M100,250 L50,250" stroke-width="0.5" stroke-dasharray="3,3"/>
+    
+    <!-- Additional Decorative Elements -->
+    <circle cx="200" cy="100" r="5" stroke-width="1"/>
+    <circle cx="200" cy="400" r="5" stroke-width="1"/>
+    <circle cx="100" cy="250" r="5" stroke-width="1"/>
+    <circle cx="300" cy="250" r="5" stroke-width="1"/>
+    
+    <circle cx="100" cy="150" r="3" stroke-width="0.8"/>
+    <circle cx="100" cy="350" r="3" stroke-width="0.8"/>
+    <circle cx="50" cy="250" r="3" stroke-width="0.8"/>
+    <circle cx="150" cy="250" r="3" stroke-width="0.8"/>
+    
+    <circle cx="350" cy="180" r="3" stroke-width="0.8"/>
+    <circle cx="350" cy="320" r="3" stroke-width="0.8"/>
+    <circle cx="300" cy="250" r="3" stroke-width="0.8"/>
+    <circle cx="400" cy="250" r="3" stroke-width="0.8"/>
+  </g>
+</svg>

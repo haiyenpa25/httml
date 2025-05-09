@@ -8,8 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    public const HOME = '/trang-chu';
+    /**
+     * The path to your application's "home" route.
+     *
+     * @var string
+     */
+    public const HOME = '/trang-chu'; // Đổi thành đường dẫn trang chủ của bạn
 
+    /**
+     * Define your route model bindings, pattern filters, etc.
+     */
     public function boot(): void
     {
         $this->routes(function () {
@@ -21,17 +29,24 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/web.php'));
         });
 
+        // Đăng ký tất cả middleware cần thiết
+        // Đăng ký các middleware cần thiết
         $this->app->router->aliasMiddleware('auth', \Illuminate\Auth\Middleware\Authenticate::class);
         $this->app->router->aliasMiddleware('checkRole', \App\Http\Middleware\CheckRole::class);
-        $this->app->router->aliasMiddleware('checkPermission', \App\Http\Middleware\CheckPermission::class);
     }
 
+    /**
+     * Define the "web" routes for the application.
+     */
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
             ->group(base_path('routes/web.php'));
     }
 
+    /**
+     * Define the "api" routes for the application.
+     */
     protected function mapApiRoutes(): void
     {
         Route::prefix('api')

@@ -11,27 +11,40 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login'); // Đảm bảo view này tồn tại
+        return view('auth.login');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email', // Thêm 'email' validation
+            'email' => 'required|email',
             'mat_khau' => 'required',
         ]);
 
-        $user = NguoiDung::where('email', $credentials['email'])->first();
+        // Đổi tên 'mat_khau' thành 'password' để phù hợp với Auth::attempt
+        $credentials['password'] = $credentials['mat_khau'];
+        unset($credentials['mat_khau']);
 
-        if ($user && Hash::check($credentials['mat_khau'], $user->mat_khau)) {
-            Auth::login($user, $request->has('remember'));
+        if (Auth::attempt($credentials, $request->has('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/trang-chu');
+            $user = Auth::user();
+
+            // Chuyển hướng theo vai trò
+            switch ($user->vai_tro) {
+                case 'quan_tri':
+                    return redirect()->route('dashboard')->with('success', 'Đăng nhập thành công!');
+                case 'truong_ban':
+                    return redirect()->route('_ban_nganh.index')->with('success', 'Đăng nhập thành công!');
+                case 'thanh_vien':
+                    return redirect()->route('_thong_bao.index')->with('success', 'Đăng nhập thành công!');
+                default:
+                    return redirect()->route('dashboard')->with('success', 'Đăng nhập thành công!');
+            }
         }
 
         return back()->withErrors([
             'email' => 'Thông tin đăng nhập không chính xác.',
-        ])->withInput(); // Thêm ->withInput() để giữ lại email đã nhập
+        ])->withInput();
     }
 
     public function logout(Request $request)
@@ -39,9 +52,8 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        return redirect()->route('login')->with('success', 'Đã đăng xuất thành công!');
     }
-
 
     public function apiLogin(Request $request)
     {
