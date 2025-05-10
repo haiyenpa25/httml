@@ -55,7 +55,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text bg-white border-right-0"><i class="fas fa-search text-primary"></i></span>
                             </div>
-                            <input type="text" id="permission-search" class="form-control border-left-0" placeholder="Tìm kiếm quyền...">
+                            <input type="text" id="permission-search" class="form-control border-left-0" placeholder="Tìm kiếm quyền hoặc URL...">
                         </div>
                     </div>
 
@@ -91,13 +91,14 @@
                                                 <table class="table table-hover permissions-table mb-0" data-group="{{ Str::slug($group) }}">
                                                     <thead>
                                                         <tr>
-                                                            <th width="60%">Quyền</th>
+                                                            <th width="40%">Quyền</th>
                                                             <th class="text-center" width="20%">Mã</th>
+                                                            <th class="text-center" width="20%">Default URL</th>
                                                             <th class="text-center" width="20%">Trạng thái</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($groupPermissions as $permission => $description)
+                                                        @foreach ($groupPermissions as $permission => $data)
                                                             <tr class="permission-row">
                                                                 <td class="permission-name">
                                                                     <label for="perm-{{ $permission }}" class="mb-0 d-flex align-items-center">
@@ -116,11 +117,14 @@
                                                                                 <i class="fas fa-lock text-secondary"></i>
                                                                             @endif
                                                                         </span>
-                                                                        {{ $description }}
+                                                                        {{ $data['description'] }}
                                                                     </label>
                                                                 </td>
                                                                 <td class="text-center permission-code">
                                                                     <code>{{ $permission }}</code>
+                                                                </td>
+                                                                <td class="text-center permission-url">
+                                                                    <span class="badge badge-light">{{ $data['default_url'] ?? 'N/A' }}</span>
                                                                 </td>
                                                                 <td class="text-center">
                                                                     <div class="custom-control custom-switch">
@@ -188,7 +192,7 @@
                         url: '//cdn.datatables.net/plug-ins/1.10.21/i18n/Vietnamese.json'
                     },
                     columnDefs: [
-                        { orderable: false, targets: 2 }
+                        { orderable: false, targets: [2, 3] }
                     ]
                 });
             });
@@ -245,8 +249,9 @@
                 $('.permission-row').each(function() {
                     const permissionName = $(this).find('.permission-name').text().toLowerCase();
                     const permissionCode = $(this).find('.permission-code').text().toLowerCase();
+                    const permissionUrl = $(this).find('.permission-url').text().toLowerCase();
                     
-                    if (permissionName.includes(searchText) || permissionCode.includes(searchText)) {
+                    if (permissionName.includes(searchText) || permissionCode.includes(searchText) || permissionUrl.includes(searchText)) {
                         $(this).show();
                         // Expand the parent accordion if it contains matching items
                         const accordionId = $(this).closest('.collapse').attr('id');
@@ -262,7 +267,6 @@
                 $('.permissions-table').each(function() {
                     const visibleRows = $(this).find('tbody tr:visible').length;
                     if (visibleRows === 0) {
-                        // Hide the entire accordion card if no matches
                         $(this).closest('.permission-card').hide();
                     } else {
                         $(this).closest('.permission-card').show();
@@ -270,7 +274,6 @@
                 });
                 
                 if (searchText === '') {
-                    // Reset view if search is cleared
                     $('.permission-card').show();
                     $('.permission-row').show();
                     $('.collapse').removeClass('show');
@@ -439,13 +442,17 @@
             border-color: #e9ecef;
         }
         
-        /* Permission code */
-        .permission-code code {
+        /* Permission code and URL */
+        .permission-code code, .permission-url .badge {
             background-color: #f8f9fa;
             padding: 0.2rem 0.4rem;
             font-size: 0.85rem;
             color: #6c757d;
             border-radius: 0.25rem;
+        }
+        
+        .permission-url .badge {
+            background-color: #e9ecef;
         }
         
         /* Search bar */
@@ -569,6 +576,11 @@
             .btn-sm {
                 padding: 0.25rem 0.5rem;
                 font-size: 0.75rem;
+            }
+            
+            .permissions-table th, .permissions-table td {
+                font-size: 0.85rem;
+                padding: 0.5rem;
             }
         }
     </style>

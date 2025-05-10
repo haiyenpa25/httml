@@ -76,12 +76,22 @@ Route::prefix('quan-ly-phan-quyen')->middleware(['auth'])->group(function () {
     // Lấy danh sách quyền của người dùng (dùng cho AJAX)
     Route::get('/user-permissions/{userId}', [NguoiDungPhanQuyenController::class, 'getUserPermissions'])
         ->middleware('checkPermission:manage-phan-quyen')
-        ->name('_phan_quyen.user_permissions');
+        ->name('_phan_quyen.get_user_permissions');
 
     // Cập nhật quyền người dùng
     Route::post('/update-permissions/{userId}', [NguoiDungPhanQuyenController::class, 'updateUserPermissions'])
         ->middleware('checkPermission:manage-phan-quyen')
         ->name('_phan_quyen.update_permissions');
+
+    // Lấy danh sách default_url của người dùng
+    Route::get('/user-default-urls/{userId}', [NguoiDungPhanQuyenController::class, 'getUserDefaultUrls'])
+        ->middleware('checkPermission:manage-phan-quyen')
+        ->name('_phan_quyen.get_user_default_urls');
+
+    // Cập nhật default_url của người dùng
+    Route::post('/update-default-url/{userId}', [NguoiDungPhanQuyenController::class, 'updateDefaultUrl'])
+        ->middleware('checkPermission:manage-phan-quyen')
+        ->name('_phan_quyen.update_default_url');
 });
 
 

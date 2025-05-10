@@ -4,9 +4,9 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Quản Lý Phân Quyền Người Dùng</h3>
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Quản Lý Phân Quyền Người Dùng</h3>
                 </div>
                 <div class="card-body">
                     @if (session('success'))
@@ -36,6 +36,7 @@
                                     <th>Email</th>
                                     <th>Tên Tín Hữu</th>
                                     <th>Vai Trò</th>
+                                    <th>Default URL</th>
                                     <th>Hành Động</th>
                                 </tr>
                             </thead>
@@ -51,14 +52,18 @@
                                                 <option value="truong_ban" {{ $user->vai_tro === 'truong_ban' ? 'selected' : '' }}>Trưởng Ban</option>
                                                 <option value="thanh_vien" {{ $user->vai_tro === 'thanh_vien' ? 'selected' : '' }}>Thành Viên</option>
                                             </select>
-                                            @if ($user->vai_tro === 'truong_ban')
-                                                <select class="form-control select2bs4 ban-nganh-select mt-2" data-user-id="{{ $user->id }}" {{ $user->email === 'admin1@example.com' ? 'disabled' : '' }}>
-                                                    <option value="">-- Chọn Ban Ngành --</option>
-                                                    @foreach ($banNganhs as $banNganh)
-                                                        <option value="{{ $banNganh->id }}" {{ $user->id_ban_nganh == $banNganh->id ? 'selected' : '' }}>{{ $banNganh->ten }}</option>
-                                                    @endforeach
-                                                </select>
-                                            @endif
+                                        </td>
+                                        <td>
+                                            <select class="form-control select2bs4 default-url-select" data-user-id="{{ $user->id }}" {{ $user->email === 'admin1@example.com' ? 'disabled' : '' }}>
+                                                <option value="">-- Chọn URL --</option>
+                                                @php
+                                                    $urls = $user->quyen()->whereNotNull('default_url')->distinct()->pluck('default_url')->toArray();
+                                                    \Log::info('Default URLs for user ' . $user->id . ': ', $urls);
+                                                @endphp
+                                                @foreach ($urls as $url)
+                                                    <option value="{{ $url }}" {{ $user->default_url == $url ? 'selected' : '' }}>{{ $url }}</option>
+                                                @endforeach
+                                            </select>
                                         </td>
                                         <td>
                                             <a href="{{ route('_phan_quyen.user', $user->id) }}" class="btn btn-primary btn-sm {{ $user->vai_tro === 'quan_tri' ? 'disabled' : '' }}">
@@ -95,7 +100,6 @@
                 timeOut: 5000
             };
 
-            // Khởi tạo DataTables cho bảng người dùng
             $('#users-table').DataTable({
                 paging: true,
                 lengthChange: true,
@@ -109,24 +113,15 @@
                 }
             });
 
-            // Xử lý khi thay đổi vai trò
             $('.role-select').on('change', function () {
                 const userId = $(this).data('user-id');
                 const role = $(this).val();
-                const banNganhSelect = $(this).closest('tr').find('.ban-nganh-select');
-                const managePermissionsBtn = $(this).closest('tr').find('.manage-permissions-btn');
+                const managePermissionsBtn = $(this).closest('tr').find('.btn');
 
-                if (role === 'truong_ban') {
-                    banNganhSelect.closest('.mt-2').show();
-                    managePermissionsBtn.removeClass('disabled');
+                if (role === 'quan_tri') {
+                    managePermissionsBtn.addClass('disabled');
                 } else {
-                    banNganhSelect.closest('.mt-2').hide();
-                    banNganhSelect.val('');
-                    if (role === 'quan_tri') {
-                        managePermissionsBtn.addClass('disabled');
-                    } else {
-                        managePermissionsBtn.removeClass('disabled');
-                    }
+                    managePermissionsBtn.removeClass('disabled');
                 }
 
                 $.ajax({
@@ -135,11 +130,13 @@
                     data: {
                         _token: '{{ csrf_token() }}',
                         role: role,
-                        ban_nganh: role === 'truong_ban' ? banNganhSelect.val() : null,
-                        ban_nganh_id: role === 'truong_ban' ? banNganhSelect.val() : null
+                        ban_nganh: null,
+                        ban_nganh_id: null
                     },
                     success: function (response) {
                         toastr.success(response.success || 'Đã cập nhật vai trò thành công.');
+                        // Cập nhật lại danh sách default_url
+                        updateDefaultUrlSelect(userId);
                     },
                     error: function (xhr) {
                         toastr.error(xhr.responseJSON.error || 'Đã xảy ra lỗi khi cập nhật vai trò.');
@@ -148,35 +145,62 @@
                 });
             });
 
-            // Xử lý khi thay đổi ban ngành
-            $('.ban-nganh-select').on('change', function () {
+            $('.default-url-select').on('change', function () {
                 const userId = $(this).data('user-id');
-                const role = $(this).closest('tr').find('.role-select').val();
-                const banNganh = $(this).val();
+                const defaultUrl = $(this).val();
 
                 $.ajax({
-                    url: '{{ route("_phan_quyen.update_role", ":userId") }}'.replace(':userId', userId),
+                    url: '{{ route("_phan_quyen.update_default_url", ":userId") }}'.replace(':userId', userId),
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        role: role,
-                        ban_nganh: banNganh,
-                        ban_nganh_id: banNganh
+                        default_url: defaultUrl
                     },
                     success: function (response) {
-                        toastr.success(response.success || 'Đã cập nhật ban ngành thành công.');
+                        toastr.success(response.success || 'Đã cập nhật URL mặc định thành công.');
                     },
                     error: function (xhr) {
-                        toastr.error(xhr.responseJSON.error || 'Đã xảy ra lỗi khi cập nhật ban ngành.');
-                        console.error('Error updating ban nganh:', xhr.responseJSON);
+                        toastr.error(xhr.responseJSON.error || 'Đã xảy ra lỗi khi cập nhật URL mặc định.');
+                        console.error('Error updating default URL:', xhr.responseJSON);
                     }
                 });
             });
+
+            // Hàm cập nhật danh sách default_url sau khi thay đổi vai trò
+            function updateDefaultUrlSelect(userId) {
+                $.ajax({
+                    url: '{{ route("_phan_quyen.get_user_default_urls", ":userId") }}'.replace(':userId', userId),
+                    method: 'GET',
+                    success: function (urls) {
+                        console.log('Default URLs for user ' + userId + ':', urls);
+                        const select = $(`.default-url-select[data-user-id="${userId}"]`);
+                        select.empty().append('<option value="">-- Chọn URL --</option>');
+                        urls.forEach(url => {
+                            select.append(`<option value="${url}">${url}</option>`);
+                        });
+                        select.val('').trigger('change.select2');
+                    },
+                    error: function (xhr) {
+                        console.error('Error fetching default URLs:', xhr.responseJSON);
+                        toastr.error('Không thể tải danh sách URL mặc định.');
+                    }
+                });
+            }
         });
     </script>
     <style>
-        .ban-nganh-select {
-            display: none;
+        .card {
+            border-radius: 0.5rem;
+        }
+        .card-header {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            padding: 12px;
+        }
+        .select2-container {
+            width: 100% !important;
         }
     </style>
 @endsection

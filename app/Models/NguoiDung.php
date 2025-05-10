@@ -16,6 +16,7 @@ class NguoiDung extends Authenticatable
         'email',
         'mat_khau',
         'vai_tro',
+        'default_url',
     ];
 
     protected $hidden = [
@@ -98,3 +99,4 @@ class NguoiDung extends Authenticatable
             ->exists();
     }
 }
+?>

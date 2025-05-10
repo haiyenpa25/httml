@@ -17,181 +17,181 @@ class NguoiDungPhanQuyenController extends Controller
     {
         $this->permissions = [
             'Hệ thống' => [
-                'view-dashboard' => 'Xem Dashboard',
-                'manage-phan-quyen' => 'Quản lý phân quyền',
-                'admin-access' => 'Truy cập toàn hệ thống',
+                'view-dashboard' => ['description' => 'Xem Dashboard', 'default_url' => '/dashboard'],
+                'manage-phan-quyen' => ['description' => 'Quản lý phân quyền', 'default_url' => '/quan-ly-phan-quyen'],
+                'admin-access' => ['description' => 'Truy cập toàn hệ thống', 'default_url' => '/dashboard'],
             ],
             'Người Dùng & Tín Hữu' => [
-                'view-nguoi-dung' => 'Xem người dùng',
-                'create-nguoi-dung' => 'Thêm người dùng',
-                'update-nguoi-dung' => 'Sửa người dùng',
-                'delete-nguoi-dung' => 'Xóa người dùng',
-                'view-tin-huu' => 'Xem tín hữu',
-                'create-tin-huu' => 'Thêm tín hữu',
-                'update-tin-huu' => 'Sửa tín hữu',
-                'delete-tin-huu' => 'Xóa tín hữu',
-                'view-nhan-su' => 'Xem nhân sự',
-                'view-ho-gia-dinh' => 'Xem hộ gia đình',
-                'create-ho-gia-dinh' => 'Thêm hộ gia đình',
-                'update-ho-gia-dinh' => 'Sửa hộ gia đình',
-                'delete-ho-gia-dinh' => 'Xóa hộ gia đình',
-                'view-than-huu' => 'Xem thân hữu',
-                'manage-than-huu' => 'Quản lý thân hữu',
+                'view-nguoi-dung' => ['description' => 'Xem người dùng', 'default_url' => '/nguoi-dung'],
+                'create-nguoi-dung' => ['description' => 'Thêm người dùng', 'default_url' => '/nguoi-dung/create'],
+                'update-nguoi-dung' => ['description' => 'Sửa người dùng', 'default_url' => null],
+                'delete-nguoi-dung' => ['description' => 'Xóa người dùng', 'default_url' => null],
+                'view-tin-huu' => ['description' => 'Xem tín hữu', 'default_url' => '/tin-huu'],
+                'create-tin-huu' => ['description' => 'Thêm tín hữu', 'default_url' => '/tin-huu/create'],
+                'update-tin-huu' => ['description' => 'Sửa tín hữu', 'default_url' => null],
+                'delete-tin-huu' => ['description' => 'Xóa tín hữu', 'default_url' => null],
+                'view-nhan-su' => ['description' => 'Xem nhân sự', 'default_url' => '/tin-huu/nhan-su'],
+                'view-ho-gia-dinh' => ['description' => 'Xem hộ gia đình', 'default_url' => '/ho-gia-dinh'],
+                'create-ho-gia-dinh' => ['description' => 'Thêm hộ gia đình', 'default_url' => '/ho-gia-dinh/create'],
+                'update-ho-gia-dinh' => ['description' => 'Sửa hộ gia đình', 'default_url' => null],
+                'delete-ho-gia-dinh' => ['description' => 'Xóa hộ gia đình', 'default_url' => null],
+                'view-than-huu' => ['description' => 'Xem thân hữu', 'default_url' => '/than-huu'],
+                'manage-than-huu' => ['description' => 'Quản lý thân hữu', 'default_url' => '/than-huu'],
             ],
             'Ban Ngành - Tổng Quan' => [
-                'view-ban-nganh' => 'Xem danh sách ban ngành',
+                'view-ban-nganh' => ['description' => 'Xem danh sách ban ngành', 'default_url' => '/ban-nganh'],
             ],
             'Ban Ngành - Trung Lão' => [
-                'view-ban-nganh-trung-lao' => 'Xem tổng quan',
-                'diem-danh-ban-nganh-trung-lao' => 'Điểm danh',
-                'tham-vieng-ban-nganh-trung-lao' => 'Thăm viếng',
-                'phan-cong-ban-nganh-trung-lao' => 'Phân công',
-                'phan-cong-chi-tiet-ban-nganh-trung-lao' => 'Phân công chi tiết',
-                'nhap-lieu-bao-cao-ban-nganh-trung-lao' => 'Nhập liệu báo cáo',
-                'bao-cao-ban-nganh-trung-lao' => 'Xem báo cáo',
-                'manage-thanh-vien-ban-nganh-trung-lao' => 'Quản lý thành viên',
-                'view-thanh-vien-ban-nganh-trung-lao' => 'Xem danh sách thành viên',
-                'manage-buoi-nhom-ban-nganh-trung-lao' => 'Quản lý buổi nhóm',
-                'manage-tham-vieng-ban-nganh-trung-lao' => 'Quản lý thăm viếng',
-                'manage-phan-cong-ban-nganh-trung-lao' => 'Quản lý phân công',
-                'manage-bao-cao-ban-nganh-trung-lao' => 'Quản lý báo cáo',
+                'view-ban-nganh-trung-lao' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-nganh/trung-lao'],
+                'diem-danh-ban-nganh-trung-lao' => ['description' => 'Điểm danh', 'default_url' => '/ban-nganh/trung-lao/diem-danh'],
+                'tham-vieng-ban-nganh-trung-lao' => ['description' => 'Thăm viếng', 'default_url' => '/ban-nganh/trung-lao/tham-vieng'],
+                'phan-cong-ban-nganh-trung-lao' => ['description' => 'Phân công', 'default_url' => '/ban-nganh/trung-lao/phan-cong'],
+                'phan-cong-chi-tiet-ban-nganh-trung-lao' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-nganh/trung-lao/phan-cong-chi-tiet'],
+                'nhap-lieu-bao-cao-ban-nganh-trung-lao' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-nganh/trung-lao/nhap-lieu-bao-cao'],
+                'bao-cao-ban-nganh-trung-lao' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-nganh/trung-lao/bao-cao'],
+                'manage-thanh-vien-ban-nganh-trung-lao' => ['description' => 'Quản lý thành viên', 'default_url' => '/ban-nganh/trung-lao/thanh-vien'],
+                'view-thanh-vien-ban-nganh-trung-lao' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-nganh/trung-lao/thanh-vien'],
+                'manage-buoi-nhom-ban-nganh-trung-lao' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/ban-nganh/trung-lao/buoi-nhom'],
+                'manage-tham-vieng-ban-nganh-trung-lao' => ['description' => 'Quản lý thăm viếng', 'default_url' => '/ban-nganh/trung-lao/tham-vieng'],
+                'manage-phan-cong-ban-nganh-trung-lao' => ['description' => 'Quản lý phân công', 'default_url' => '/ban-nganh/trung-lao/phan-cong'],
+                'manage-bao-cao-ban-nganh-trung-lao' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/trung-lao/bao-cao'],
             ],
             'Ban Ngành - Thanh Tráng' => [
-                'view-ban-nganh-thanh-trang' => 'Xem tổng quan',
-                'diem-danh-ban-nganh-thanh-trang' => 'Điểm danh',
-                'tham-vieng-ban-nganh-thanh-trang' => 'Thăm viếng',
-                'phan-cong-ban-nganh-thanh-trang' => 'Phân công',
-                'phan-cong-chi-tiet-ban-nganh-thanh-trang' => 'Phân công chi tiết',
-                'nhap-lieu-bao-cao-ban-nganh-thanh-trang' => 'Nhập liệu báo cáo',
-                'bao-cao-ban-nganh-thanh-trang' => 'Xem báo cáo',
-                'manage-thanh-vien-ban-nganh-thanh-trang' => 'Quản lý thành viên',
-                'view-thanh-vien-ban-nganh-thanh-trang' => 'Xem danh sách thành viên',
-                'manage-buoi-nhom-ban-nganh-thanh-trang' => 'Quản lý buổi nhóm',
-                'manage-tham-vieng-ban-nganh-thanh-trang' => 'Quản lý thăm viếng',
-                'manage-phan-cong-ban-nganh-thanh-trang' => 'Quản lý phân công',
-                'manage-bao-cao-ban-nganh-thanh-trang' => 'Quản lý báo cáo',
+                'view-ban-nganh-thanh-trang' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-nganh/thanh-trang'],
+                'diem-danh-ban-nganh-thanh-trang' => ['description' => 'Điểm danh', 'default_url' => '/ban-nganh/thanh-trang/diem-danh'],
+                'tham-vieng-ban-nganh-thanh-trang' => ['description' => 'Thăm viếng', 'default_url' => '/ban-nganh/thanh-trang/tham-vieng'],
+                'phan-cong-ban-nganh-thanh-trang' => ['description' => 'Phân công', 'default_url' => '/ban-nganh/thanh-trang/phan-cong'],
+                'phan-cong-chi-tiet-ban-nganh-thanh-trang' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-nganh/thanh-trang/phan-cong-chi-tiet'],
+                'nhap-lieu-bao-cao-ban-nganh-thanh-trang' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-nganh/thanh-trang/nhap-lieu-bao-cao'],
+                'bao-cao-ban-nganh-thanh-trang' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-nganh/thanh-trang/bao-cao'],
+                'manage-thanh-vien-ban-nganh-thanh-trang' => ['description' => 'Quản lý thành viên', 'default_url' => '/ban-nganh/thanh-trang/thanh-vien'],
+                'view-thanh-vien-ban-nganh-thanh-trang' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-nganh/thanh-trang/thanh-vien'],
+                'manage-buoi-nhom-ban-nganh-thanh-trang' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/ban-nganh/thanh-trang/buoi-nhom'],
+                'manage-tham-vieng-ban-nganh-thanh-trang' => ['description' => 'Quản lý thăm viếng', 'default_url' => '/ban-nganh/thanh-trang/tham-vieng'],
+                'manage-phan-cong-ban-nganh-thanh-trang' => ['description' => 'Quản lý phân công', 'default_url' => '/ban-nganh/thanh-trang/phan-cong'],
+                'manage-bao-cao-ban-nganh-thanh-trang' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/thanh-trang/bao-cao'],
             ],
             'Ban Ngành - Thanh Niên' => [
-                'view-ban-nganh-thanh-nien' => 'Xem tổng quan',
-                'diem-danh-ban-nganh-thanh-nien' => 'Điểm danh',
-                'tham-vieng-ban-nganh-thanh-nien' => 'Thăm viếng',
-                'phan-cong-ban-nganh-thanh-nien' => 'Phân công',
-                'phan-cong-chi-tiet-ban-nganh-thanh-nien' => 'Phân công chi tiết',
-                'nhap-lieu-bao-cao-ban-nganh-thanh-nien' => 'Nhập liệu báo cáo',
-                'bao-cao-ban-nganh-thanh-nien' => 'Xem báo cáo',
-                'manage-thanh-vien-ban-nganh-thanh-nien' => 'Quản lý thành viên',
-                'view-thanh-vien-ban-nganh-thanh-nien' => 'Xem danh sách thành viên',
-                'manage-buoi-nhom-ban-nganh-thanh-nien' => 'Quản lý buổi nhóm',
-                'manage-tham-vieng-ban-nganh-thanh-nien' => 'Quản lý thăm viếng',
-                'manage-phan-cong-ban-nganh-thanh-nien' => 'Quản lý phân công',
-                'manage-bao-cao-ban-nganh-thanh-nien' => 'Quản lý báo cáo',
+                'view-ban-nganh-thanh-nien' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-nganh/thanh-nien'],
+                'diem-danh-ban-nganh-thanh-nien' => ['description' => 'Điểm danh', 'default_url' => '/ban-nganh/thanh-nien/diem-danh'],
+                'tham-vieng-ban-nganh-thanh-nien' => ['description' => 'Thăm viếng', 'default_url' => '/ban-nganh/thanh-nien/tham-vieng'],
+                'phan-cong-ban-nganh-thanh-nien' => ['description' => 'Phân công', 'default_url' => '/ban-nganh/thanh-nien/phan-cong'],
+                'phan-cong-chi-tiet-ban-nganh-thanh-nien' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-nganh/thanh-nien/phan-cong-chi-tiet'],
+                'nhap-lieu-bao-cao-ban-nganh-thanh-nien' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-nganh/thanh-nien/nhap-lieu-bao-cao'],
+                'bao-cao-ban-nganh-thanh-nien' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-nganh/thanh-nien/bao-cao'],
+                'manage-thanh-vien-ban-nganh-thanh-nien' => ['description' => 'Quản lý thành viên', 'default_url' => '/ban-nganh/thanh-nien/thanh-vien'],
+                'view-thanh-vien-ban-nganh-thanh-nien' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-nganh/thanh-nien/thanh-vien'],
+                'manage-buoi-nhom-ban-nganh-thanh-nien' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/ban-nganh/thanh-nien/buoi-nhom'],
+                'manage-tham-vieng-ban-nganh-thanh-nien' => ['description' => 'Quản lý thăm viếng', 'default_url' => '/ban-nganh/thanh-nien/tham-vieng'],
+                'manage-phan-cong-ban-nganh-thanh-nien' => ['description' => 'Quản lý phân công', 'default_url' => '/ban-nganh/thanh-nien/phan-cong'],
+                'manage-bao-cao-ban-nganh-thanh-nien' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/thanh-nien/bao-cao'],
             ],
             'Ban Ngành - Thiếu Nhi' => [
-                'view-ban-nganh-thieu-nhi' => 'Xem tổng quan',
-                'diem-danh-ban-nganh-thieu-nhi' => 'Điểm danh',
-                'tham-vieng-ban-nganh-thieu-nhi' => 'Thăm viếng',
-                'phan-cong-ban-nganh-thieu-nhi' => 'Phân công',
-                'phan-cong-chi-tiet-ban-nganh-thieu-nhi' => 'Phân công chi tiết',
-                'nhap-lieu-bao-cao-ban-nganh-thieu-nhi' => 'Nhập liệu báo cáo',
-                'bao-cao-ban-nganh-thieu-nhi' => 'Xem báo cáo',
-                'manage-thanh-vien-ban-nganh-thieu-nhi' => 'Quản lý thành viên',
-                'view-thanh-vien-ban-nganh-thieu-nhi' => 'Xem danh sách thành viên',
-                'manage-buoi-nhom-ban-nganh-thieu-nhi' => 'Quản lý buổi nhóm',
-                'manage-tham-vieng-ban-nganh-thieu-nhi' => 'Quản lý thăm viếng',
-                'manage-phan-cong-ban-nganh-thieu-nhi' => 'Quản lý phân công',
-                'manage-bao-cao-ban-nganh-thieu-nhi' => 'Quản lý báo cáo',
+                'view-ban-nganh-thieu-nhi' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-nganh/thieu-nhi'],
+                'diem-danh-ban-nganh-thieu-nhi' => ['description' => 'Điểm danh', 'default_url' => '/ban-nganh/thieu-nhi/diem-danh'],
+                'tham-vieng-ban-nganh-thieu-nhi' => ['description' => 'Thăm viếng', 'default_url' => '/ban-nganh/thieu-nhi/tham-vieng'],
+                'phan-cong-ban-nganh-thieu-nhi' => ['description' => 'Phân công', 'default_url' => '/ban-nganh/thieu-nhi/phan-cong'],
+                'phan-cong-chi-tiet-ban-nganh-thieu-nhi' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-nganh/thieu-nhi/phan-cong-chi-tiet'],
+                'nhap-lieu-bao-cao-ban-nganh-thieu-nhi' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-nganh/thieu-nhi/nhap-lieu-bao-cao'],
+                'bao-cao-ban-nganh-thieu-nhi' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-nganh/thieu-nhi/bao-cao'],
+                'manage-thanh-vien-ban-nganh-thieu-nhi' => ['description' => 'Quản lý thành viên', 'default_url' => '/ban-nganh/thieu-nhi/thanh-vien'],
+                'view-thanh-vien-ban-nganh-thieu-nhi' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-nganh/thieu-nhi/thanh-vien'],
+                'manage-buoi-nhom-ban-nganh-thieu-nhi' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/ban-nganh/thieu-nhi/buoi-nhom'],
+                'manage-tham-vieng-ban-nganh-thieu-nhi' => ['description' => 'Quản lý thăm viếng', 'default_url' => '/ban-nganh/thieu-nhi/tham-vieng'],
+                'manage-phan-cong-ban-nganh-thieu-nhi' => ['description' => 'Quản lý phân công', 'default_url' => '/ban-nganh/thieu-nhi/phan-cong'],
+                'manage-bao-cao-ban-nganh-thieu-nhi' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/thieu-nhi/bao-cao'],
             ],
             'Ban Ngành - Cơ Đốc Giáo Dục' => [
-                'view-ban-co-doc-giao-duc' => 'Xem tổng quan',
-                'diem-danh-ban-co-doc-giao-duc' => 'Điểm danh',
-                'tham-vieng-ban-co-doc-giao-duc' => 'Thăm viếng',
-                'phan-cong-ban-co-doc-giao-duc' => 'Phân công',
-                'phan-cong-chi-tiet-ban-co-doc-giao-duc' => 'Phân công chi tiết',
-                'nhap-lieu-bao-cao-ban-co-doc-giao-duc' => 'Nhập liệu báo cáo',
-                'bao-cao-ban-co-doc-giao-duc' => 'Xem báo cáo',
-                'manage-thanh-vien-ban-co-doc-giao-duc' => 'Quản lý thành viên',
-                'view-thanh-vien-ban-co-doc-giao-duc' => 'Xem danh sách thành viên',
-                'manage-buoi-nhom-ban-co-doc-giao-duc' => 'Quản lý buổi nhóm',
-                'manage-tham-vieng-ban-co-doc-giao-duc' => 'Quản lý thăm viếng',
-                'manage-phan-cong-ban-co-doc-giao-duc' => 'Quản lý phân công',
-                'manage-bao-cao-ban-co-doc-giao-duc' => 'Quản lý báo cáo',
+                'view-ban-co-doc-giao-duc' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-nganh/co-doc-giao-duc'],
+                'diem-danh-ban-co-doc-giao-duc' => ['description' => 'Điểm danh', 'default_url' => '/ban-nganh/co-doc-giao-duc/diem-danh'],
+                'tham-vieng-ban-co-doc-giao-duc' => ['description' => 'Thăm viếng', 'default_url' => '/ban-nganh/co-doc-giao-duc/tham-vieng'],
+                'phan-cong-ban-co-doc-giao-duc' => ['description' => 'Phân công', 'default_url' => '/ban-nganh/co-doc-giao-duc/phan-cong'],
+                'phan-cong-chi-tiet-ban-co-doc-giao-duc' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-nganh/co-doc-giao-duc/phan-cong-chi-tiet'],
+                'nhap-lieu-bao-cao-ban-co-doc-giao-duc' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-nganh/co-doc-giao-duc/nhap-lieu-bao-cao'],
+                'bao-cao-ban-co-doc-giao-duc' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-nganh/co-doc-giao-duc/bao-cao'],
+                'manage-thanh-vien-ban-co-doc-giao-duc' => ['description' => 'Quản lý thành viên', 'default_url' => '/ban-nganh/co-doc-giao-duc/thanh-vien'],
+                'view-thanh-vien-ban-co-doc-giao-duc' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-nganh/co-doc-giao-duc/thanh-vien'],
+                'manage-buoi-nhom-ban-co-doc-giao-duc' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/ban-nganh/co-doc-giao-duc/buoi-nhom'],
+                'manage-tham-vieng-ban-co-doc-giao-duc' => ['description' => 'Quản lý thăm viếng', 'default_url' => '/ban-nganh/co-doc-giao-duc/tham-vieng'],
+                'manage-phan-cong-ban-co-doc-giao-duc' => ['description' => 'Quản lý phân công', 'default_url' => '/ban-nganh/co-doc-giao-duc/phan-cong'],
+                'manage-bao-cao-ban-co-doc-giao-duc' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/co-doc-giao-duc/bao-cao'],
             ],
             'Ban Ngành - Khác' => [
-                'view-ban-chap-su' => 'Xem Ban Chấp Sự',
-                'view-ban-am-thuc' => 'Xem Ban Ẩm Thực',
-                'view-ban-cau-nguyen' => 'Xem Ban Cầu Nguyện',
-                'view-ban-chung-dao' => 'Xem Ban Chứng Đạo',
-                'view-ban-dan' => 'Xem Ban Đàn',
-                'view-ban-hau-can' => 'Xem Ban Hậu Cần',
-                'view-ban-hat-tho-phuong' => 'Xem Ban Hát Thờ Phượng',
-                'view-ban-khanh-tiet' => 'Xem Ban Khánh Tiết',
-                'view-ban-ky-thuat-am-thanh' => 'Xem Ban Kỹ Thuật - Âm Thanh',
-                'view-ban-le-tan' => 'Xem Ban Lễ Tân',
-                'view-ban-may-chieu' => 'Xem Ban Máy Chiếu',
-                'view-ban-tham-vieng' => 'Xem Ban Thăm Viếng',
-                'view-ban-trat-tu' => 'Xem Ban Trật Tự',
-                'view-ban-truyen-giang' => 'Xem Ban Truyền Giảng',
-                'view-ban-truyen-thong-may-chieu' => 'Xem Ban Truyền Thông - Máy Chiếu',
+                'view-ban-chap-su' => ['description' => 'Xem Ban Chấp Sự', 'default_url' => '/ban/chap-su'],
+                'view-ban-am-thuc' => ['description' => 'Xem Ban Ẩm Thực', 'default_url' => '/ban/am-thuc'],
+                'view-ban-cau-nguyen' => ['description' => 'Xem Ban Cầu Nguyện', 'default_url' => '/ban/cau-nguyen'],
+                'view-ban-chung-dao' => ['description' => 'Xem Ban Chứng Đạo', 'default_url' => '/ban/chung-dao'],
+                'view-ban-dan' => ['description' => 'Xem Ban Đàn', 'default_url' => '/ban/dan'],
+                'view-ban-hau-can' => ['description' => 'Xem Ban Hậu Cần', 'default_url' => '/ban/hau-can'],
+                'view-ban-hat-tho-phuong' => ['description' => 'Xem Ban Hát Thờ Phượng', 'default_url' => '/ban/hat-tho-phuong'],
+                'view-ban-khanh-tiet' => ['description' => 'Xem Ban Khánh Tiết', 'default_url' => '/ban/khanh-tiet'],
+                'view-ban-ky-thuat-am-thanh' => ['description' => 'Xem Ban Kỹ Thuật - Âm Thanh', 'default_url' => '/ban/ky-thuat-am-thanh'],
+                'view-ban-le-tan' => ['description' => 'Xem Ban Lễ Tân', 'default_url' => '/ban/le-tan'],
+                'view-ban-may-chieu' => ['description' => 'Xem Ban Máy Chiếu', 'default_url' => '/ban/may-chieu'],
+                'view-ban-tham-vieng' => ['description' => 'Xem Ban Thăm Viếng', 'default_url' => '/ban/tham-vieng'],
+                'view-ban-trat-tu' => ['description' => 'Xem Ban Trật Tự', 'default_url' => '/ban/trat-tu'],
+                'view-ban-truyen-giang' => ['description' => 'Xem Ban Truyền Giảng', 'default_url' => '/ban/truyen-giang'],
+                'view-ban-truyen-thong-may-chieu' => ['description' => 'Xem Ban Truyền Thông - Máy Chiếu', 'default_url' => '/ban/truyen-thong-may-chieu'],
             ],
             'Thủ Quỹ' => [
-                'view-thu-quy-dashboard' => 'Xem dashboard thủ quỹ',
-                'view-thu-quy-thong-bao' => 'Xem thông báo',
-                'view-thu-quy-quy' => 'Xem quỹ',
-                'manage-thu-quy-quy' => 'Quản lý quỹ',
-                'view-thu-quy-giao-dich' => 'Xem giao dịch',
-                'manage-thu-quy-giao-dich' => 'Quản lý giao dịch',
-                'duyet-thu-quy-giao-dich' => 'Duyệt giao dịch',
-                'search-thu-quy-giao-dich' => 'Tìm kiếm giao dịch',
-                'export-thu-quy-giao-dich' => 'Xuất giao dịch',
-                'view-thu-quy-chi-dinh-ky' => 'Xem chi định kỳ',
-                'manage-thu-quy-chi-dinh-ky' => 'Quản lý chi định kỳ',
-                'view-thu-quy-bao-cao' => 'Xem báo cáo',
-                'manage-thu-quy-bao-cao' => 'Quản lý báo cáo',
-                'view-thu-quy-lich-su' => 'Xem lịch sử thao tác',
+                'view-thu-quy-dashboard' => ['description' => 'Xem dashboard thủ quỹ', 'default_url' => '/thu-quy'],
+                'view-thu-quy-thong-bao' => ['description' => 'Xem thông báo', 'default_url' => '/thu-quy/thong-bao'],
+                'view-thu-quy-quy' => ['description' => 'Xem quỹ', 'default_url' => '/thu-quy/quy'],
+                'manage-thu-quy-quy' => ['description' => 'Quản lý quỹ', 'default_url' => '/thu-quy/quy'],
+                'view-thu-quy-giao-dich' => ['description' => 'Xem giao dịch', 'default_url' => '/thu-quy/giao-dich'],
+                'manage-thu-quy-giao-dich' => ['description' => 'Quản lý giao dịch', 'default_url' => '/thu-quy/giao-dich'],
+                'duyet-thu-quy-giao-dich' => ['description' => 'Duyệt giao dịch', 'default_url' => '/thu-quy/giao-dich/duyet/danh-sach'],
+                'search-thu-quy-giao-dich' => ['description' => 'Tìm kiếm giao dịch', 'default_url' => '/thu-quy/giao-dich/tim-kiem'],
+                'export-thu-quy-giao-dich' => ['description' => 'Xuất giao dịch', 'default_url' => '/thu-quy/giao-dich/tim-kiem'],
+                'view-thu-quy-chi-dinh-ky' => ['description' => 'Xem chi định kỳ', 'default_url' => '/thu-quy/chi-dinh-ky'],
+                'manage-thu-quy-chi-dinh-ky' => ['description' => 'Quản lý chi định kỳ', 'default_url' => '/thu-quy/chi-dinh-ky'],
+                'view-thu-quy-bao-cao' => ['description' => 'Xem báo cáo', 'default_url' => '/thu-quy/bao-cao'],
+                'manage-thu-quy-bao-cao' => ['description' => 'Quản lý báo cáo', 'default_url' => '/thu-quy/bao-cao'],
+                'view-thu-quy-lich-su' => ['description' => 'Xem lịch sử thao tác', 'default_url' => '/thu-quy/lich-su'],
             ],
             'Thiết Bị' => [
-                'view-thiet-bi' => 'Xem thiết bị',
-                'manage-thiet-bi' => 'Quản lý thiết bị',
-                'view-nha-cung-cap' => 'Xem nhà cung cấp',
-                'manage-nha-cung-cap' => 'Quản lý nhà cung cấp',
-                'view-thiet-bi-canh-bao' => 'Xem cảnh báo',
-                'view-thiet-bi-bao-cao' => 'Xem báo cáo thống kê',
-                'export-thiet-bi' => 'Xuất dữ liệu thiết bị',
-                'view-lich-su-bao-tri' => 'Xem lịch sử bảo trì',
-                'manage-lich-su-bao-tri' => 'Quản lý lịch sử bảo trì',
+                'view-thiet-bi' => ['description' => 'Xem thiết bị', 'default_url' => '/thiet-bi'],
+                'manage-thiet-bi' => ['description' => 'Quản lý thiết bị', 'default_url' => '/thiet-bi'],
+                'view-nha-cung-cap' => ['description' => 'Xem nhà cung cấp', 'default_url' => '/nha-cung-cap'],
+                'manage-nha-cung-cap' => ['description' => 'Quản lý nhà cung cấp', 'default_url' => '/nha-cung-cap'],
+                'view-thiet-bi-canh-bao' => ['description' => 'Xem cảnh báo', 'default_url' => '/thiet-bi/canh-bao'],
+                'view-thiet-bi-bao-cao' => ['description' => 'Xem báo cáo thống kê', 'default_url' => '/thiet-bi/bao-cao'],
+                'export-thiet-bi' => ['description' => 'Xuất dữ liệu thiết bị', 'default_url' => '/thiet-bi/bao-cao'],
+                'view-lich-su-bao-tri' => ['description' => 'Xem lịch sử bảo trì', 'default_url' => '/thiet-bi/lich-su-bao-tri'],
+                'manage-lich-su-bao-tri' => ['description' => 'Quản lý lịch sử bảo trì', 'default_url' => '/thiet-bi/lich-su-bao-tri'],
             ],
             'Thông Báo' => [
-                'view-thong-bao' => 'Xem tổng quan',
-                'view-thong-bao-inbox' => 'Xem hộp thư đến',
-                'view-thong-bao-sent' => 'Xem đã gửi',
-                'view-thong-bao-archived' => 'Xem lưu trữ',
-                'manage-thong-bao' => 'Quản lý trạng thái thông báo',
-                'delete-thong-bao' => 'Xóa thông báo',
-                'send-thong-bao' => 'Gửi thông báo',
+                'view-thong-bao' => ['description' => 'Xem tổng quan', 'default_url' => '/thong-bao'],
+                'view-thong-bao-inbox' => ['description' => 'Xem hộp thư đến', 'default_url' => '/thong-bao/inbox'],
+                'view-thong-bao-sent' => ['description' => 'Xem đã gửi', 'default_url' => '/thong-bao/sent'],
+                'view-thong-bao-archived' => ['description' => 'Xem lưu trữ', 'default_url' => '/thong-bao/archived'],
+                'manage-thong-bao' => ['description' => 'Quản lý trạng thái thông báo', 'default_url' => '/thong-bao'],
+                'delete-thong-bao' => ['description' => 'Xóa thông báo', 'default_url' => '/thong-bao'],
+                'send-thong-bao' => ['description' => 'Gửi thông báo', 'default_url' => '/thong-bao/create'],
             ],
             'Báo Cáo' => [
-                'view-bao-cao-thiet-bi' => 'Xem báo cáo thiết bị',
-                'view-bao-cao-tai-chinh' => 'Xem báo cáo tài chính',
-                'view-bao-cao-hoi-thanh' => 'Xem báo cáo hội thánh',
+                'view-bao-cao-thiet-bi' => ['description' => 'Xem báo cáo thiết bị', 'default_url' => '/bao-cao/thiet-bi'],
+                'view-bao-cao-tai-chinh' => ['description' => 'Xem báo cáo tài chính', 'default_url' => '/bao-cao/tai-chinh'],
+                'view-bao-cao-hoi-thanh' => ['description' => 'Xem báo cáo hội thánh', 'default_url' => '/bao-cao/hoi-thanh'],
             ],
             'Diễn Giả' => [
-                'view-dien-gia' => 'Xem diễn giả',
-                'manage-dien-gia' => 'Quản lý diễn giả',
+                'view-dien-gia' => ['description' => 'Xem diễn giả', 'default_url' => '/dien-gia'],
+                'manage-dien-gia' => ['description' => 'Quản lý diễn giả', 'default_url' => '/dien-gia'],
             ],
             'Thờ Phượng' => [
-                'view-tho-phuong' => 'Xem thờ phượng',
-                'manage-tho-phuong' => 'Quản lý thờ phượng',
+                'view-tho-phuong' => ['description' => 'Xem thờ phượng', 'default_url' => '/tho-phuong'],
+                'manage-tho-phuong' => ['description' => 'Quản lý thờ phượng', 'default_url' => '/tho-phuong'],
             ],
             'Tài Liệu' => [
-                'view-tai-lieu' => 'Xem tài liệu',
-                'manage-tai-lieu' => 'Quản lý tài liệu',
+                'view-tai-lieu' => ['description' => 'Xem tài liệu', 'default_url' => '/tai-lieu'],
+                'manage-tai-lieu' => ['description' => 'Quản lý tài liệu', 'default_url' => '/tai-lieu'],
             ],
             'Cài Đặt' => [
-                'view-cai-dat' => 'Xem cài đặt',
+                'view-cai-dat' => ['description' => 'Xem cài đặt', 'default_url' => '/cai-dat'],
             ],
             'Buổi Nhóm' => [
-                'view-buoi-nhom' => 'Xem buổi nhóm',
-                'manage-buoi-nhom' => 'Quản lý buổi nhóm',
+                'view-buoi-nhom' => ['description' => 'Xem buổi nhóm', 'default_url' => '/buoi-nhom'],
+                'manage-buoi-nhom' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/buoi-nhom'],
             ],
         ];
     }
@@ -208,13 +208,18 @@ class NguoiDungPhanQuyenController extends Controller
         // Lấy danh sách tất cả quyền từ $permissions
         $definedPermissions = [];
         foreach ($this->permissions as $groupPermissions) {
-            $definedPermissions = array_merge($definedPermissions, array_keys($groupPermissions));
+            foreach ($groupPermissions as $perm => $data) {
+                $definedPermissions[] = $perm;
+            }
         }
 
         // Kết hợp với $permissions
         $customPermissions = array_diff($allPermissions, $definedPermissions);
         if (!empty($customPermissions)) {
-            $permissions['Quyền Tùy Chỉnh'] = array_combine($customPermissions, array_map(fn($perm) => ucfirst(str_replace('-', ' ', $perm)), $customPermissions));
+            $permissions['Quyền Tùy Chỉnh'] = array_combine(
+                $customPermissions,
+                array_map(fn($perm) => ['description' => ucfirst(str_replace('-', ' ', $perm)), 'default_url' => null], $customPermissions)
+            );
         }
 
         return view('_phan_quyen.phan_quyen', compact('users', 'banNganhs', 'permissions'));
@@ -233,13 +238,18 @@ class NguoiDungPhanQuyenController extends Controller
         // Lấy danh sách tất cả quyền từ $permissions
         $definedPermissions = [];
         foreach ($this->permissions as $groupPermissions) {
-            $definedPermissions = array_merge($definedPermissions, array_keys($groupPermissions));
+            foreach ($groupPermissions as $perm => $data) {
+                $definedPermissions[] = $perm;
+            }
         }
 
         // Kết hợp với $permissions
         $customPermissions = array_diff($allPermissions, $definedPermissions);
         if (!empty($customPermissions)) {
-            $permissions['Quyền Tùy Chỉnh'] = array_combine($customPermissions, array_map(fn($perm) => ucfirst(str_replace('-', ' ', $perm)), $customPermissions));
+            $permissions['Quyền Tùy Chỉnh'] = array_combine(
+                $customPermissions,
+                array_map(fn($perm) => ['description' => ucfirst(str_replace('-', ' ', $perm)), 'default_url' => null], $customPermissions)
+            );
         }
 
         return view('_phan_quyen.user_permissions', compact('user', 'banNganhs', 'permissions', 'userPermissions'));
@@ -267,7 +277,7 @@ class NguoiDungPhanQuyenController extends Controller
             case 'truong_ban':
                 foreach ($this->permissions as $group => $groupPermissions) {
                     if (str_contains($group, 'Ban Ngành')) {
-                        foreach ($groupPermissions as $permission => $description) {
+                        foreach ($groupPermissions as $permission => $data) {
                             $rolePermissions[] = $permission;
                         }
                     }
@@ -311,10 +321,18 @@ class NguoiDungPhanQuyenController extends Controller
         // Gán quyền mới dựa trên vai trò
         $rolePermissions = $this->getRolePermissions($request)->getData();
         foreach ($rolePermissions as $permission) {
+            $defaultUrl = null;
+            foreach ($this->permissions as $group => $groupPermissions) {
+                if (isset($groupPermissions[$permission]['default_url'])) {
+                    $defaultUrl = $groupPermissions[$permission]['default_url'];
+                    break;
+                }
+            }
             NguoiDungPhanQuyen::create([
                 'nguoi_dung_id' => $userId,
                 'quyen' => $permission,
                 'id_ban_nganh' => null,
+                'default_url' => $defaultUrl,
             ]);
         }
 
@@ -324,6 +342,7 @@ class NguoiDungPhanQuyenController extends Controller
                 'nguoi_dung_id' => $userId,
                 'quyen' => 'admin-access',
                 'id_ban_nganh' => null,
+                'default_url' => '/dashboard',
             ]);
         }
 
@@ -340,7 +359,9 @@ class NguoiDungPhanQuyenController extends Controller
             $userPermissions = NguoiDungPhanQuyen::select('quyen')->distinct()->pluck('quyen')->toArray();
             $definedPermissions = [];
             foreach ($this->permissions as $groupPermissions) {
-                $definedPermissions = array_merge($definedPermissions, array_keys($groupPermissions));
+                foreach ($groupPermissions as $perm => $data) {
+                    $definedPermissions[] = $perm;
+                }
             }
             $userPermissions = array_unique(array_merge($userPermissions, $definedPermissions));
         }
@@ -349,6 +370,14 @@ class NguoiDungPhanQuyenController extends Controller
             'permissions' => $userPermissions,
             'isAdmin' => $isAdmin,
         ]);
+    }
+
+    public function getUserDefaultUrls($userId)
+    {
+        $user = NguoiDung::findOrFail($userId);
+        return response()->json(
+            $user->quyen()->whereNotNull('default_url')->distinct()->pluck('default_url')->toArray()
+        );
     }
 
     public function updateUserPermissions(Request $request, $userId)
@@ -372,7 +401,7 @@ class NguoiDungPhanQuyenController extends Controller
             $selectedPermissions = $request->permissions;
 
             // Log để debug
-            Log::info('Updating permissions for user: ' . $userId, [
+            \Log::info('Updating permissions for user: ' . $userId, [
                 'current_permissions' => $currentPermissions,
                 'selected_permissions' => $selectedPermissions,
             ]);
@@ -381,47 +410,69 @@ class NguoiDungPhanQuyenController extends Controller
             $permissionsToRemove = array_diff($currentPermissions, $selectedPermissions);
             $permissionsToRemove = array_values($permissionsToRemove);
             if (!empty($permissionsToRemove)) {
-                Log::info('Removing permissions for user ' . $userId . ': ', ['permissions' => $permissionsToRemove]);
-
-                // Log truy vấn SQL
+                \Log::info('Removing permissions for user ' . $userId . ': ', ['permissions' => $permissionsToRemove]);
                 $query = NguoiDungPhanQuyen::where('nguoi_dung_id', $userId)
                     ->whereIn('quyen', $permissionsToRemove);
-                Log::info('Delete query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
-
-                // Thực hiện xóa và kiểm tra số bản ghi bị ảnh hưởng
+                \Log::info('Delete query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
                 $deletedRows = $query->delete();
-                Log::info('Deleted rows for user ' . $userId . ': ' . $deletedRows);
+                \Log::info('Deleted rows for user ' . $userId . ': ' . $deletedRows);
             } else {
-                Log::info('No permissions to remove for user ' . $userId);
+                \Log::info('No permissions to remove for user ' . $userId);
             }
 
             // Xác định quyền cần thêm
             $permissionsToAdd = array_diff($selectedPermissions, $currentPermissions);
             if (!empty($permissionsToAdd)) {
                 foreach ($permissionsToAdd as $permission) {
-                    Log::info('Adding permission for user ' . $userId . ': ' . $permission);
+                    $defaultUrl = null;
+                    foreach ($this->permissions as $group => $groupPermissions) {
+                        if (isset($groupPermissions[$permission]['default_url'])) {
+                            $defaultUrl = $groupPermissions[$permission]['default_url'];
+                            break;
+                        }
+                    }
+                    \Log::info('Adding permission for user ' . $userId . ': ' . $permission . ' with default_url: ' . ($defaultUrl ?? 'null'));
                     NguoiDungPhanQuyen::create([
                         'nguoi_dung_id' => $userId,
                         'quyen' => $permission,
                         'id_ban_nganh' => null,
+                        'default_url' => $defaultUrl,
                     ]);
                 }
             } else {
-                Log::info('No permissions to add for user ' . $userId);
+                \Log::info('No permissions to add for user ' . $userId);
             }
 
             // Nếu không có quyền nào được chọn, xóa tất cả quyền
             if (empty($selectedPermissions) && !empty($currentPermissions)) {
-                Log::info('No permissions selected, removing all permissions for user ' . $userId);
+                \Log::info('No permissions selected, removing all permissions for user ' . $userId);
                 $deletedRows = NguoiDungPhanQuyen::where('nguoi_dung_id', $userId)
                     ->delete();
-                Log::info('Deleted all rows for user ' . $userId . ': ' . $deletedRows);
+                \Log::info('Deleted all rows for user ' . $userId . ': ' . $deletedRows);
             }
 
             return response()->json(['success' => 'Đã cập nhật quyền thành công.']);
         } catch (\Exception $e) {
-            Log::error('Error updating permissions for user ' . $userId . ': ' . $e->getMessage(), ['exception' => $e]);
+            \Log::error('Error updating permissions for user ' . $userId . ': ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => 'Không thể cập nhật quyền: ' . $e->getMessage()], 500);
         }
     }
+
+    public function updateDefaultUrl(Request $request, $userId)
+    {
+        $request->validate([
+            'default_url' => 'nullable|string|max:255',
+        ]);
+
+        $user = NguoiDung::findOrFail($userId);
+        if ($user->email === 'admin1@example.com') {
+            return response()->json(['error' => 'Không thể chỉnh sửa URL mặc định của tài khoản quản trị mặc định.'], 403);
+        }
+
+        $user->default_url = $request->default_url ?: null;
+        $user->save();
+
+        return response()->json(['success' => 'Đã cập nhật URL mặc định thành công.']);
+    }
 }
+?>

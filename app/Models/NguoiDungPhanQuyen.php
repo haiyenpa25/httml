@@ -10,12 +10,7 @@ class NguoiDungPhanQuyen extends Model
     use HasFactory;
 
     protected $table = 'nguoi_dung_phan_quyen';
-
-    protected $fillable = [
-        'nguoi_dung_id',
-        'quyen',
-        'id_ban_nganh',
-    ];
+    protected $fillable = ['nguoi_dung_id', 'quyen', 'id_ban_nganh', 'default_url'];
 
     public function nguoiDung()
     {
