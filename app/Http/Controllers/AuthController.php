@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\NguoiDung;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -29,17 +30,12 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
-            // Chuyển hướng theo vai trò
-            switch ($user->vai_tro) {
-                case 'quan_tri':
-                    return redirect()->route('dashboard')->with('success', 'Đăng nhập thành công!');
-                case 'truong_ban':
-                    return redirect()->route('_ban_nganh.index')->with('success', 'Đăng nhập thành công!');
-                case 'thanh_vien':
-                    return redirect()->route('_thong_bao.index')->with('success', 'Đăng nhập thành công!');
-                default:
-                    return redirect()->route('dashboard')->with('success', 'Đăng nhập thành công!');
-            }
+            // Lấy default_url từ nguoi_dung hoặc nguoi_dung_phan_quyen
+            $defaultUrl = $user->default_url ?? $user->quyen()->whereNotNull('default_url')->value('default_url') ?? '/dashboard';
+
+            Log::info('User logged in: ' . $user->id . ', redirecting to: ' . $defaultUrl);
+
+            return redirect()->to($defaultUrl)->with('success', 'Đăng nhập thành công!');
         }
 
         return back()->withErrors([
@@ -89,3 +85,4 @@ class AuthController extends Controller
         ]);
     }
 }
+?>

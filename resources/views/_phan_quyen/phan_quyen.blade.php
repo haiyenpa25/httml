@@ -54,15 +54,19 @@
                                             </select>
                                         </td>
                                         <td>
+                                            @php
+                                                $urls = $user->quyen()->whereNotNull('default_url')->distinct()->pluck('default_url')->toArray();
+                                                \Log::info('Default URLs for user ' . $user->id . ' (initial load): ', $urls);
+                                            @endphp
                                             <select class="form-control select2bs4 default-url-select" data-user-id="{{ $user->id }}" {{ $user->email === 'admin1@example.com' ? 'disabled' : '' }}>
                                                 <option value="">-- Chọn URL --</option>
-                                                @php
-                                                    $urls = $user->quyen()->whereNotNull('default_url')->distinct()->pluck('default_url')->toArray();
-                                                    \Log::info('Default URLs for user ' . $user->id . ': ', $urls);
-                                                @endphp
-                                                @foreach ($urls as $url)
-                                                    <option value="{{ $url }}" {{ $user->default_url == $url ? 'selected' : '' }}>{{ $url }}</option>
-                                                @endforeach
+                                                @if (empty($urls))
+                                                    <option value="" disabled>Không có URL khả dụng</option>
+                                                @else
+                                                    @foreach ($urls as $url)
+                                                        <option value="{{ $url }}" {{ $user->default_url == $url ? 'selected' : '' }}>{{ $url }}</option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                         </td>
                                         <td>
@@ -149,6 +153,8 @@
                 const userId = $(this).data('user-id');
                 const defaultUrl = $(this).val();
 
+                console.log('Updating default URL for user ' + userId + ':', defaultUrl);
+
                 $.ajax({
                     url: '{{ route("_phan_quyen.update_default_url", ":userId") }}'.replace(':userId', userId),
                     method: 'POST',
@@ -172,13 +178,20 @@
                     url: '{{ route("_phan_quyen.get_user_default_urls", ":userId") }}'.replace(':userId', userId),
                     method: 'GET',
                     success: function (urls) {
-                        console.log('Default URLs for user ' + userId + ':', urls);
+                        console.log('Default URLs for user ' + userId + ' (AJAX):', urls);
                         const select = $(`.default-url-select[data-user-id="${userId}"]`);
                         select.empty().append('<option value="">-- Chọn URL --</option>');
-                        urls.forEach(url => {
-                            select.append(`<option value="${url}">${url}</option>`);
-                        });
+                        if (urls.length === 0) {
+                            console.warn('No default URLs available for user ' + userId);
+                            select.append('<option value="" disabled>Không có URL khả dụng</option>');
+                            toastr.warning('Không có URL mặc định nào cho người dùng này.');
+                        } else {
+                            urls.forEach(url => {
+                                select.append(`<option value="${url}">${url}</option>`);
+                            });
+                        }
                         select.val('').trigger('change.select2');
+                        console.log('Select2 updated for user ' + userId + ', options count:', select.find('option').length);
                     },
                     error: function (xhr) {
                         console.error('Error fetching default URLs:', xhr.responseJSON);

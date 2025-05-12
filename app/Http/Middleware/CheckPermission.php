@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\BanNganh;
+use Illuminate\Support\Facades\Log;
 
 class CheckPermission
 {
@@ -23,10 +24,9 @@ class CheckPermission
 
         // Ánh xạ chuỗi ban_nganh_id thành ID số
         if ($banNganhId) {
-            $banNganh = BanNganh::where('id', $banNganhId)
-                ->orWhere('slug', $banNganhId) // Giả sử bảng ban_nganh có cột 'slug'
-                ->first();
+            $banNganh = BanNganh::where('id', $banNganhId)->first();
             if (!$banNganh) {
+                Log::error('Ban ngành không tồn tại: ' . $banNganhId);
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json(['error' => 'Ban ngành không tồn tại.'], 404);
                 }
@@ -44,6 +44,7 @@ class CheckPermission
 
         // Kiểm tra quyền trong ban ngành (nếu có) hoặc quyền toàn hệ thống
         if (!$user->hasPermission($permission, $banNganhId)) {
+            Log::warning('User ' . $user->id . ' lacks permission ' . $permission . ' for ban_nganh_id: ' . ($banNganhId ?? 'null'));
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['error' => 'Không có quyền truy cập.'], 403);
             }
@@ -53,3 +54,4 @@ class CheckPermission
         return $next($request);
     }
 }
+?>
