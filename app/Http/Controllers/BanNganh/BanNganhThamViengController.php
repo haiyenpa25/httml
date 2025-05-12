@@ -11,6 +11,7 @@ use App\Models\KienNghi;
 use App\Models\ThamVieng;
 use App\Models\TinHuu;
 use App\Models\TinHuuBanNganh;
+use App\Models\BanNganh;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,10 +19,367 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class BanNganhThamViengController extends Controller
 {
+    /**
+     * Hiển thị trang thăm viếng
+     */
+    public function thamVieng(array $config): View
+    {
+        // Kiểm tra cấu hình
+        if (!isset($config['id']) || !is_numeric($config['id'])) {
+            Log::error("Cấu hình không chứa ID hợp lệ cho {$config['name']}", $config);
+            return redirect()->route('_ban_nganh.index', ['banType' => request()->route('banType')])
+                ->with('error', "Cấu hình không hợp lệ cho {$config['name']}");
+        }
+
+        // Tối ưu truy vấn với cache
+        $banNganh = Cache::remember("ban_nganh_{$config['id']}", now()->addDay(), function () use ($config) {
+            return BanNganh::where('id', $config['id'])->first();
+        });
+
+        if (!$banNganh) {
+            $banName = $config['name'] ?? 'Ban Ngành';
+            return redirect()->route('_ban_nganh.index', ['banType' => request()->route('banType')])
+                ->with('error', "Không tìm thấy {$banName}");
+        }
+
+        $thanhVienBan = TinHuuBanNganh::with('tinHuu')
+            ->where('ban_nganh_id', $banNganh->id)
+            ->get();
+
+        $danhSachTinHuu = TinHuu::orderBy('ho_ten')->get();
+
+        $tinHuuWithLocations = TinHuu::whereNotNull('vi_do')
+            ->whereNotNull('kinh_do')
+            ->get();
+
+        $lichSuThamVieng = collect();
+        $lichSuThamViengError = null;
+
+        try {
+            $lichSuThamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
+                ->where('id_ban', $banNganh->id)
+                ->where('trang_thai', 'da_tham')
+                ->whereDate('ngay_tham', '>=', Carbon::now()->subMonth()->startOfMonth())
+                ->whereDate('ngay_tham', '<=', Carbon::now())
+                ->orderBy('ngay_tham', 'desc')
+                ->limit(50)
+                ->get();
+
+            if ($lichSuThamVieng->isEmpty()) {
+                throw new \Exception('Không có dữ liệu lịch sử thăm viếng');
+            }
+        } catch (\Exception $e) {
+            $lichSuThamViengError = $e->getMessage();
+        }
+
+        // Lấy danh sách đề xuất thăm viếng với phân trang
+        $days = 60; // Mặc định 60 ngày
+        $cutoffDate = Carbon::now()->subDays($days);
+        $now = Carbon::now();
+
+        $deXuatThamVieng = TinHuu::select('tin_huu.*')
+            ->selectRaw('DATEDIFF(?, COALESCE(tin_huu.ngay_tham_vieng_gan_nhat, "1900-01-01")) as so_ngay_chua_tham', [$now])
+            ->leftJoin('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
+            ->where('tin_huu_ban_nganh.ban_nganh_id', $config['id'])
+            ->where(function ($query) use ($cutoffDate) {
+                $query->where('tin_huu.ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
+                    ->orWhereNull('tin_huu.ngay_tham_vieng_gan_nhat');
+            })
+            ->orderByRaw('tin_huu.ngay_tham_vieng_gan_nhat IS NULL DESC, tin_huu.ngay_tham_vieng_gan_nhat ASC')
+            ->paginate(10); // Phân trang 10 row
+
+        $thongKe = $this->getThongKeThamVieng($banNganh->id);
+
+        return view('_ban_nganh.tham_vieng', compact(
+            'banNganh',
+            'thanhVienBan',
+            'danhSachTinHuu',
+            'tinHuuWithLocations',
+            'lichSuThamVieng',
+            'thongKe',
+            'lichSuThamViengError',
+            'deXuatThamVieng',
+            'config'
+        ));
+    }
+
+    /**
+     * Tạo thống kê thăm viếng
+     */
+    private function getThongKeThamVieng($banNganhId)
+    {
+        $thongKe = [
+            'total_visits' => 0,
+            'this_month' => 0,
+            'last_month' => 0,
+            'months' => [],
+            'counts' => []
+        ];
+
+        // Tổng số lần thăm
+        $thongKe['total_visits'] = ThamVieng::where('id_ban', $banNganhId)
+            ->where('trang_thai', 'da_tham')
+            ->count();
+
+        // Số lần thăm trong tháng này
+        $thongKe['this_month'] = ThamVieng::where('id_ban', $banNganhId)
+            ->where('trang_thai', 'da_tham')
+            ->whereMonth('ngay_tham', Carbon::now()->month)
+            ->whereYear('ngay_tham', Carbon::now()->year)
+            ->count();
+
+        // Số lần thăm trong tháng trước
+        $thongKe['last_month'] = ThamVieng::where('id_ban', $banNganhId)
+            ->where('trang_thai', 'da_tham')
+            ->whereMonth('ngay_tham', Carbon::now()->subMonth()->month)
+            ->whereYear('ngay_tham', Carbon::now()->subMonth()->year)
+            ->count();
+
+        // Dữ liệu biểu đồ (6 tháng gần nhất)
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $count = ThamVieng::where('id_ban', $banNganhId)
+                ->where('trang_thai', 'da_tham')
+                ->whereMonth('ngay_tham', $month->month)
+                ->whereYear('ngay_tham', $month->year)
+                ->count();
+
+            $thongKe['months'][] = $month->format('m/Y');
+            $thongKe['counts'][] = $count;
+        }
+
+        return $thongKe;
+    }
+
+    /**
+     * Thêm lần thăm mới
+     */
+    public function themThamVieng(Request $request, array $config): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'tin_huu_id' => 'required|exists:tin_huu,id',
+            'nguoi_tham_id' => 'required|exists:tin_huu,id',
+            'ngay_tham' => 'required|date',
+            'noi_dung' => 'required|string',
+            'ket_qua' => 'nullable|string',
+            'trang_thai' => 'required|in:da_tham,ke_hoach',
+            'id_ban' => 'required|exists:ban_nganh,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->id_ban != $config['id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ban ngành không hợp lệ!'
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $thamVieng = ThamVieng::create([
+                'tin_huu_id' => $request->tin_huu_id,
+                'nguoi_tham_id' => $request->nguoi_tham_id,
+                'id_ban' => $request->id_ban,
+                'ngay_tham' => $request->ngay_tham,
+                'noi_dung' => $request->noi_dung,
+                'ket_qua' => $request->ket_qua,
+                'trang_thai' => $request->trang_thai,
+            ]);
+
+            // Cập nhật ngay_tham_vieng_gan_nhat nếu trạng thái là "da_tham"
+            if ($request->trang_thai == 'da_tham') {
+                TinHuu::where('id', $request->tin_huu_id)->update([
+                    'ngay_tham_vieng_gan_nhat' => $request->ngay_tham
+                ]);
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã thêm lần thăm thành công',
+                'data' => $thamVieng
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Lỗi thêm thăm viếng {$config['name']}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi thêm lần thăm: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Lọc đề xuất thăm viếng theo số ngày
+     */
+    public function filterDeXuatThamVieng(Request $request, array $config): JsonResponse
+    {
+        $days = $request->input('days', 60);
+        $cutoffDate = Carbon::now()->subDays($days);
+        $now = Carbon::now();
+
+        $tinHuuList = TinHuu::select('tin_huu.*')
+            ->selectRaw('DATEDIFF(?, COALESCE(tin_huu.ngay_tham_vieng_gan_nhat, "1900-01-01")) as so_ngay_chua_tham', [$now])
+            ->leftJoin('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
+            ->where('tin_huu_ban_nganh.ban_nganh_id', $config['id'])
+            ->where(function ($query) use ($cutoffDate) {
+                $query->where('tin_huu.ngay_tham_vieng_gan_nhat', '<=', $cutoffDate)
+                    ->orWhereNull('tin_huu.ngay_tham_vieng_gan_nhat');
+            })
+            ->orderByRaw('tin_huu.ngay_tham_vieng_gan_nhat IS NULL DESC, tin_huu.ngay_tham_vieng_gan_nhat ASC')
+            ->paginate(10);
+
+        $tinHuuList->getCollection()->transform(function ($tinHuu) {
+            $tinHuu->ngay_tham_vieng_gan_nhat_formatted = $tinHuu->ngay_tham_vieng_gan_nhat
+                ? Carbon::parse($tinHuu->ngay_tham_vieng_gan_nhat)->format('d/m/Y')
+                : null;
+            return $tinHuu;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $tinHuuList->items(),
+            'pagination' => [
+                'current_page' => $tinHuuList->currentPage(),
+                'last_page' => $tinHuuList->lastPage(),
+                'per_page' => $tinHuuList->perPage(),
+                'total' => $tinHuuList->total(),
+            ]
+        ]);
+    }
+
+    /**
+     * Lọc lịch sử thăm viếng theo khoảng thời gian
+     */
+    public function filterThamVieng(Request $request, array $config): JsonResponse
+    {
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+
+        if (!$fromDate || !$toDate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng chọn khoảng thời gian'
+            ], 422);
+        }
+
+        $thamViengs = ThamVieng::with(['tinHuu', 'nguoiTham'])
+            ->where('id_ban', $config['id'])
+            ->whereDate('ngay_tham', '>=', $fromDate)
+            ->whereDate('ngay_tham', '<=', $toDate)
+            ->orderBy('ngay_tham', 'desc')
+            ->get();
+
+        $formattedResults = $thamViengs->map(function ($thamVieng) {
+            return [
+                'id' => $thamVieng->id,
+                'ngay_tham' => $thamVieng->ngay_tham,
+                'ngay_tham_formatted' => Carbon::parse($thamVieng->ngay_tham)->format('d/m/Y'),
+                'tin_huu_name' => $thamVieng->tinHuu ? $thamVieng->tinHuu->ho_ten : null,
+                'nguoi_tham_name' => $thamVieng->nguoiTham ? $thamVieng->nguoiTham->ho_ten : null,
+                'trang_thai' => $thamVieng->trang_thai
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $formattedResults
+        ]);
+    }
+
+    /**
+     * Lấy chi tiết một lần thăm viếng
+     */
+    public function chiTietThamVieng($id, array $config): JsonResponse
+    {
+        try {
+            $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham', 'banNganh'])
+                ->where('id_ban', $config['id'])
+                ->findOrFail($id);
+
+            $data = [
+                'id' => $thamVieng->id,
+                'tin_huu_name' => $thamVieng->tinHuu ? $thamVieng->tinHuu->ho_ten : null,
+                'nguoi_tham_name' => $thamVieng->nguoiTham ? $thamVieng->nguoiTham->ho_ten : null,
+                'ngay_tham_formatted' => Carbon::parse($thamVieng->ngay_tham)->format('d/m/Y'),
+                'noi_dung' => $thamVieng->noi_dung,
+                'ket_qua' => $thamVieng->ket_qua,
+                'trang_thai' => $thamVieng->trang_thai,
+                'ban_name' => $thamVieng->banNganh ? $thamVieng->banNganh->ten : null
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Lỗi lấy chi tiết thăm viếng ID {$id} cho {$config['name']}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy bản ghi thăm viếng hoặc lỗi hệ thống'
+            ], 404);
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái và kết quả thăm viếng
+     */
+    public function updateThamVieng(Request $request, $id, array $config): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'trang_thai' => 'required|in:da_tham,ke_hoach',
+            'ket_qua' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+            $thamVieng = ThamVieng::where('id_ban', $config['id'])->findOrFail($id);
+            $thamVieng->trang_thai = $request->trang_thai;
+            $thamVieng->ket_qua = $request->ket_qua;
+            $thamVieng->save();
+
+            if ($request->trang_thai == 'da_tham') {
+                TinHuu::where('id', $thamVieng->tin_huu_id)->update([
+                    'ngay_tham_vieng_gan_nhat' => $thamVieng->ngay_tham
+                ]);
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thăm viếng thành công',
+                'data' => $thamVieng
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Lỗi cập nhật thăm viếng ID {$id} cho {$config['name']}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * Hiển thị form nhập liệu báo cáo ban
      */

@@ -1,11 +1,13 @@
 @section('page-styles')
-
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="{{ asset('plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="{{ asset('plugins/select2/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
     <!-- Custom styles -->
     <style>
         .badge {
@@ -190,6 +192,56 @@
             padding: 20px;
         }
 
+        /* Pagination styles */
+        .pagination {
+            margin-bottom: 0;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .pagination .page-link {
+            color: #007bff;
+        }
+
+        .pagination .page-link:hover {
+            color: #0056b3;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        /* Loading state */
+        .loading-overlay {
+            position: relative;
+            min-height: 100px;
+        }
+
+        .loading-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .loading-overlay::after {
+            content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#007bff" stroke-width="4" stroke-dasharray="90, 150" stroke-dashoffset="0"><animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/></circle></svg>');
+        }
+
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            min-height: 250px;
+        }
+
         @media (max-width: 767px) {
             .content-header h1 {
                 font-size: 1.5rem;
@@ -273,19 +325,11 @@
             }
         }
     </style>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        .badge {
-            font-size: 90%;
-        }
-    </style>
 @endsection
 
 @section('page-scripts')
-    <!-- resources/views/scripts/ban_trung_lao/ban_trung_lao_tham_vieng.blade.php -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
         $(function () {
             // Khởi tạo Select2 trong modal
@@ -302,54 +346,60 @@
                 $(this).find('.select2bs4').select2('destroy');
             });
 
-            // Khởi tạo bản đồ Leaflet
-            @if($tinHuuWithLocations->isNotEmpty())
-                    if ($('#map').length) {
-                        var map = L.map('map').setView([{{ $tinHuuWithLocations[0]->vi_do }}, {{ $tinHuuWithLocations[0]->kinh_do }}], 13);
+            // Khởi tạo biểu đồ thống kê
+            function initializeChart() {
+                if ($('#visitChart').length) {
+                    var labels = {!! json_encode($thongKe['months']) !!};
+                    var data = {!! json_encode($thongKe['counts']) !!};
 
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        }).addTo(map);
-
-                        @foreach($tinHuuWithLocations as $tinHuu)
-                            L.marker([{{ $tinHuu->vi_do }}, {{ $tinHuu->kinh_do }}])
-                                .addTo(map)
-                                .bindPopup("<b>{{ $tinHuu->ho_ten }}</b><br>{{ $tinHuu->dia_chi }}<br><a href='https://www.google.com/maps/dir/?api=1&destination={{ $tinHuu->vi_do }},{{ $tinHuu->kinh_do }}' target='_blank'>Chỉ đường</a>");
-                        @endforeach
-                }
-            @else
-                if ($('#map').length) {
-                        document.getElementById('map').innerHTML = '<div class="text-center p-3"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Không có dữ liệu tọa độ của tín hữu.</p></div>';
+                    // Kiểm tra dữ liệu
+                    if (!Array.isArray(labels) || !Array.isArray(data) || labels.length !== data.length || labels.length === 0) {
+                        console.error('Dữ liệu thống kê không hợp lệ:', { labels: labels, data: data });
+                        document.getElementById('visitChart').parentElement.innerHTML = '<div class="text-center p-3"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><p class="text-muted">Không có dữ liệu để hiển thị biểu đồ.</p></div>';
+                        return;
                     }
-            @endif
 
-                                        // Khởi tạo biểu đồ thống kê
-                                        if ($('#visitChart').length) {
-                var ctx = document.getElementById('visitChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: {!! json_encode($thongKe['months']) !!},
-                        datasets: [{
-                            label: 'Số lần thăm',
-                            data: {!! json_encode($thongKe['counts']) !!},
-                            backgroundColor: 'rgba(60, 141, 188, 0.8)',
-                            borderColor: 'rgba(60, 141, 188, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            yAxes: [{
-                                ticks: {
-                                    beginAtZero: true,
-                                    stepSize: 1
+                    try {
+                        var ctx = document.getElementById('visitChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'Số lần thăm',
+                                    data: data,
+                                    backgroundColor: 'rgba(60, 141, 188, 0.8)',
+                                    borderColor: 'rgba(60, 141, 188, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: true
+                                    }
                                 }
-                            }]
-                        }
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Lỗi khởi tạo biểu đồ:', e);
+                        document.getElementById('visitChart').parentElement.innerHTML = '<div class="text-center p-3"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><p class="text-muted">Không thể hiển thị biểu đồ. Vui lòng kiểm tra dữ liệu hoặc thư viện Chart.js.</p></div>';
                     }
-                });
+                }
             }
+
+            // Gọi hàm khởi tạo biểu đồ
+            initializeChart();
 
             // Xử lý click nút thêm thăm viếng
             $(document).on('click', '.btn-them-tham-vieng', function () {
@@ -402,6 +452,203 @@
                 });
             }
 
+            // Xử lý lọc đề xuất thăm viếng
+            if ($('#filter-time').length) {
+                $('#filter-time').on('change', function () {
+                    var days = $(this).val();
+                    console.log('Filtering đề xuất thăm viếng:', { days: days });
+                    loadDeXuatThamVieng(days, 1);
+                });
+            }
+
+            // Sử dụng delegate event để xử lý click phân trang
+            $(document).off('click', '.page-link').on('click', '.page-link', function(e) {
+                e.preventDefault();
+                var page = $(this).data('page');
+                var days = $('#filter-time').val();
+                loadDeXuatThamVieng(days, page);
+            });
+
+            // Hàm tải danh sách đề xuất thăm viếng với phân trang
+            function loadDeXuatThamVieng(days, page) {
+                // Thêm trạng thái loading
+                var $tableContainer = $('#table-de-xuat').parent();
+                $tableContainer.addClass('loading-overlay');
+
+                $.ajax({
+                    url: '{{ route("api.ban_nganh.trung_lao.filter_de_xuat_tham_vieng") }}',
+                    method: 'GET',
+                    data: { days: days, page: page },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log('Success response:', response);
+                        if (response.success) {
+                            $('#de-xuat-table-body').empty();
+                            if (response.data.length > 0) {
+                                $.each(response.data, function (index, item) {
+                                    var lastVisit = item.ngay_tham_vieng_gan_nhat
+                                        ? `${item.ngay_tham_vieng_gan_nhat_formatted} <span class="badge badge-${item.so_ngay_chua_tham > 60 ? 'danger' : 'warning'}">${item.so_ngay_chua_tham} ngày</span>`
+                                        : '<span class="badge badge-danger">Chưa thăm bao giờ</span>';
+                                    var hasCoordinates = item.vi_do && item.kinh_do;
+
+                                    $('#de-xuat-table-body').append(`
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle bg-primary">
+                                                        <span>${item.ho_ten.charAt(0)}</span>
+                                                    </div>
+                                                    <div class="ml-2">${item.ho_ten}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="tel:${item.so_dien_thoai || 'N/A'}" class="text-decoration-none">
+                                                    <i class="fas fa-phone-alt text-success mr-1"></i>
+                                                    ${item.so_dien_thoai || 'N/A'}
+                                                </a>
+                                            </td>
+                                            <td>${lastVisit}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-primary btn-them-tham-vieng" 
+                                                        data-id="${item.id}" data-ten="${item.ho_ten}"
+                                                        data-toggle="modal" data-target="#modal-them-tham-vieng">
+                                                        <i class="fas fa-plus"></i> Thăm
+                                                    </button>
+                                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${item.vi_do || ''},${item.kinh_do || ''}" 
+                                                        class="btn btn-sm btn-success ${!hasCoordinates ? 'disabled' : ''}" 
+                                                        target="_blank">
+                                                        <i class="fas fa-map-marker-alt"></i> Chỉ đường
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `);
+                                });
+                            } else {
+                                $('#de-xuat-table-body').append('<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>');
+                            }
+
+                            // Cập nhật phân trang với cấu trúc Bootstrap
+                            var pagination = response.pagination;
+                            var paginationHtml = '<nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
+                            if (pagination.last_page > 1) {
+                                if (pagination.current_page > 1) {
+                                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${pagination.current_page - 1}" aria-label="Previous"><span aria-hidden="true">«</span></a></li>`;
+                                } else {
+                                    paginationHtml += `<li class="page-item disabled"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">«</span></a></li>`;
+                                }
+
+                                for (var i = 1; i <= pagination.last_page; i++) {
+                                    paginationHtml += `<li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                    </li>`;
+                                }
+
+                                if (pagination.current_page < pagination.last_page) {
+                                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" data-page="${pagination.current_page + 1}" aria-label="Next"><span aria-hidden="true">»</span></a></li>`;
+                                } else {
+                                    paginationHtml += `<li class="page-item disabled"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">»</span></a></li>`;
+                                }
+                            }
+                            paginationHtml += '</ul></nav>';
+                            $('.pagination').parent().html(paginationHtml);
+                        } else {
+                            toastr.error('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        console.log('Error response:', xhr.responseText, xhr.status);
+                        toastr.error('Đã xảy ra lỗi khi lọc dữ liệu!');
+                    },
+                    complete: function () {
+                        // Xóa trạng thái loading
+                        $tableContainer.removeClass('loading-overlay');
+                    }
+                });
+            }
+
+            // Khởi tạo bản đồ Leaflet
+            function initializeMap() {
+                if ($('#map').length) {
+                    @if($tinHuuWithLocations->isNotEmpty())
+                        try {
+                            var map = L.map('map').setView([{{ $tinHuuWithLocations[0]->vi_do }}, {{ $tinHuuWithLocations[0]->kinh_do }}], 13);
+
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            }).addTo(map);
+
+                            @foreach($tinHuuWithLocations as $tinHuu)
+                                L.marker([{{ $tinHuu->vi_do }}, {{ $tinHuu->kinh_do }}])
+                                    .addTo(map)
+                                    .bindPopup("<b>{{ $tinHuu->ho_ten }}</b><br>{{ $tinHuu->dia_chi }}<br><a href='https://www.google.com/maps/dir/?api=1&destination={{ $tinHuu->vi_do }},{{ $tinHuu->kinh_do }}' target='_blank'>Chỉ đường</a>");
+                            @endforeach
+
+                            // Cập nhật bản đồ khi kích thước thay đổi
+                            $('#map-section').on('shown.bs.collapse', function () {
+                                map.invalidateSize();
+                            });
+                        } catch (e) {
+                            console.error('Lỗi khởi tạo bản đồ:', e);
+                            document.getElementById('map').innerHTML = '<div class="text-center p-3"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><p class="text-muted">Không thể hiển thị bản đồ. Vui lòng kiểm tra dữ liệu hoặc kết nối mạng.</p></div>';
+                        }
+                    @else
+                        document.getElementById('map').innerHTML = '<div class="text-center p-3"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Không có dữ liệu tọa độ của tín hữu.</p></div>';
+                    @endif
+                }
+            }
+
+            // Gọi hàm khởi tạo bản đồ
+            initializeMap();
+
+            // Locate me button for map
+            $('#btn-locate-me').on('click', function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const currentPos = [position.coords.latitude, position.coords.longitude];
+                        if (typeof map !== 'undefined') {
+                            map.setView(currentPos, 15);
+                            L.marker(currentPos)
+                                .addTo(map)
+                                .bindPopup("Vị trí của bạn")
+                                .openPopup();
+                        }
+                    }, function(error) {
+                        toastr.error('Không thể lấy vị trí của bạn: ' + error.message);
+                    });
+                } else {
+                    toastr.error('Trình duyệt của bạn không hỗ trợ định vị.');
+                }
+            });
+
+            // Xử lý nút preset cho ngày
+            $('.date-preset').on('click', function() {
+                const days = $(this).data('days');
+                const toDate = new Date();
+                const fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - days);
+
+                $('#date-to').val(formatDate(toDate));
+                $('#date-from').val(formatDate(fromDate));
+
+                // Kích hoạt nút tìm kiếm
+                $('#btn-filter-history').click();
+            });
+
+            // Format date helper function
+            function formatDate(date) {
+                const d = new Date(date);
+                let month = '' + (d.getMonth() + 1);
+                let day = '' + d.getDate();
+                const year = d.getFullYear();
+
+                if (month.length < 2) month = '0' + month;
+                if (day.length < 2) day = '0' + day;
+
+                return [year, month, day].join('-');
+            }
+
             // Xử lý lọc lịch sử thăm viếng
             if ($('#btn-filter-history').length) {
                 $('#btn-filter-history').on('click', function () {
@@ -428,21 +675,39 @@
                                 $('#lich-su-table-body').empty();
                                 if (response.data.length > 0) {
                                     $.each(response.data, function (index, item) {
+                                        var date = new Date(item.ngay_tham);
+                                        var month = date.toLocaleString('default', { month: 'short' });
+                                        var day = date.getDate();
                                         $('#lich-su-table-body').append(`
-                                                                        <tr>
-                                                                            <td>${item.ngay_tham_formatted}</td>
-                                                                            <td>${item.tin_huu_name || 'N/A'}</td>
-                                                                            <td>${item.nguoi_tham_name || 'N/A'}</td>
-                                                                            <td>
-                                                                                <button type="button" class="btn btn-sm btn-info btn-xem-chi-tiet" 
-                                                                                    data-id="${item.id}"
-                                                                                    data-toggle="modal" 
-                                                                                    data-target="#modal-chi-tiet-tham-vieng">
-                                                                                    <i class="fas fa-eye"></i> Chi tiết
-                                                                                </button>
-                                                                            </td>
-                                                                        </tr>
-                                                                    `);
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="event-date-badge">
+                                                            <div class="event-date-month">${month}</div>
+                                                            <div class="event-date-day">${day}</div>
+                                                        </div>
+                                                        <div class="ml-2">${item.ngay_tham_formatted}</div>
+                                                    </div>
+                                                </td>
+                                                <td>${item.tin_huu_name || 'N/A'}</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="visitor-icon">
+                                                            <i class="fas fa-user-circle"></i>
+                                                        </span>
+                                                        <span>${item.nguoi_tham_name || 'N/A'}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-info btn-xem-chi-tiet" 
+                                                        data-id="${item.id}"
+                                                        data-toggle="modal" 
+                                                        data-target="#modal-chi-tiet-tham-vieng">
+                                                        <i class="fas fa-eye"></i> Chi tiết
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `);
                                     });
                                 } else {
                                     $('#lich-su-table-body').append('<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>');
@@ -499,64 +764,47 @@
                 });
             });
 
-            // Xử lý lọc đề xuất thăm viếng
-            if ($('#filter-time').length) {
-                $('#filter-time').on('change', function () {
-                    var days = $(this).val();
-                    console.log('Filtering đề xuất thăm viếng:', { days: days });
+            // Print button functionality
+            $('#btn-print-detail').on('click', function() {
+                const printContents = $('#chi-tiet-content').html();
+                const originalContents = document.body.innerHTML;
 
-                    $.ajax({
-                        url: '{{ route("api.ban_nganh.trung_lao.filter_de_xuat_tham_vieng") }}',
-                        method: 'GET',
-                        data: { days: days },
-                        dataType: 'json',
-                        success: function (response) {
-                            console.log('Success response:', response);
-                            if (response.success) {
-                                $('#de-xuat-table-body').empty();
-                                if (response.data.length > 0) {
-                                    $.each(response.data, function (index, item) {
-                                        var lastVisit = item.ngay_tham_vieng_gan_nhat
-                                            ? `${item.ngay_tham_vieng_gan_nhat_formatted} <span class="badge badge-${item.so_ngay_chua_tham > 60 ? 'danger' : 'warning'}">${item.so_ngay_chua_tham} ngày</span>`
-                                            : '<span class="badge badge-danger">Chưa thăm bao giờ</span>';
-                                        var hasCoordinates = item.vi_do && item.kinh_do;
-
-                                        $('#de-xuat-table-body').append(`
-                                                                        <tr>
-                                                                            <td>${item.ho_ten}</td>
-                                                                            <td>${item.so_dien_thoai || 'N/A'}</td>
-                                                                            <td>${lastVisit}</td>
-                                                                            <td>
-                                                                                <div class="btn-group">
-                                                                                    <button type="button" class="btn btn-sm btn-info btn-them-tham-vieng" 
-                                                                                        data-id="${item.id}" data-ten="${item.ho_ten}"
-                                                                                        data-toggle="modal" data-target="#modal-them-tham-vieng">
-                                                                                        <i class="fas fa-plus"></i> Thăm
-                                                                                    </button>
-                                                                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${item.vi_do || ''},${item.kinh_do || ''}" 
-                                                                                        class="btn btn-sm btn-success ${!hasCoordinates ? 'disabled' : ''}" 
-                                                                                        target="_blank">
-                                                                                        <i class="fas fa-map-marker-alt"></i> Chỉ đường
-                                                                                    </a>
-                                                                                </div>
-                                                                            </td>
-                                                                        </tr>
-                                                                    `);
-                                    });
-                                } else {
-                                    $('#de-xuat-table-body').append('<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>');
-                                }
-                            } else {
-                                toastr.error('Lỗi: ' + response.message);
+                const printTemplate = `
+                    <html>
+                    <head>
+                        <title>Chi tiết thăm viếng</title>
+                        <link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
+                        <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
+                        <style>
+                            body { padding: 2rem; font-family: Arial, sans-serif; }
+                            .print-header { text-align: center; margin-bottom: 2rem; }
+                            .print-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; }
+                            .print-subtitle { font-size: 1rem; color: #6c757d; }
+                            .visit-info-card { margin-bottom: 1rem; padding: 1rem; border: 1px solid #dee2e6; border-radius: 0.5rem; }
+                            .content-box { padding: 1rem; border: 1px solid #dee2e6; border-radius: 0.5rem; margin-bottom: 1rem; min-height: 5rem; }
+                            @media print {
+                                .no-print { display: none; }
                             }
-                        },
-                        error: function (xhr) {
-                            console.log('Error response:', xhr.responseText, xhr.status);
-                            toastr.error('Đã xảy ra lỗi khi lọc dữ liệu!');
-                        }
-                    });
-                });
-            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="print-header">
+                            <div class="print-title">Chi tiết thăm viếng</div>
+                            <div class="print-subtitle">Ngày in: ${new Date().toLocaleDateString('vi-VN')}</div>
+                        </div>
+                        ${printContents}
+                        <div class="mt-5 text-center no-print">
+                            <button onclick="window.print()" class="btn btn-primary">In ngay</button>
+                            <button onclick="window.close()" class="btn btn-secondary ml-2">Đóng</button>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printTemplate);
+                printWindow.document.close();
+            });
         });
     </script>
 @endsection
