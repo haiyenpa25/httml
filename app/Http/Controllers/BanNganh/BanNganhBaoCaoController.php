@@ -412,6 +412,88 @@ class BanNganhBaoCaoController extends Controller
     }
 
     /**
+     * Lấy dữ liệu buổi nhóm cho tháng so sánh
+     */
+    public function getCompareData(Request $request, string $banType): JsonResponse
+    {
+        // Lấy config cho ban ngành
+        $config = config("ban_nganh.{$banType}");
+        if (!$config) {
+            return response()->json(['success' => false, 'message' => 'Ban ngành không hợp lệ'], 404);
+        }
+
+        // Validate month, year
+        $month = $request->get('month', date('m'));
+        $year = $request->get('year', date('Y'));
+
+        if (!is_numeric($month) || $month < 1 || $month > 12) {
+            $month = date('m');
+        }
+        if (!is_numeric($year) || $year < 2020 || $year > date('Y') + 1) {
+            $year = date('Y');
+        }
+
+        Log::info("getCompareData {$config['name']}: Lấy dữ liệu so sánh", [
+            'month' => $month,
+            'year' => $year,
+            'ban_nganh_id' => $config['id'],
+            'hoi_thanh_id' => $config['hoi_thanh_id']
+        ]);
+
+        // Lấy buổi nhóm Hội Thánh
+        $buoiNhomHT = BuoiNhom::with([
+            'dienGia' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao')
+            ->whereYear('ngay_dien_ra', $year)
+            ->whereMonth('ngay_dien_ra', $month)
+            ->where('ban_nganh_id', $config['hoi_thanh_id'])
+            ->orderBy('ngay_dien_ra')
+            ->get()
+            ->map(function ($item) {
+                $item->ngay_dien_ra = Carbon::parse($item->ngay_dien_ra)->format('Y-m-d');
+                return $item;
+            });
+
+        // Lấy buổi nhóm Ban Ngành
+        $buoiNhomBN = BuoiNhom::with([
+            'dienGia' => function ($query) {
+                $query->select('id', 'ho_ten');
+            },
+            'giaoDichTaiChinh' => function ($query) {
+                $query->select('id', 'buoi_nhom_id', 'so_tien');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao')
+            ->whereYear('ngay_dien_ra', $year)
+            ->whereMonth('ngay_dien_ra', $month)
+            ->where('ban_nganh_id', $config['id'])
+            ->orderBy('ngay_dien_ra')
+            ->get()
+            ->map(function ($item) {
+                $item->ngay_dien_ra = Carbon::parse($item->ngay_dien_ra)->format('Y-m-d');
+                return $item;
+            });
+
+        Log::info("getCompareData {$config['name']}: Dữ liệu trả về", [
+            'buoiNhomHT_count' => $buoiNhomHT->count(),
+            'buoiNhomBN_count' => $buoiNhomBN->count()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'buoiNhomHT' => $buoiNhomHT,
+                'buoiNhomBN' => $buoiNhomBN,
+                'month' => $month,
+                'year' => $year
+            ]
+        ]);
+    }
+
+    /**
      * Cập nhật số lượng tham dự và dâng hiến cho một buổi nhóm
      */
     public function updateThamDu(Request $request, array $config): JsonResponse

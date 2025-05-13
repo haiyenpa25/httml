@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Route;
 //         ->name('_ban_nganh.index');
 // });
 
+// Route để lấy dữ liệu so sánh biểu đồ
+Route::get('/ban-nganh/compare-data/{banType}', [App\Http\Controllers\BanNganh\BanNganhBaoCaoController::class, 'getCompareData'])
+    ->middleware(['auth'])
+    ->name('_ban_nganh.compare_data');
+
 // Ban Trung Lão Routes
 Route::prefix('ban-nganh/ban-trung-lao')
     ->middleware(['auth'])

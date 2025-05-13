@@ -5,10 +5,13 @@
 @section('page-styles')
 <style>
     .modal-chart {
-        min-height: 300px !important;
-        height: 300px !important;
-        max-height: 300px !important;
+        min-height: 350px !important;
+        height: 350px !important;
+        max-height: 350px !important;
         width: 100% !important;
+    }
+    .modal-body {
+        padding: 20px;
     }
 </style>
 @endsection
@@ -541,10 +544,43 @@
                     <div class="modal-header">
                         <h5 class="modal-title" id="chartModalLabel">Biểu đồ Số lượng Tham dự Theo Tuần</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="modal-body">
+                        <!-- Form chọn tháng so sánh -->
+                        <form id="compare-form" class="mb-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="compare_month">Tháng so sánh:</label>
+                                        <select id="compare_month" name="month" class="form-control">
+                                            <option value="">Chọn tháng</option>
+                                            @for ($m = 1; $m <= 12; $m++)
+                                                <option value="{{ $m }}">Tháng {{ $m }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="compare_year">Năm so sánh:</label>
+                                        <select id="compare_year" name="year" class="form-control">
+                                            <option value="">Chọn năm</option>
+                                            @for ($y = date('Y') + 1; $y >= date('Y') - 5; $y--)
+                                                <option value="{{ $y }}">{{ $y }}</option>
+                                            @endfor
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-sync"></i> So sánh
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- Canvas biểu đồ -->
                         <canvas id="modalChart" class="modal-chart"></canvas>
                     </div>
                     <div class="modal-footer">
@@ -578,142 +614,243 @@ $(document).ready(function() {
         toastr.info('Chức năng xuất Excel đang được phát triển');
     });
 
-    // Draw chart when modal is shown
-    $('#chartModal').on('shown.bs.modal', function () {
-        console.log('Chart modal shown');
-        try {
-            const buoiNhomHT = @json($buoiNhomHT);
-            const buoiNhomBN = @json($buoiNhomBN);
-            console.log('Raw buoiNhomHT:', buoiNhomHT);
-            console.log('Raw buoiNhomBN:', buoiNhomBN);
+    // Biến toàn cục để lưu biểu đồ
+    let chartInstance = null;
 
-            const month = parseInt({{ $month }});
-            const year = parseInt({{ $year }});
-            console.log('month:', month, 'year:', year);
+    // Hàm vẽ biểu đồ
+    function drawChart(dataHT, dataBN, month, year, compareDataHT = [], compareDataBN = [], compareMonth = null, compareYear = null) {
+        console.log('Drawing chart with data:', {
+            dataHT, dataBN, month, year,
+            compareDataHT, compareDataBN, compareMonth, compareYear
+        });
 
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const numWeeks = Math.ceil(daysInMonth / 7);
-            const weeks = Array.from({ length: numWeeks }, (_, i) => `Tuần ${i + 1}`);
-            console.log('numWeeks:', numWeeks, 'weeks:', weeks);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const daysInCompareMonth = compareMonth ? new Date(compareYear, compareMonth, 0).getDate() : daysInMonth;
+        const numWeeks = Math.ceil(Math.max(daysInMonth, daysInCompareMonth) / 7);
+        const weeks = Array.from({ length: numWeeks }, (_, i) => `Tuần ${i + 1}`);
+        console.log('numWeeks:', numWeeks, 'weeks:', weeks);
 
-            const attendanceHT = new Array(numWeeks).fill(0);
-            const attendanceBN = new Array(numWeeks).fill(0);
+        const attendanceHT = new Array(numWeeks).fill(0);
+        const attendanceBN = new Array(numWeeks).fill(0);
+        const compareAttendanceHT = new Array(numWeeks).fill(0);
+        const compareAttendanceBN = new Array(numWeeks).fill(0);
 
-            if (buoiNhomHT && Array.isArray(buoiNhomHT)) {
-                buoiNhomHT.forEach(meeting => {
-                    if (meeting && meeting.ngay_dien_ra) {
-                        const date = new Date(meeting.ngay_dien_ra);
-                        if (isNaN(date.getTime())) {
-                            console.warn('Invalid date for buoiNhomHT:', meeting.ngay_dien_ra);
-                            return;
-                        }
-                        const dayOfMonth = date.getDate();
-                        const weekIndex = Math.floor((dayOfMonth - 1) / 7);
-                        console.log('Processing HT meeting:', {
-                            id: meeting.id,
-                            ngay_dien_ra: meeting.ngay_dien_ra,
-                            so_luong_trung_lao: meeting.so_luong_trung_lao
-                        });
-                        attendanceHT[weekIndex] += parseInt(meeting.so_luong_trung_lao || 0);
-                    } else {
-                        console.warn('Missing ngay_dien_ra in buoiNhomHT:', meeting);
+        // Xử lý dữ liệu tháng hiện tại
+        if (dataHT && Array.isArray(dataHT)) {
+            dataHT.forEach(meeting => {
+                if (meeting && meeting.ngay_dien_ra) {
+                    const date = new Date(meeting.ngay_dien_ra);
+                    if (isNaN(date.getTime())) {
+                        console.warn('Invalid date for buoiNhomHT:', meeting.ngay_dien_ra);
+                        return;
                     }
-                });
-            } else {
-                console.warn('buoiNhomHT is not an array or is undefined');
-            }
-
-            if (buoiNhomBN && Array.isArray(buoiNhomBN)) {
-                buoiNhomBN.forEach(meeting => {
-                    if (meeting && meeting.ngay_dien_ra) {
-                        const date = new Date(meeting.ngay_dien_ra);
-                        if (isNaN(date.getTime())) {
-                            console.warn('Invalid date for buoiNhomBN:', meeting.ngay_dien_ra);
-                            return;
-                        }
-                        const dayOfMonth = date.getDate();
-                        const weekIndex = Math.floor((dayOfMonth - 1) / 7);
-                        console.log('Processing BN meeting:', {
-                            id: meeting.id,
-                            ngay_dien_ra: meeting.ngay_dien_ra,
-                            so_luong_trung_lao: meeting.so_luong_trung_lao
-                        });
-                        attendanceBN[weekIndex] += parseInt(meeting.so_luong_trung_lao || 0);
-                    } else {
-                        console.warn('Missing ngay_dien_ra in buoiNhomBN:', meeting);
-                    }
-                });
-            } else {
-                console.warn('buoiNhomBN is not an array or is undefined');
-            }
-
-            console.log('Final attendanceHT:', attendanceHT);
-            console.log('Final attendanceBN:', attendanceBN);
-
-            if (attendanceHT.every(val => val === 0) && attendanceBN.every(val => val === 0)) {
-                console.log('Using sample data for', numWeeks, 'weeks');
-                attendanceHT.splice(0, attendanceHT.length, ...Array(numWeeks).fill(0).map(() => Math.floor(Math.random() * 20 + 20)));
-                attendanceBN.splice(0, attendanceBN.length, ...Array(numWeeks).fill(0).map(() => Math.floor(Math.random() * 15 + 15)));
-            }
-
-            const ctx = document.getElementById('modalChart').getContext('2d');
-            console.log('Chart context:', ctx);
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: weeks,
-                    datasets: [
-                        {
-                            label: 'Nhóm Chúa Nhật (Hội Thánh)',
-                            data: attendanceHT,
-                            backgroundColor: '#6c757d',
-                            borderColor: '#6c757d',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Nhóm Tối Thứ 7 (Ban Ngành)',
-                            data: attendanceBN,
-                            backgroundColor: '#28a745',
-                            borderColor: '#28a745',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Số lượng tham dự'
-                            },
-                            ticks: {
-                                stepSize: 1
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Tuần'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Số lượng Tham dự Theo Tuần (Tháng ' + month + '/' + year + ')'
-                        }
-                    }
+                    const dayOfMonth = date.getDate();
+                    const weekIndex = Math.floor((dayOfMonth - 1) / 7);
+                    console.log('Processing HT meeting:', {
+                        id: meeting.id,
+                        ngay_dien_ra: meeting.ngay_dien_ra,
+                        so_luong_trung_lao: meeting.so_luong_trung_lao
+                    });
+                    attendanceHT[weekIndex] += parseInt(meeting.so_luong_trung_lao || 0);
                 }
             });
-        } catch (error) {
-            console.error('Lỗi khi vẽ biểu đồ:', error);
         }
+
+        if (dataBN && Array.isArray(dataBN)) {
+            dataBN.forEach(meeting => {
+                if (meeting && meeting.ngay_dien_ra) {
+                    const date = new Date(meeting.ngay_dien_ra);
+                    if (isNaN(date.getTime())) {
+                        console.warn('Invalid date for buoiNhomBN:', meeting.ngay_dien_ra);
+                        return;
+                    }
+                    const dayOfMonth = date.getDate();
+                    const weekIndex = Math.floor((dayOfMonth - 1) / 7);
+                    console.log('Processing BN meeting:', {
+                        id: meeting.id,
+                        ngay_dien_ra: meeting.ngay_dien_ra,
+                        so_luong_trung_lao: meeting.so_luong_trung_lao
+                    });
+                    attendanceBN[weekIndex] += parseInt(meeting.so_luong_trung_lao || 0);
+                }
+            });
+        }
+
+        // Xử lý dữ liệu tháng so sánh
+        if (compareDataHT && Array.isArray(compareDataHT)) {
+            compareDataHT.forEach(meeting => {
+                if (meeting && meeting.ngay_dien_ra) {
+                    const date = new Date(meeting.ngay_dien_ra);
+                    if (isNaN(date.getTime())) {
+                        console.warn('Invalid date for compare buoiNhomHT:', meeting.ngay_dien_ra);
+                        return;
+                    }
+                    const dayOfMonth = date.getDate();
+                    const weekIndex = Math.floor((dayOfMonth - 1) / 7);
+                    console.log('Processing compare HT meeting:', {
+                        id: meeting.id,
+                        ngay_dien_ra: meeting.ngay_dien_ra,
+                        so_luong_trung_lao: meeting.so_luong_trung_lao
+                    });
+                    compareAttendanceHT[weekIndex] += parseInt(meeting.so_luong_trung_lao || 0);
+                }
+            });
+        }
+
+        if (compareDataBN && Array.isArray(compareDataBN)) {
+            compareDataBN.forEach(meeting => {
+                if (meeting && meeting.ngay_dien_ra) {
+                    const date = new Date(meeting.ngay_dien_ra);
+                    if (isNaN(date.getTime())) {
+                        console.warn('Invalid date for compare buoiNhomBN:', meeting.ngay_dien_ra);
+                        return;
+                    }
+                    const dayOfMonth = date.getDate();
+                    const weekIndex = Math.floor((dayOfMonth - 1) / 7);
+                    console.log('Processing compare BN meeting:', {
+                        id: meeting.id,
+                        ngay_dien_ra: meeting.ngay_dien_ra,
+                        so_luong_trung_lao: meeting.so_luong_trung_lao
+                    });
+                    compareAttendanceBN[weekIndex] += parseInt(meeting.so_luong_trung_lao || 0);
+                }
+            });
+        }
+
+        console.log('Final attendanceHT:', attendanceHT);
+        console.log('Final attendanceBN:', attendanceBN);
+        console.log('Final compareAttendanceHT:', compareAttendanceHT);
+        console.log('Final compareAttendanceBN:', compareAttendanceBN);
+
+        // Sử dụng dữ liệu mẫu nếu không có dữ liệu
+        if (attendanceHT.every(val => val === 0) && attendanceBN.every(val => val === 0) &&
+            compareAttendanceHT.every(val => val === 0) && compareAttendanceBN.every(val => val === 0)) {
+            console.log('Using sample data for', numWeeks, 'weeks');
+            attendanceHT.splice(0, attendanceHT.length, ...Array(numWeeks).fill(0).map(() => Math.floor(Math.random() * 20 + 20)));
+            attendanceBN.splice(0, attendanceBN.length, ...Array(numWeeks).fill(0).map(() => Math.floor(Math.random() * 15 + 15)));
+        }
+
+        // Hủy biểu đồ cũ nếu tồn tại
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        const ctx = document.getElementById('modalChart').getContext('2d');
+        console.log('Chart context:', ctx);
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: weeks,
+                datasets: [
+                    {
+                        label: `Hội Thánh (Tháng ${month}/${year})`,
+                        data: attendanceHT,
+                        backgroundColor: '#6c757d',
+                        borderColor: '#6c757d',
+                        borderWidth: 1
+                    },
+                    {
+                        label: `Ban Ngành (Tháng ${month}/${year})`,
+                        data: attendanceBN,
+                        backgroundColor: '#28a745',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    },
+                    {
+                        label: compareMonth ? `Hội Thánh (Tháng ${compareMonth}/${compareYear})` : 'Hội Thánh (So sánh)',
+                        data: compareAttendanceHT,
+                        backgroundColor: '#007bff',
+                        borderColor: '#007bff',
+                        borderWidth: 1
+                    },
+                    {
+                        label: compareMonth ? `Ban Ngành (Tháng ${compareMonth}/${compareYear})` : 'Ban Ngành (So sánh)',
+                        data: compareAttendanceBN,
+                        backgroundColor: '#fd7e14',
+                        borderColor: '#fd7e14',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Số lượng tham dự'
+                        },
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tuần'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: compareMonth ? `So sánh Tháng ${month}/${year} với Tháng ${compareMonth}/${compareYear}` : `Số lượng Tham dự Tháng ${month}/${year}`
+                    }
+                }
+            }
+        });
+    }
+
+    // Vẽ biểu đồ ban đầu khi modal mở
+    $('#chartModal').on('shown.bs.modal', function () {
+        console.log('Chart modal shown');
+        drawChart(@json($buoiNhomHT), @json($buoiNhomBN), {{ $month }}, {{ $year }});
+    });
+
+    // Xử lý form so sánh
+    $('#compare-form').on('submit', function(e) {
+        e.preventDefault();
+        const compareMonth = $('#compare_month').val();
+        const compareYear = $('#compare_year').val();
+
+        if (!compareMonth || !compareYear) {
+            toastr.warning('Vui lòng chọn tháng và năm để so sánh');
+            return;
+        }
+
+        $.ajax({
+            url: '{{ route("_ban_nganh.compare_data", $banType) }}',
+            method: 'GET',
+            data: {
+                month: compareMonth,
+                year: compareYear
+            },
+            success: function(response) {
+                if (response.success) {
+                    const compareData = response.data;
+                    drawChart(
+                        @json($buoiNhomHT),
+                        @json($buoiNhomBN),
+                        {{ $month }},
+                        {{ $year }},
+                        compareData.buoiNhomHT,
+                        compareData.buoiNhomBN,
+                        compareData.month,
+                        compareData.year
+                    );
+                } else {
+                    toastr.error(response.message || 'Lỗi khi lấy dữ liệu so sánh');
+                }
+            },
+            error: function(xhr) {
+                toastr.error('Lỗi server: ' + (xhr.responseJSON?.message || 'Không thể lấy dữ liệu'));
+            }
+        });
     });
 });
 </script>
