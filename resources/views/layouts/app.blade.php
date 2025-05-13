@@ -41,6 +41,9 @@
     <!-- Bootstrap 4 -->
     <link rel="stylesheet" href="{{ asset('plugins/bootstrap/css/bootstrap.min.css') }}">
 
+    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
+
+
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <!-- CSS riêng của trang -->

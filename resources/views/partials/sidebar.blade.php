@@ -29,65 +29,68 @@
 
         <nav class="mt-2">
             @php
-                // Lấy danh sách quyền của người dùng
                 $userPermissions = Auth::check() ? Auth::user()->quyen->pluck('quyen')->toArray() : [];
                 $isAdmin = Auth::check() && (Auth::user()->vai_tro === 'quan_tri' || in_array('admin-access', $userPermissions));
             @endphp
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                <!-- Dashboard -->
+                <!-- Trang Chủ -->
                 @if($isAdmin || in_array('view-dashboard', $userPermissions))
                     <li class="nav-item">
                         <a href="{{ route('dashboard') }}"
                            class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-tachometer-alt"></i>
-                            <p>Dashboard</p>
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Trang Chủ</p>
                         </a>
                     </li>
                 @endif
 
-                <!-- Quản lý Người Dùng & Tín Hữu -->
-                @if($isAdmin || in_array('view-nguoi-dung', $userPermissions) || in_array('view-tin-huu', $userPermissions) || in_array('view-ho-gia-dinh', $userPermissions) || in_array('view-than-huu', $userPermissions))
-                    <li class="nav-item {{ request()->routeIs('nguoi_dung.*', '_tin_huu.*', '_ho_gia_dinh.*', '_than_huu.*') ? 'menu-open' : '' }}">
+                <!-- Quản lý Tín Hữu -->
+                @if($isAdmin || in_array('view-tin-huu', $userPermissions) || in_array('view-ho-gia-dinh', $userPermissions) || in_array('view-than-huu', $userPermissions))
+                    <li class="nav-item {{ request()->routeIs('_tin_huu.*', '_ho_gia_dinh.*', '_than_huu.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-users"></i>
                             <p>
-                                Người Dùng & Tín Hữu
+                                Quản lý Tín Hữu
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            @if($isAdmin || in_array('view-nguoi-dung', $userPermissions))
-                                <li class="nav-item">
-                                    <a href="{{ route('nguoi_dung.index') }}"
-                                       class="nav-link {{ request()->routeIs('nguoi_dung.*') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Người Dùng</p>
-                                    </a>
-                                </li>
-                            @endif
+                            <!-- Tín Hữu -->
                             @if($isAdmin || in_array('view-tin-huu', $userPermissions))
-                                <li class="nav-item">
-                                    <a href="{{ route('_tin_huu.index') }}"
-                                       class="nav-link {{ request()->routeIs('_tin_huu.index') ? 'active' : '' }}">
+                                <li class="nav-item {{ request()->routeIs('_tin_huu.*') ? 'menu-open' : '' }}">
+                                    <a href="#" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Danh sách Tín Hữu</p>
+                                        <p>
+                                            Tín Hữu
+                                            <i class="fas fa-angle-left right"></i>
+                                        </p>
                                     </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('_tin_huu.create') }}"
-                                       class="nav-link {{ request()->routeIs('_tin_huu.create') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Thêm Tín Hữu mới</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('_tin_huu.nhan_su') }}"
-                                       class="nav-link {{ request()->routeIs('_tin_huu.nhan_su') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Nhân sự</p>
-                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a href="{{ route('_tin_huu.index') }}"
+                                               class="nav-link {{ request()->routeIs('_tin_huu.index') ? 'active' : '' }}">
+                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                <p>Danh sách Tín Hữu</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('_tin_huu.create') }}"
+                                               class="nav-link {{ request()->routeIs('_tin_huu.create') ? 'active' : '' }}">
+                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                <p>Thêm Tín Hữu mới</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('_tin_huu.nhan_su') }}"
+                                               class="nav-link {{ request()->routeIs('_tin_huu.nhan_su') ? 'active' : '' }}">
+                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                <p>Nhân sự</p>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             @endif
+                            <!-- Hộ Gia Đình -->
                             @if($isAdmin || in_array('view-ho-gia-dinh', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_ho_gia_dinh.index') }}"
@@ -97,6 +100,7 @@
                                     </a>
                                 </li>
                             @endif
+                            <!-- Thân Hữu -->
                             @if($isAdmin || in_array('view-than-huu', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_than_huu.index') }}"
@@ -110,13 +114,24 @@
                     </li>
                 @endif
 
+                <!-- Diễn Giả -->
+                @if($isAdmin || in_array('view-dien-gia', $userPermissions))
+                    <li class="nav-item">
+                        <a href="{{ route('_dien_gia.index') }}"
+                           class="nav-link {{ request()->routeIs('_dien_gia.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-microphone"></i>
+                            <p>Diễn Giả</p>
+                        </a>
+                    </li>
+                @endif
+
                 <!-- Quản lý Ban Ngành -->
                 @if($isAdmin || in_array('view-ban-nganh', $userPermissions))
                     <li class="nav-item {{ request()->routeIs('_ban_nganh.*', '_ban_*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-sitemap"></i>
                             <p>
-                                Ban Ngành
+                                Quản lý Ban Ngành
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
@@ -130,19 +145,21 @@
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-money-bill-wave"></i>
                             <p>
-                                Thủ Quỹ
+                                Quản lý Thủ Quỹ
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            <!-- Tổng quan -->
                             <li class="nav-item">
                                 <a href="{{ route('_thu_quy.dashboard') }}"
                                    class="nav-link {{ request()->routeIs('_thu_quy.dashboard') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Dashboard</p>
+                                    <p>Tổng quan</p>
                                 </a>
                             </li>
-                            @if($isAdmin || (Route::has('_thu_quy.quy.index') && in_array('view-thu-quy-quy', $userPermissions)))
+                            <!-- Quản lý Quỹ -->
+                            @if($isAdmin || in_array('view-thu-quy-quy', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_thu_quy.quy.index') }}"
                                        class="nav-link {{ request()->routeIs('_thu_quy.quy.*') ? 'active' : '' }}">
@@ -151,7 +168,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_thu_quy.giao_dich.index') && in_array('view-thu-quy-giao-dich', $userPermissions)))
+                            <!-- Giao dịch -->
+                            @if($isAdmin || in_array('view-thu-quy-giao-dich', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_thu_quy.giao_dich.index') }}"
                                        class="nav-link {{ request()->routeIs('_thu_quy.giao_dich.*') ? 'active' : '' }}">
@@ -160,7 +178,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_thu_quy.chi_dinh_ky.index') && in_array('view-thu-quy-chi-dinh-ky', $userPermissions)))
+                            <!-- Chi định kỳ -->
+                            @if($isAdmin || in_array('view-thu-quy-chi-dinh-ky', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_thu_quy.chi_dinh_ky.index') }}"
                                        class="nav-link {{ request()->routeIs('_thu_quy.chi_dinh_ky.*') ? 'active' : '' }}">
@@ -169,7 +188,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_thu_quy.bao_cao.index') && in_array('view-thu-quy-bao-cao', $userPermissions)))
+                            <!-- Báo cáo -->
+                            @if($isAdmin || in_array('view-thu-quy-bao-cao', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_thu_quy.bao_cao.index') }}"
                                        class="nav-link {{ request()->routeIs('_thu_quy.bao_cao.*') ? 'active' : '' }}">
@@ -178,7 +198,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_thu_quy.lich_su.index') && in_array('view-thu-quy-lich-su', $userPermissions)))
+                            <!-- Lịch sử thao tác -->
+                            @if($isAdmin || in_array('view-thu-quy-lich-su', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_thu_quy.lich_su.index') }}"
                                        class="nav-link {{ request()->routeIs('_thu_quy.lich_su.*') ? 'active' : '' }}">
@@ -187,7 +208,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_thu_quy.thong_bao.index') && in_array('view-thu-quy-thong-bao', $userPermissions)))
+                            <!-- Thông báo -->
+                            @if($isAdmin || in_array('view-thu-quy-thong-bao', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_thu_quy.thong_bao.index') }}"
                                        class="nav-link {{ request()->routeIs('_thu_quy.thong_bao.*') ? 'active' : '' }}">
@@ -217,11 +239,12 @@
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-desktop"></i>
                             <p>
-                                Thiết Bị
+                                Quản lý Thiết Bị
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            <!-- Danh sách Thiết Bị -->
                             @if($isAdmin || in_array('view-thiet-bi', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thiet-bi.index') }}"
@@ -230,6 +253,9 @@
                                         <p>Danh sách Thiết Bị</p>
                                     </a>
                                 </li>
+                            @endif
+                            <!-- Cảnh Báo -->
+                            @if($isAdmin || in_array('view-thiet-bi', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thiet-bi.canh-bao') }}"
                                        class="nav-link {{ request()->routeIs('thiet-bi.canh-bao') ? 'active' : '' }}">
@@ -237,6 +263,9 @@
                                         <p>Cảnh Báo</p>
                                     </a>
                                 </li>
+                            @endif
+                            <!-- Báo Cáo Thống Kê -->
+                            @if($isAdmin || in_array('view-thiet-bi', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thiet-bi.bao-cao') }}"
                                        class="nav-link {{ request()->routeIs('thiet-bi.bao-cao') ? 'active' : '' }}">
@@ -245,6 +274,7 @@
                                     </a>
                                 </li>
                             @endif
+                            <!-- Nhà Cung Cấp -->
                             @if($isAdmin || in_array('view-nha-cung-cap', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('nha-cung-cap.index') }}"
@@ -264,11 +294,12 @@
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-envelope"></i>
                             <p>
-                                Thông Báo
+                                Quản lý Thông Báo
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
+                            <!-- Tổng quan -->
                             <li class="nav-item">
                                 <a href="{{ route('thong-bao.index') }}"
                                    class="nav-link {{ Request::is('thong-bao') ? 'active' : '' }}">
@@ -276,6 +307,7 @@
                                     <p>Tổng quan</p>
                                 </a>
                             </li>
+                            <!-- Hộp thư đến -->
                             @if($isAdmin || in_array('view-thong-bao-inbox', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thong-bao.inbox') }}"
@@ -296,6 +328,7 @@
                                     </a>
                                 </li>
                             @endif
+                            <!-- Đã gửi -->
                             @if($isAdmin || in_array('view-thong-bao-sent', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thong-bao.sent') }}"
@@ -305,6 +338,7 @@
                                     </a>
                                 </li>
                             @endif
+                            <!-- Lưu trữ -->
                             @if($isAdmin || in_array('view-thong-bao-archived', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thong-bao.archived') }}"
@@ -314,6 +348,7 @@
                                     </a>
                                 </li>
                             @endif
+                            <!-- Soạn thông báo -->
                             @if($isAdmin || in_array('send-thong-bao', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thong-bao.create') }}"
@@ -333,12 +368,13 @@
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-chart-bar"></i>
                             <p>
-                                Báo Cáo
+                                Quản lý Báo Cáo
                                 <i class="fas fa-angle-left right"></i>
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            @if($isAdmin || (Route::has('_bao_cao.thiet_bi') && in_array('view-bao-cao-thiet-bi', $userPermissions)))
+                            <!-- Báo Cáo Thiết Bị -->
+                            @if($isAdmin || in_array('view-bao-cao-thiet-bi', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_bao_cao.thiet_bi') }}"
                                        class="nav-link {{ request()->routeIs('_bao_cao.thiet_bi') ? 'active' : '' }}">
@@ -347,7 +383,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_bao_cao.tai_chinh') && in_array('view-bao-cao-tai-chinh', $userPermissions)))
+                            <!-- Báo Cáo Tài Chính -->
+                            @if($isAdmin || in_array('view-bao-cao-tai-chinh', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_bao_cao.tai_chinh') }}"
                                        class="nav-link {{ request()->routeIs('_bao_cao.tai_chinh') ? 'active' : '' }}">
@@ -356,7 +393,8 @@
                                     </a>
                                 </li>
                             @endif
-                            @if($isAdmin || (Route::has('_bao_cao.hoi_thanh') && in_array('view-bao-cao-hoi-thanh', $userPermissions)))
+                            <!-- Báo Cáo Hội Thánh -->
+                            @if($isAdmin || in_array('view-bao-cao-hoi-thanh', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('_bao_cao.hoi_thanh') }}"
                                        class="nav-link {{ request()->routeIs('_bao_cao.hoi_thanh') ? 'active' : '' }}">
@@ -380,47 +418,93 @@
                     </li>
                 @endif
 
-                <!-- Diễn Giả -->
-                @if($isAdmin || in_array('view-dien-gia', $userPermissions))
-                    <li class="nav-item">
-                        <a href="{{ route('_dien_gia.index') }}"
-                           class="nav-link {{ request()->routeIs('_dien_gia.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-microphone"></i>
-                            <p>Diễn Giả</p>
-                        </a>
-                    </li>
-                @endif
-
                 <!-- Thờ Phượng -->
                 @if($isAdmin || in_array('view-tho-phuong', $userPermissions))
-                    <li class="nav-item">
-                        <a href="{{ route('_tho_phuong.buoi_nhom') }}"
-                           class="nav-link {{ request()->routeIs('_tho_phuong.*') ? 'active' : '' }}">
+                    <li class="nav-item {{ request()->routeIs('_tho_phuong.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-church"></i>
-                            <p>Thờ Phượng</p>
+                            <p>
+                                Thờ Phượng
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('_tho_phuong.buoi_nhom') }}"
+                                   class="nav-link {{ request()->routeIs('_tho_phuong.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Thờ Phượng</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endif
 
                 <!-- Tài Liệu -->
                 @if($isAdmin || in_array('view-tai-lieu', $userPermissions))
-                    <li class="nav-item">
-                        <a href="{{ route('_tai_lieu.index') }}"
-                           class="nav-link {{ request()->routeIs('_tai_lieu.*') ? 'active' : '' }}">
+                    <li class="nav-item {{ request()->routeIs('_tai_lieu.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-file-alt"></i>
-                            <p>Tài Liệu</p>
+                            <p>
+                                Tài Liệu
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('_tai_lieu.index') }}"
+                                   class="nav-link {{ request()->routeIs('_tai_lieu.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Tài Liệu</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endif
 
                 <!-- Cài đặt Hệ thống -->
-                @if($isAdmin || in_array('view-cai-dat', $userPermissions))
-                    <li class="nav-item">
-                        <a href="{{ route('_cai_dat.he_thong') }}"
-                           class="nav-link {{ request()->routeIs('_cai_dat.*') ? 'active' : '' }}">
+                @if($isAdmin || in_array('view-cai-dat', $userPermissions) || in_array('view-nguoi-dung', $userPermissions))
+                    <li class="nav-item {{ request()->routeIs('_cai_dat.*', 'nguoi_dung.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-cog"></i>
-                            <p>Cài đặt Hệ thống</p>
+                            <p>
+                                Cài đặt Hệ thống
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <!-- Người Dùng -->
+                            @if($isAdmin || in_array('view-nguoi-dung', $userPermissions))
+                                <li class="nav-item">
+                                    <a href="{{ route('nguoi_dung.index') }}"
+                                       class="nav-link {{ request()->routeIs('nguoi_dung.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Người Dùng</p>
+                                    </a>
+                                </li>
+                            @endif
+                            <!-- Cài đặt -->
+                            @if($isAdmin || in_array('view-cai-dat', $userPermissions))
+                                <li class="nav-item {{ request()->routeIs('_cai_dat.*') ? 'menu-open' : '' }}">
+                                    <a href="#" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>
+                                            Cài đặt
+                                            <i class="fas fa-angle-left right"></i>
+                                        </p>
+                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a href="{{ route('_cai_dat.he_thong') }}"
+                                               class="nav-link {{ request()->routeIs('_cai_dat.*') ? 'active' : '' }}">
+                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                <p>Cài đặt Hệ thống</p>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            @endif
+                        </ul>
                     </li>
                 @endif
             </ul>

@@ -29,6 +29,7 @@
 
 <!-- AdminLTE -->
 <script src="{{ asset('plugins/adminlte/adminlte.min.js') }}"></script>
+<script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
 
 
 

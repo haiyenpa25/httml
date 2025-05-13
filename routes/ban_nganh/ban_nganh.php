@@ -4,12 +4,12 @@ use App\Http\Controllers\BanNganh\BanNganhController;
 use Illuminate\Support\Facades\Route;
 
 // General Ban Ngành Routes
-Route::prefix('ban-nganh')->group(function () {
-    // Displays the overview list of all Ban Ngành
-    Route::get('/{banType}', [BanNganhController::class, 'list'])
-        ->middleware(['auth', 'checkPermission:view-ban-nganh'])
-        ->name('_ban_nganh.index');
-});
+// Route::prefix('ban-nganh')->group(function () {
+//     // Displays the overview list of all Ban Ngành
+//     Route::get('/{banType}', [BanNganhController::class, 'list'])
+//         ->middleware(['auth', 'checkPermission:view-ban-nganh'])
+//         ->name('_ban_nganh.index');
+// });
 
 // Ban Trung Lão Routes
 Route::prefix('ban-nganh/ban-trung-lao')

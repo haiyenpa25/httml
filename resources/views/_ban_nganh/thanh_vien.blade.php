@@ -11,7 +11,7 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="{{ route('_ban_nganh.index') }}">Ban Ngành</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('_ban_nganh.' . $banType . '.index') }}">Ban Ngành</a></li>
                         <li class="breadcrumb-item active">{{ $config['name'] }}</li>
                     </ol>
                 </div>

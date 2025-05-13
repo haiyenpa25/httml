@@ -156,6 +156,18 @@ class BanNganhBaoCaoController extends Controller
             $year = date('Y');
         }
 
+        // Log thông tin đầu vào
+        Log::info("baoCaoBan {$config['name']}: Bắt đầu xử lý báo cáo", [
+            'month' => $month,
+            'year' => $year,
+            'config' => [
+                'id' => $config['id'],
+                'hoi_thanh_id' => $config['hoi_thanh_id'],
+                'name' => $config['name'],
+                'view_prefix' => $config['view_prefix']
+            ]
+        ]);
+
         // Tính nextMonth và nextYear
         $nextMonth = $month == 12 ? 1 : $month + 1;
         $nextYear = $month == 12 ? $year + 1 : $year;
@@ -173,6 +185,12 @@ class BanNganhBaoCaoController extends Controller
                 ->get();
         });
 
+        // Log số lượng ban điều hành
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu ban điều hành", [
+            'count' => $banDieuHanh->count(),
+            'data' => $banDieuHanh->toArray()
+        ]);
+
         // Lấy buổi nhóm Hội Thánh
         $buoiNhomHT = BuoiNhom::with([
             'dienGia' => function ($query) {
@@ -185,6 +203,20 @@ class BanNganhBaoCaoController extends Controller
             ->where('ban_nganh_id', $config['hoi_thanh_id'])
             ->orderBy('ngay_dien_ra')
             ->get();
+
+        // Log chi tiết buổi nhóm Hội Thánh
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu buổi nhóm Hội Thánh", [
+            'count' => $buoiNhomHT->count(),
+            'data' => $buoiNhomHT->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'ngay_dien_ra' => $item->ngay_dien_ra,
+                    'so_luong_trung_lao' => $item->so_luong_trung_lao,
+                    'chu_de' => $item->chu_de,
+                    'dien_gia' => $item->dienGia ? $item->dienGia->ho_ten : null
+                ];
+            })->toArray()
+        ]);
 
         // Lấy buổi nhóm Ban Ngành
         $buoiNhomBN = BuoiNhom::with([
@@ -201,6 +233,21 @@ class BanNganhBaoCaoController extends Controller
             ->where('ban_nganh_id', $config['id'])
             ->orderBy('ngay_dien_ra')
             ->get();
+
+        // Log chi tiết buổi nhóm Ban Ngành
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu buổi nhóm Ban Ngành", [
+            'count' => $buoiNhomBN->count(),
+            'data' => $buoiNhomBN->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'ngay_dien_ra' => $item->ngay_dien_ra,
+                    'so_luong_trung_lao' => $item->so_luong_trung_lao,
+                    'chu_de' => $item->chu_de,
+                    'dien_gia' => $item->dienGia ? $item->dienGia->ho_ten : null,
+                    'giao_dich_tai_chinh' => $item->giaoDichTaiChinh ? $item->giaoDichTaiChinh->so_tien : null
+                ];
+            })->toArray()
+        ]);
 
         // Lấy giao dịch tài chính
         $giaoDich = GiaoDichTaiChinh::select('id', 'ban_nganh_id', 'loai', 'so_tien', 'mo_ta', 'ngay_giao_dich')
@@ -221,6 +268,14 @@ class BanNganhBaoCaoController extends Controller
             'giaoDich' => $giaoDich,
         ];
 
+        // Log giao dịch tài chính
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu tài chính", [
+            'tongThu' => $tongThu,
+            'tongChi' => $tongChi,
+            'tongTon' => $tongTon,
+            'giaoDich_count' => $giaoDich->count()
+        ]);
+
         // Lấy dữ liệu thăm viếng
         $thamVieng = ThamVieng::with([
             'tinHuu' => function ($query) {
@@ -237,6 +292,11 @@ class BanNganhBaoCaoController extends Controller
             ->orderBy('ngay_tham')
             ->get();
 
+        // Log thăm viếng
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu thăm viếng", [
+            'count' => $thamVieng->count()
+        ]);
+
         // Lấy kế hoạch
         $keHoach = Cache::remember("ke_hoach_{$config['id']}_{$nextMonth}_{$nextYear}", now()->addHour(), function () use ($config, $nextMonth, $nextYear) {
             return KeHoach::with([
@@ -250,6 +310,13 @@ class BanNganhBaoCaoController extends Controller
                 ->where('nam', $nextYear)
                 ->get();
         });
+
+        // Log kế hoạch
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu kế hoạch", [
+            'count' => $keHoach->count(),
+            'nextMonth' => $nextMonth,
+            'nextYear' => $nextYear
+        ]);
 
         // Lấy đánh giá
         $diemManh = DanhGia::with([
@@ -276,6 +343,12 @@ class BanNganhBaoCaoController extends Controller
             ->where('nam', $year)
             ->get();
 
+        // Log đánh giá
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu đánh giá", [
+            'diemManh_count' => $diemManh->count(),
+            'diemYeu_count' => $diemYeu->count()
+        ]);
+
         // Lấy kiến nghị
         $kienNghi = KienNghi::with([
             'nguoiDeXuat' => function ($query) {
@@ -288,9 +361,14 @@ class BanNganhBaoCaoController extends Controller
             ->where('nam', $year)
             ->get();
 
+        // Log kiến nghị
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu kiến nghị", [
+            'count' => $kienNghi->count()
+        ]);
+
         // Tính toán thống kê
         $totalMeetings = $buoiNhomBN->count();
-        $avgAttendance = $totalMeetings > 0 ? round($buoiNhomBN->sum('so_luong_tin_huu') / $totalMeetings) : 0;
+        $avgAttendance = $totalMeetings > 0 ? round($buoiNhomBN->sum('so_luong_trung_lao') / $totalMeetings) : 0;
         $totalOffering = $tongThu;
         $totalVisits = $thamVieng->count();
 
@@ -301,15 +379,25 @@ class BanNganhBaoCaoController extends Controller
             'totalVisits' => $totalVisits,
         ];
 
+        // Log thống kê
+        Log::info("baoCaoBan {$config['name']}: Thống kê", [
+            'summary' => $summary
+        ]);
+
         // Logging để debug
-        Log::info("Rendering bao_cao view for ban_nganh_id: {$config['id']}, month: {$month}, year: {$year}");
+        Log::info("baoCaoBan {$config['name']}: Rendering bao_cao view", [
+            'ban_nganh_id' => $config['id'],
+            'month' => $month,
+            'year' => $year,
+            'view' => "{$config['view_prefix']}.bao_cao"
+        ]);
 
         // Render view chung _ban_nganh.bao_cao
         return view("{$config['view_prefix']}.bao_cao", compact(
             'month',
             'year',
-            'nextMonth', // Thêm nextMonth
-            'nextYear',  // Thêm nextYear
+            'nextMonth',
+            'nextYear',
             'banDieuHanh',
             'buoiNhomHT',
             'buoiNhomBN',
