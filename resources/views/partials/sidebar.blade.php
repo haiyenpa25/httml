@@ -234,8 +234,8 @@
                 @endif
 
                 <!-- Quản lý Thiết Bị -->
-                @if($isAdmin || in_array('view-thiet-bi', $userPermissions) || in_array('view-nha-cung-cap', $userPermissions))
-                    <li class="nav-item {{ request()->routeIs('thiet-bi.*', 'nha-cung-cap.*') ? 'menu-open' : '' }}">
+                @if($isAdmin || in_array('view-thiet-bi', $userPermissions) || in_array('view-nha-cung-cap', $userPermissions) || in_array('view-lich-su-bao-tri', $userPermissions))
+                    <li class="nav-item {{ request()->routeIs('thiet-bi.*', 'nha-cung-cap.*', 'lich-su-bao-tri.*') ? 'menu-open' : '' }}">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-desktop"></i>
                             <p>
@@ -255,7 +255,7 @@
                                 </li>
                             @endif
                             <!-- Cảnh Báo -->
-                            @if($isAdmin || in_array('view-thiet-bi', $userPermissions))
+                            @if($isAdmin || in_array('view-thiet-bi-canh-bao', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thiet-bi.canh-bao') }}"
                                        class="nav-link {{ request()->routeIs('thiet-bi.canh-bao') ? 'active' : '' }}">
@@ -265,13 +265,51 @@
                                 </li>
                             @endif
                             <!-- Báo Cáo Thống Kê -->
-                            @if($isAdmin || in_array('view-thiet-bi', $userPermissions))
+                            @if($isAdmin || in_array('view-thiet-bi-bao-cao', $userPermissions))
                                 <li class="nav-item">
                                     <a href="{{ route('thiet-bi.bao-cao') }}"
                                        class="nav-link {{ request()->routeIs('thiet-bi.bao-cao') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Báo Cáo Thống Kê</p>
                                     </a>
+                                </li>
+                            @endif
+                            <!-- Lịch Sử Bảo Trì -->
+                            @if($isAdmin || in_array('view-lich-su-bao-tri', $userPermissions))
+                                <li class="nav-item">
+                                    <a href="{{ route('thiet-bi.index') }}"
+                                       class="nav-link {{ request()->routeIs('lich-su-bao-tri.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Lịch Sử Bảo Trì</p>
+                                    </a>
+                                </li>
+                            @endif
+                            <!-- Export -->
+                            @if($isAdmin || in_array('export-thiet-bi', $userPermissions))
+                                <li class="nav-item {{ request()->routeIs('thiet-bi.export-excel', 'thiet-bi.export-pdf') ? 'menu-open' : '' }}">
+                                    <a href="#" class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>
+                                            Xuất Báo Cáo
+                                            <i class="fas fa-angle-left right"></i>
+                                        </p>
+                                    </a>
+                                    <ul class="nav nav-treeview">
+                                        <li class="nav-item">
+                                            <a href="{{ route('thiet-bi.export-excel') }}"
+                                               class="nav-link {{ request()->routeIs('thiet-bi.export-excel') ? 'active' : '' }}">
+                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                <p>Xuất Excel</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a href="{{ route('thiet-bi.export-pdf') }}"
+                                               class="nav-link {{ request()->routeIs('thiet-bi.export-pdf') ? 'active' : '' }}">
+                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                <p>Xuất PDF</p>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             @endif
                             <!-- Nhà Cung Cấp -->

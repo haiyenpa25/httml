@@ -1,7 +1,6 @@
-{{--
-Partial Modal Thêm Thành Viên cho Ban Cơ Đốc Giáo Dục
-File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_them_thanh_vien.blade.php
---}}
+@php
+    $banType = isset($banType) ? $banType : 'co_doc_giao_duc';
+@endphp
 
 <div class="modal fade" id="modal-them-thanh-vien">
     <div class="modal-dialog">
@@ -12,11 +11,10 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_them_thanh
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <form id="form-them-thanh-vien" action="{{ route('api.ban_co_doc_giao_duc.them_thanh_vien') }}"
-                method="POST">
+            <form id="form-them-thanh-vien" action="{{ route('api._ban_' . $banType . '.them_thanh_vien', ['banType' => 'ban-co-doc-giao-duc']) }}" method="POST">
                 @csrf
                 <div class="modal-body">
-                    <input type="hidden" name="ban_nganh_id" value="{{ $banThanhTrang->id }}">
+                    <input type="hidden" name="ban_nganh_id" value="{{ $config['id'] }}">
                     <div class="form-group">
                         <label for="tin_huu_id">Chọn Tín Hữu <span class="text-danger">*</span></label>
                         <select class="form-control select2bs4" name="tin_huu_id" id="tin_huu_id" required
@@ -29,7 +27,7 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_them_thanh
                     </div>
                     <div class="form-group">
                         <label for="chuc_vu">Chức Vụ</label>
-                        <select class="form-control" name="chuc_vu" id="chuc_vu" style="width: 100%">
+                        <select class="form-control select2bs4" name="chuc_vu" id="chuc_vu" style="width: 100%">
                             <option value="">-- Thành viên --</option>
                             <option value="Cố Vấn Linh Vụ">Cố Vấn Linh Vụ</option>
                             <option value="Trưởng Ban">Trưởng Ban</option>
@@ -45,8 +43,5 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_them_thanh
                 </div>
             </form>
         </div>
-        <!-- /.modal-content -->
     </div>
-    <!-- /.modal-dialog -->
 </div>
-<!-- /.modal -->

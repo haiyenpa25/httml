@@ -3,33 +3,45 @@
 namespace App\Http\Controllers\BanCoDocGiaoDuc;
 
 use App\Http\Controllers\Controller;
-use App\Models\BanNganh;
 use App\Models\BuoiNhom;
 use App\Models\DanhGia;
 use App\Models\GiaoDichTaiChinh;
 use App\Models\KeHoach;
 use App\Models\KienNghi;
-use App\Models\ThamVieng;
 use App\Models\TinHuu;
 use App\Models\TinHuuBanNganh;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
+use App\Models\BanNganh;
+use App\Traits\ApiResponseTrait;
+use Yajra\DataTables\Facades\DataTables;
 
-class BanCoDocGiaoDucBaoCaoController extends Controller
+class BanCDGDBaoCaoController extends Controller
 {
-    private const BAN_NGANH_ID = 2;
-    private const HOI_THANH_ID = 20;
+    use ApiResponseTrait;
 
     /**
-     * Hiển thị form nhập liệu báo cáo Ban Trung Lão
+     * Hiển thị form nhập liệu báo cáo ban
      */
-    public function formBaoCaoBanCoDocGiaoDuc(Request $request): View
+    public function formBaoCaoBan(Request $request, array $config): View
     {
+        $banType = $config['view_prefix'];
+
+        $banNganh = Cache::remember("ban_{$banType}", now()->addDay(), function () use ($config) {
+            return BanNganh::where('id', $config['id'])->first();
+        });
+
+        if (!$banNganh) {
+            throw new \Exception("Không tìm thấy {$config['name']}");
+        }
+
         $month = (int) $request->get('month', date('m'));
         $year = (int) $request->get('year', date('Y'));
         $buoiNhomType = $request->get('buoi_nhom_type', 1);
@@ -40,50 +52,49 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
         $buoiNhomHT = BuoiNhom::with('dienGia')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', self::HOI_THANH_ID)
+            ->where('ban_nganh_id', $config['hoi_thanh_id'])
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        $buoiNhomBTL = BuoiNhom::with(['dienGia', 'giaoDichTaiChinh'])
+        $buoiNhomBN = BuoiNhom::with(['dienGia', 'giaoDichTaiChinh'])
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        $tinHuuTrungLao = TinHuu::select('tin_huu.id', 'tin_huu.ho_ten')
+        $tinHuuBan = TinHuu::select('tin_huu.id', 'tin_huu.ho_ten')
             ->join('tin_huu_ban_nganh', 'tin_huu.id', '=', 'tin_huu_ban_nganh.tin_huu_id')
-            ->where('tin_huu_ban_nganh.ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('tin_huu_ban_nganh.ban_nganh_id', $config['id'])
             ->orderBy('tin_huu.ho_ten')
             ->get();
 
         $diemManh = DanhGia::with('nguoiDanhGia')
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->where('loai', 'diem_manh')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
         $diemYeu = DanhGia::with('nguoiDanhGia')
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->where('loai', 'diem_yeu')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
         $keHoach = KeHoach::with('nguoiPhuTrach')
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->where('thang', $nextMonth)
             ->where('nam', $nextYear)
             ->get();
 
         $kienNghi = KienNghi::with('nguoiDeXuat')
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        // Chuẩn bị dữ liệu JSON cho điểm mạnh và điểm yếu
         $diemManhData = $diemManh->map(function ($item, $index) {
             return [
                 'stt' => $index + 1,
@@ -102,18 +113,18 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             ];
         })->toArray() ?: [];
 
-        // Log dữ liệu để kiểm tra
-        Log::info('Dữ liệu điểm mạnh:', ['count' => $diemManh->count(), 'data' => $diemManhData]);
-        Log::info('Dữ liệu điểm yếu:', ['count' => $diemYeu->count(), 'data' => $diemYeuData]);
+        Log::info("Dữ liệu điểm mạnh {$config['name']}:", ['count' => $diemManh->count(), 'data' => $diemManhData]);
+        Log::info("Dữ liệu điểm yếu {$config['name']}:", ['count' => $diemYeu->count(), 'data' => $diemYeuData]);
 
-        return view('_ban_co_doc_giao_duc.nhap_lieu_bao_cao', compact(
+        return view("_ban_co_doc_giao_duc.nhap_lieu_bao_cao", compact(
             'month',
             'year',
+            'banNganh',
             'nextMonth',
             'nextYear',
             'buoiNhomHT',
-            'buoiNhomBTL',
-            'tinHuuTrungLao',
+            'buoiNhomBN',
+            'tinHuuBan',
             'diemManh',
             'diemYeu',
             'keHoach',
@@ -125,35 +136,92 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
     }
 
     /**
-     * Hiển thị báo cáo Ban Trung Lão
+     * Hiển thị báo cáo hoàn thiện của ban
      */
-    public function baoCaoBanCoDocGiaoDuc(Request $request)
+    public function baoCaoBan(Request $request, array $config): View
     {
         $month = $request->get('month', date('m'));
         $year = $request->get('year', date('Y'));
 
-        $banDieuHanh = TinHuuBanNganh::with('tinHuu')
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
-            ->whereNotNull('chuc_vu')
-            ->get();
+        if (!is_numeric($month) || $month < 1 || $month > 12) {
+            $month = date('m');
+        }
+        if (!is_numeric($year) || $year < 2020 || $year > date('Y') + 1) {
+            $year = date('Y');
+        }
 
-        $buoiNhomHT = BuoiNhom::with('dienGia')
+        Log::info("baoCaoBan {$config['name']}: Bắt đầu xử lý báo cáo", [
+            'month' => $month,
+            'year' => $year,
+            'config' => [
+                'id' => $config['id'],
+                'hoi_thanh_id' => $config['hoi_thanh_id'],
+                'name' => $config['name'],
+                'view_prefix' => $config['view_prefix']
+            ]
+        ]);
+
+        $nextMonth = $month == 12 ? 1 : $month + 1;
+        $nextYear = $month == 12 ? $year + 1 : $year;
+
+        $banDieuHanh = Cache::remember("ban_dieu_hanh_{$config['id']}_{$month}_{$year}", now()->addHour(), function () use ($config) {
+            return TinHuuBanNganh::with([
+                'tinHuu' => function ($query) {
+                    $query->select('id', 'ho_ten');
+                }
+            ])
+                ->select('id', 'tin_huu_id', 'ban_nganh_id', 'chuc_vu')
+                ->where('ban_nganh_id', $config['id'])
+                ->whereNotNull('chuc_vu')
+                ->get();
+        });
+
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu ban điều hành", [
+            'count' => $banDieuHanh->count(),
+            'data' => $banDieuHanh->toArray()
+        ]);
+
+        $buoiNhomHT = BuoiNhom::with([
+            'dienGia' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao', 'so_luong_thanh_trang', 'so_luong_thanh_nien')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', self::HOI_THANH_ID)
+            ->where('ban_nganh_id', $config['hoi_thanh_id'])
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        $buoiNhomBN = BuoiNhom::with('dienGia')
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu buổi nhóm Hội Thánh", [
+            'count' => $buoiNhomHT->count(),
+            'data' => $buoiNhomHT->toArray()
+        ]);
+
+        $buoiNhomBN = BuoiNhom::with([
+            'dienGia' => function ($query) {
+                $query->select('id', 'ho_ten');
+            },
+            'giaoDichTaiChinh' => function ($query) {
+                $query->select('id', 'buoi_nhom_id', 'so_tien');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao', 'so_luong_thanh_trang', 'so_luong_thanh_nien')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->orderBy('ngay_dien_ra')
             ->get();
 
-        $giaoDich = GiaoDichTaiChinh::whereYear('ngay_giao_dich', $year)
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu buổi nhóm Ban Ngành", [
+            'count' => $buoiNhomBN->count(),
+            'data' => $buoiNhomBN->toArray()
+        ]);
+
+        $giaoDich = GiaoDichTaiChinh::select('id', 'ban_nganh_id', 'loai', 'so_tien', 'mo_ta', 'ngay_giao_dich')
+            ->whereYear('ngay_giao_dich', $year)
             ->whereMonth('ngay_giao_dich', $month)
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
+            ->where('ban_nganh_id', $config['id'])
             ->orderBy('ngay_giao_dich')
             ->get();
 
@@ -168,59 +236,99 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             'giaoDich' => $giaoDich,
         ];
 
-        $thamVieng = ThamVieng::with(['tinHuu', 'nguoiTham'])
-            ->whereYear('ngay_tham', $year)
-            ->whereMonth('ngay_tham', $month)
-            ->where('id_ban', self::BAN_NGANH_ID)
-            ->orderBy('ngay_tham')
-            ->get();
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu tài chính", [
+            'tongThu' => $tongThu,
+            'tongChi' => $tongChi,
+            'tongTon' => $tongTon,
+            'giaoDich_count' => $giaoDich->count()
+        ]);
 
-        $nextMonth = $month == 12 ? 1 : $month + 1;
-        $nextYear = $month == 12 ? $year + 1 : $year;
+        $keHoach = Cache::remember("ke_hoach_{$config['id']}_{$nextMonth}_{$nextYear}", now()->addHour(), function () use ($config, $nextMonth, $nextYear) {
+            return KeHoach::with([
+                'nguoiPhuTrach' => function ($query) {
+                    $query->select('id', 'ho_ten');
+                }
+            ])
+                ->select('id', 'ban_nganh_id', 'hoat_dong', 'thoi_gian', 'nguoi_phu_trach_id', 'ghi_chu', 'thang', 'nam')
+                ->where('ban_nganh_id', $config['id'])
+                ->where('thang', $nextMonth)
+                ->where('nam', $nextYear)
+                ->get();
+        });
 
-        $keHoach = KeHoach::with('nguoiPhuTrach')
-            ->where('ban_nganh_id', self::BAN_NGANH_ID)
-            ->where('thang', $nextMonth)
-            ->where('nam', $nextYear)
-            ->get();
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu kế hoạch", [
+            'count' => $keHoach->count(),
+            'nextMonth' => $nextMonth,
+            'nextYear' => $nextYear
+        ]);
 
-        $diemManh = DanhGia::where('ban_nganh_id', self::BAN_NGANH_ID)
+        $diemManh = DanhGia::with([
+            'nguoiDanhGia' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'loai', 'noi_dung', 'nguoi_danh_gia_id', 'thang', 'nam')
+            ->where('ban_nganh_id', $config['id'])
             ->where('loai', 'diem_manh')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        $diemYeu = DanhGia::where('ban_nganh_id', self::BAN_NGANH_ID)
+        $diemYeu = DanhGia::with([
+            'nguoiDanhGia' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'loai', 'noi_dung', 'nguoi_danh_gia_id', 'thang', 'nam')
+            ->where('ban_nganh_id', $config['id'])
             ->where('loai', 'diem_yeu')
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
-        $kienNghi = KienNghi::where('ban_nganh_id', self::BAN_NGANH_ID)
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu đánh giá", [
+            'diemManh_count' => $diemManh->count(),
+            'diemYeu_count' => $diemYeu->count()
+        ]);
+
+        $kienNghi = KienNghi::with([
+            'nguoiDeXuat' => function ($query) {
+                $query->select('id', 'ho_ten');
+            }
+        ])
+            ->select('id', 'ban_nganh_id', 'tieu_de', 'noi_dung', 'nguoi_de_xuat_id', 'trang_thai', 'thang', 'nam')
+            ->where('ban_nganh_id', $config['id'])
             ->where('thang', $month)
             ->where('nam', $year)
             ->get();
 
+        Log::info("baoCaoBan {$config['name']}: Dữ liệu kiến nghị", [
+            'count' => $kienNghi->count()
+        ]);
+
         $totalMeetings = $buoiNhomBN->count();
-        $avgAttendance = $totalMeetings > 0 ? round($buoiNhomBN->sum('so_luong_tin_huu') / $totalMeetings) : 0;
+        $avgAttendance = $totalMeetings > 0 ? round(($buoiNhomBN->sum('so_luong_trung_lao') + $buoiNhomBN->sum('so_luong_thanh_trang') + $buoiNhomBN->sum('so_luong_thanh_nien')) / $totalMeetings) : 0;
         $totalOffering = $tongThu;
-        $totalVisits = $thamVieng->count();
 
         $summary = [
             'totalMeetings' => $totalMeetings,
             'avgAttendance' => $avgAttendance,
             'totalOffering' => $totalOffering,
-            'totalVisits' => $totalVisits,
         ];
 
-        return view('_ban_co_doc_giao_duc.nhap_lieu_bao_cao', compact(
+        Log::info("baoCaoBan {$config['name']}: Thống kê", [
+            'summary' => $summary
+        ]);
+
+        return view("{$config['view_prefix']}.bao_cao", compact(
             'month',
             'year',
+            'nextMonth',
+            'nextYear',
             'banDieuHanh',
             'buoiNhomHT',
             'buoiNhomBN',
             'taiChinh',
-            'thamVieng',
             'keHoach',
             'summary',
             'diemManh',
@@ -232,24 +340,32 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
     /**
      * Cập nhật số lượng tham dự và dâng hiến cho một buổi nhóm
      */
-    public function updateThamDuTrungLao(Request $request)
+    public function updateThamDu(Request $request, array $config): JsonResponse
     {
-        Log::info('updateThamDuTrungLao: Nhận yêu cầu', $request->all());
+        Log::info("updateThamDu {$config['name']}: Nhận yêu cầu", $request->all());
 
         $validator = Validator::make($request->all(), [
             'id' => 'required|exists:buoi_nhom,id',
             'so_luong_trung_lao' => 'required|integer|min:0',
-            'dang_hien' => 'nullable|string' // Nới lỏng validation, sẽ xử lý sau
+            'so_luong_thanh_trang' => 'required|integer|min:0',
+            'so_luong_thanh_nien' => 'required|integer|min:0',
+            'dang_hien' => 'nullable|string'
         ], [
             'id.required' => 'ID buổi nhóm là bắt buộc.',
             'id.exists' => 'Buổi nhóm không tồn tại.',
             'so_luong_trung_lao.required' => 'Số lượng Trung Lão là bắt buộc.',
             'so_luong_trung_lao.integer' => 'Số lượng Trung Lão phải là số nguyên.',
             'so_luong_trung_lao.min' => 'Số lượng Trung Lão không được nhỏ hơn 0.',
+            'so_luong_thanh_trang.required' => 'Số lượng Thanh Trang là bắt buộc.',
+            'so_luong_thanh_trang.integer' => 'Số lượng Thanh Trang phải là số nguyên.',
+            'so_luong_thanh_trang.min' => 'Số lượng Thanh Trang không được nhỏ hơn 0.',
+            'so_luong_thanh_nien.required' => 'Số lượng Thanh Niên là bắt buộc.',
+            'so_luong_thanh_nien.integer' => 'Số lượng Thanh Niên phải là số nguyên.',
+            'so_luong_thanh_nien.min' => 'Số lượng Thanh Niên không được nhỏ hơn 0.',
         ]);
 
         if ($validator->fails()) {
-            Log::error('updateThamDuTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            Log::error("updateThamDu {$config['name']}: Validation thất bại", ['errors' => $validator->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first()
@@ -259,41 +375,42 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
         try {
             $buoiNhom = BuoiNhom::findOrFail($request->id);
             $buoiNhom->so_luong_trung_lao = $request->so_luong_trung_lao;
+            $buoiNhom->so_luong_thanh_trang = $request->so_luong_thanh_trang;
+            $buoiNhom->so_luong_thanh_nien = $request->so_luong_thanh_nien;
             $buoiNhom->save();
 
             if ($request->has('dang_hien') && $request->dang_hien !== null) {
-                // Chuẩn hóa giá trị dang_hien
                 $dangHien = preg_replace('/[^0-9]/', '', $request->dang_hien);
                 $dangHien = (int) $dangHien;
 
                 if ($dangHien > 0) {
                     $giaoDich = GiaoDichTaiChinh::firstOrNew([
                         'buoi_nhom_id' => $buoiNhom->id,
-                        'ban_nganh_id' => self::BAN_NGANH_ID,
+                        'ban_nganh_id' => $config['id'],
                     ]);
 
                     $giaoDich->loai = 'thu';
                     $giaoDich->so_tien = $dangHien;
-                    $giaoDich->mo_ta = 'Dâng hiến buổi nhóm Ban Trung Lão ngày ' .
+                    $giaoDich->mo_ta = "Dâng hiến buổi nhóm {$config['name']} ngày " .
                         Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y');
                     $giaoDich->ngay_giao_dich = $buoiNhom->ngay_dien_ra;
                     $giaoDich->save();
                 }
             }
 
-            Log::info('updateThamDuTrungLao: Cập nhật thành công', ['buoi_nhom_id' => $buoiNhom->id]);
+            Log::info("updateThamDu {$config['name']}: Cập nhật thành công", ['buoi_nhom_id' => $buoiNhom->id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Cập nhật số lượng tham dự thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('updateThamDuTrungLao: Lỗi cập nhật số lượng tham dự', [
+            Log::error("updateThamDu {$config['name']}: Lỗi cập nhật số lượng tham dự", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                'message' => "Có lỗi xảy ra: {$e->getMessage()}"
             ], 500);
         }
     }
@@ -301,9 +418,9 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
     /**
      * Lưu tất cả số lượng tham dự và dâng hiến
      */
-    public function saveThamDuTrungLao(Request $request)
+    public function saveThamDu(Request $request, array $config)
     {
-        Log::info('saveThamDuTrungLao: Nhận yêu cầu', $request->all());
+        Log::info("saveThamDu {$config['name']}: Nhận yêu cầu", $request->all());
 
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
@@ -311,7 +428,9 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             'ban_nganh_id' => 'required|exists:ban_nganh,id',
             'buoi_nhom' => 'required|array',
             'buoi_nhom.*.so_luong_trung_lao' => 'required|integer|min:0',
-            'buoi_nhom.*.dang_hien' => 'nullable|string' // Nới lỏng validation, sẽ xử lý sau
+            'buoi_nhom.*.so_luong_thanh_trang' => 'required|integer|min:0',
+            'buoi_nhom.*.so_luong_thanh_nien' => 'required|integer|min:0',
+            'buoi_nhom.*.dang_hien' => 'nullable|string'
         ], [
             'month.required' => 'Tháng là bắt buộc.',
             'month.integer' => 'Tháng phải là số nguyên.',
@@ -319,12 +438,22 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             'month.max' => 'Tháng không được lớn hơn 12.',
             'buoi_nhom.*.so_luong_trung_lao.required' => 'Số lượng Trung Lão là bắt buộc.',
             'buoi_nhom.*.so_luong_trung_lao.integer' => 'Số lượng Trung Lão phải là số nguyên.',
-            'buoi_nhom.*.so_luong_trung_lao.min' => 'Số lượng Trung Lão không được nhỏ hơn 0.'
+            'buoi_nhom.*.so_luong_trung_lao.min' => 'Số lượng Trung Lão không được nhỏ hơn 0.',
+            'buoi_nhom.*.so_luong_thanh_trang.required' => 'Số lượng Thanh Trang là bắt buộc.',
+            'buoi_nhom.*.so_luong_thanh_trang.integer' => 'Số lượng Thanh Trang phải là số nguyên.',
+            'buoi_nhom.*.so_luong_thanh_trang.min' => 'Số lượng Thanh Trang không được nhỏ hơn 0.',
+            'buoi_nhom.*.so_luong_thanh_nien.required' => 'Số lượng Thanh Niên là bắt buộc.',
+            'buoi_nhom.*.so_luong_thanh_nien.integer' => 'Số lượng Thanh Niên phải là số nguyên.',
+            'buoi_nhom.*.so_luong_thanh_nien.min' => 'Số lượng Thanh Niên không được nhỏ hơn 0.'
         ]);
 
         if ($validator->fails()) {
-            Log::error('saveThamDuTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            Log::error("saveThamDu {$config['name']}: Validation thất bại", ['errors' => $validator->errors()]);
             return redirect()->back()->with('error', 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first());
+        }
+
+        if ($request->ban_nganh_id != $config['id']) {
+            return redirect()->back()->with('error', 'Ban ngành không hợp lệ!');
         }
 
         DB::beginTransaction();
@@ -333,22 +462,23 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             foreach ($request->buoi_nhom as $id => $data) {
                 $buoiNhom = BuoiNhom::findOrFail($id);
                 $buoiNhom->so_luong_trung_lao = $data['so_luong_trung_lao'] ?? 0;
+                $buoiNhom->so_luong_thanh_trang = $data['so_luong_thanh_trang'] ?? 0;
+                $buoiNhom->so_luong_thanh_nien = $data['so_luong_thanh_nien'] ?? 0;
                 $buoiNhom->save();
 
-                if ($buoiNhom->ban_nganh_id == self::BAN_NGANH_ID && isset($data['dang_hien']) && $data['dang_hien'] !== null) {
-                    // Chuẩn hóa giá trị dang_hien
+                if ($buoiNhom->ban_nganh_id == $config['id'] && isset($data['dang_hien']) && $data['dang_hien'] !== null) {
                     $dangHien = preg_replace('/[^0-9]/', '', $data['dang_hien']);
                     $dangHien = (int) $dangHien;
 
                     if ($dangHien > 0) {
                         $giaoDich = GiaoDichTaiChinh::firstOrNew([
                             'buoi_nhom_id' => $buoiNhom->id,
-                            'ban_nganh_id' => self::BAN_NGANH_ID,
+                            'ban_nganh_id' => $config['id'],
                         ]);
 
                         $giaoDich->loai = 'thu';
                         $giaoDich->so_tien = $dangHien;
-                        $giaoDich->mo_ta = 'Dâng hiến buổi nhóm Ban Trung Lão ngày ' .
+                        $giaoDich->mo_ta = "Dâng hiến buổi nhóm {$config['name']} ngày " .
                             Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y');
                         $giaoDich->ngay_giao_dich = $buoiNhom->ngay_dien_ra;
                         $giaoDich->save();
@@ -357,24 +487,24 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             }
 
             DB::commit();
-            Log::info('saveThamDuTrungLao: Lưu thành công');
+            Log::info("saveThamDu {$config['name']}: Lưu thành công");
             return redirect()->back()->with('success', 'Đã lưu số lượng tham dự thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('saveThamDuTrungLao: Lỗi lưu số lượng tham dự', [
+            Log::error("saveThamDu {$config['name']}: Lỗi lưu số lượng tham dự", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
+            return redirect()->back()->with('error', "Lỗi: {$e->getMessage()}");
         }
     }
 
     /**
-     * Lưu đánh giá báo cáo
+     * Lưu đánh giá báo cáo (dành cho AJAX)
      */
-    public function saveDanhGiaTrungLao(Request $request)
+    public function saveDanhGia(Request $request, array $config): JsonResponse
     {
-        Log::info('saveDanhGiaTrungLao: Nhận yêu cầu', $request->all());
+        Log::info("saveDanhGia {$config['name']}: Nhận yêu cầu", $request->all());
 
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
@@ -385,16 +515,22 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('saveDanhGiaTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            Log::error("saveDanhGia {$config['name']}: Validation thất bại", ['errors' => $validator->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first()
             ], 422);
         }
 
-        // Kiểm tra nguoi_danh_gia_id
+        if ($request->ban_nganh_id != $config['id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ban ngành không hợp lệ!'
+            ], 422);
+        }
+
         if (!Auth::check()) {
-            Log::error('saveDanhGiaTrungLao: Người dùng chưa đăng nhập');
+            Log::error("saveDanhGia {$config['name']}: Người dùng chưa đăng nhập");
             return response()->json([
                 'success' => false,
                 'message' => 'Người dùng chưa đăng nhập.'
@@ -403,7 +539,7 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
 
         $user = Auth::user();
         if (!$user->tin_huu_id) {
-            Log::error('saveDanhGiaTrungLao: Người dùng không có tin_huu_id', ['user_id' => $user->id]);
+            Log::error("saveDanhGia {$config['name']}: Người dùng không có tin_huu_id", ['user_id' => $user->id]);
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể xác định người đánh giá. Vui lòng kiểm tra thông tin người dùng (tin_huu_id không tồn tại).'
@@ -414,7 +550,7 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
 
         try {
             $danhGia = DanhGia::create([
-                'ban_nganh_id' => self::BAN_NGANH_ID,
+                'ban_nganh_id' => $config['id'],
                 'loai' => $request->loai,
                 'noi_dung' => $request->noi_dung,
                 'thang' => $request->month,
@@ -423,30 +559,131 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             ]);
 
             DB::commit();
-            Log::info('saveDanhGiaTrungLao: Lưu thành công', ['danh_gia_id' => $danhGia->id]);
+            Log::info("saveDanhGia {$config['name']}: Lưu thành công", ['danh_gia_id' => $danhGia->id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu đánh giá thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('saveDanhGiaTrungLao: Lỗi lưu đánh giá', [
+            Log::error("saveDanhGia {$config['name']}: Lỗi lưu đánh giá", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi: ' . $e->getMessage()
+                'message' => "Lỗi: {$e->getMessage()}"
             ], 500);
+        }
+    }
+
+    /**
+     * Lưu đánh giá báo cáo (dành cho form web)
+     */
+    public function saveDanhGiaWeb(Request $request, array $config)
+    {
+        Log::info("saveDanhGiaWeb {$config['name']}: Nhận yêu cầu", $request->all());
+
+        $validator = Validator::make($request->all(), [
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2021|max:2030',
+            'ban_nganh_id' => 'required|exists:ban_nganh,id',
+            'diem_manh' => 'required|array',
+            'diem_manh_id' => 'required|array',
+            'diem_yeu' => 'required|array',
+            'diem_yeu_id' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            Log::error("saveDanhGiaWeb {$config['name']}: Validation thất bại", ['errors' => $validator->errors()]);
+            return redirect()->back()->with('error', 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first());
+        }
+
+        if ($request->ban_nganh_id != $config['id']) {
+            return redirect()->back()->with('error', 'Ban ngành không hợp lệ!');
+        }
+
+        if (!Auth::check()) {
+            Log::error("saveDanhGiaWeb {$config['name']}: Người dùng chưa đăng nhập");
+            return redirect()->back()->with('error', 'Người dùng chưa đăng nhập.');
+        }
+
+        $user = Auth::user();
+        if (!$user->tin_huu_id) {
+            Log::error("saveDanhGiaWeb {$config['name']}: Người dùng không có tin_huu_id", ['user_id' => $user->id]);
+            return redirect()->back()->with('error', 'Không thể xác định người đánh giá. Vui lòng kiểm tra thông tin người dùng (tin_huu_id không tồn tại).');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Lưu điểm mạnh
+            foreach ($request->diem_manh as $index => $noiDung) {
+                $id = $request->diem_manh_id[$index];
+
+                if (empty($noiDung)) {
+                    continue;
+                }
+
+                if ($id > 0) {
+                    $danhGia = DanhGia::findOrFail($id);
+                    $danhGia->noi_dung = $noiDung;
+                    $danhGia->save();
+                } else {
+                    DanhGia::create([
+                        'ban_nganh_id' => $config['id'],
+                        'loai' => 'diem_manh',
+                        'noi_dung' => $noiDung,
+                        'thang' => $request->month,
+                        'nam' => $request->year,
+                        'nguoi_danh_gia_id' => $user->tin_huu_id
+                    ]);
+                }
+            }
+
+            // Lưu điểm yếu
+            foreach ($request->diem_yeu as $index => $noiDung) {
+                $id = $request->diem_yeu_id[$index];
+
+                if (empty($noiDung)) {
+                    continue;
+                }
+
+                if ($id > 0) {
+                    $danhGia = DanhGia::findOrFail($id);
+                    $danhGia->noi_dung = $noiDung;
+                    $danhGia->save();
+                } else {
+                    DanhGia::create([
+                        'ban_nganh_id' => $config['id'],
+                        'loai' => 'diem_yeu',
+                        'noi_dung' => $noiDung,
+                        'thang' => $request->month,
+                        'nam' => $request->year,
+                        'nguoi_danh_gia_id' => $user->tin_huu_id
+                    ]);
+                }
+            }
+
+            DB::commit();
+            Log::info("saveDanhGiaWeb {$config['name']}: Lưu thành công");
+            return redirect()->back()->with('success', 'Đã lưu đánh giá thành công!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("saveDanhGiaWeb {$config['name']}: Lỗi lưu đánh giá", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', "Lỗi: {$e->getMessage()}");
         }
     }
 
     /**
      * Lưu kế hoạch báo cáo
      */
-    public function saveKeHoachTrungLao(Request $request)
+    public function saveKeHoach(Request $request, array $config): JsonResponse
     {
-        Log::info('saveKeHoachTrungLao: Nhận yêu cầu', $request->all());
+        Log::info("saveKeHoach {$config['name']}: Nhận yêu cầu", $request->all());
 
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
@@ -460,11 +697,18 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('saveKeHoachTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            Log::error("saveKeHoach {$config['name']}: Validation thất bại", ['errors' => $validator->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first(),
                 'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->ban_nganh_id != $config['id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ban ngành không hợp lệ!'
             ], 422);
         }
 
@@ -491,7 +735,7 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
                     ]);
                 } else {
                     $keHoach = KeHoach::create([
-                        'ban_nganh_id' => self::BAN_NGANH_ID,
+                        'ban_nganh_id' => $config['id'],
                         'hoat_dong' => $data['hoat_dong'],
                         'thoi_gian' => $data['thoi_gian'] ?? '',
                         'nguoi_phu_trach_id' => $data['nguoi_phu_trach_id'] ?? null,
@@ -504,20 +748,20 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             }
 
             DB::commit();
-            Log::info('saveKeHoachTrungLao: Lưu thành công');
+            Log::info("saveKeHoach {$config['name']}: Lưu thành công");
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu kế hoạch thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('saveKeHoachTrungLao: Lỗi lưu kế hoạch', [
+            Log::error("saveKeHoach {$config['name']}: Lỗi lưu kế hoạch", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi: ' . $e->getMessage()
+                'message' => "Lỗi: {$e->getMessage()}"
             ], 500);
         }
     }
@@ -525,9 +769,9 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
     /**
      * Lưu kiến nghị báo cáo
      */
-    public function saveKienNghiTrungLao(Request $request)
+    public function saveKienNghi(Request $request, array $config): JsonResponse
     {
-        Log::info('saveKienNghiTrungLao: Nhận yêu cầu', $request->all());
+        Log::info("saveKienNghi {$config['name']}: Nhận yêu cầu", $request->all());
 
         $validator = Validator::make($request->all(), [
             'month' => 'required|integer|min:1|max:12',
@@ -542,11 +786,18 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('saveKienNghiTrungLao: Validation thất bại', ['errors' => $validator->errors()]);
+            Log::error("saveKienNghi {$config['name']}: Validation thất bại", ['errors' => $validator->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu đầu vào không hợp lệ: ' . $validator->errors()->first(),
                 'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if ($request->ban_nganh_id != $config['id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ban ngành không hợp lệ!'
             ], 422);
         }
 
@@ -555,7 +806,7 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
         try {
             $user = Auth::user();
             if (!$user || !$user->tin_huu_id) {
-                Log::error('saveKienNghiTrungLao: Người dùng không có tin_huu_id', ['user_id' => $user ? $user->id : null]);
+                Log::error("saveKienNghi {$config['name']}: Người dùng không có tin_huu_id", ['user_id' => $user ? $user->id : null]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Không thể xác định người đề xuất. Vui lòng kiểm tra thông tin người dùng (tin_huu_id không tồn tại).'
@@ -580,7 +831,7 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
                     ]);
                 } else {
                     $kienNghi = KienNghi::create([
-                        'ban_nganh_id' => self::BAN_NGANH_ID,
+                        'ban_nganh_id' => $config['id'],
                         'tieu_de' => $data['tieu_de'],
                         'noi_dung' => $data['noi_dung'],
                         'nguoi_de_xuat_id' => $data['nguoi_de_xuat_id'] ?? $user->tin_huu_id,
@@ -593,107 +844,110 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             }
 
             DB::commit();
-            Log::info('saveKienNghiTrungLao: Lưu thành công');
+            Log::info("saveKienNghi {$config['name']}: Lưu thành công");
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu kiến nghị thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('saveKienNghiTrungLao: Lỗi lưu kiến nghị', [
+            Log::error("saveKienNghi {$config['name']}: Lỗi lưu kiến nghị", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi: ' . $e->getMessage()
+                'message' => "Lỗi: {$e->getMessage()}"
             ], 500);
         }
     }
 
     /**
-     * Lưu toàn bộ báo cáo Ban Trung Lão
+     * Lưu toàn bộ báo cáo ban
      */
-    public function luuBaoCaoBanCoDocGiaoDuc(Request $request)
+    public function luuBaoCao(Request $request, array $config): JsonResponse
     {
-        Log::info('luuBaoCaoBanCoDocGiaoDuc: Nhận yêu cầu', $request->all());
+        Log::info("luuBaoCao {$config['name']}: Nhận yêu cầu", $request->all());
 
         DB::beginTransaction();
 
         try {
             if ($request->has('buoi_nhom')) {
                 $requestForThamDu = new Request($request->only(['month', 'year', 'ban_nganh_id', 'buoi_nhom']));
-                $this->saveThamDuTrungLao($requestForThamDu);
+                $this->saveThamDu($requestForThamDu, $config);
             }
 
-            if ($request->has('diem_manh') || $request->has('diem_yeu')) {
+            if ($request->has('loai') && $request->has('noi_dung')) {
+                $requestForDanhGia = new Request($request->only(['month', 'year', 'ban_nganh_id', 'loai', 'noi_dung']));
+                $this->saveDanhGia($requestForDanhGia, $config);
+            } elseif ($request->has('diem_manh') || $request->has('diem_yeu')) {
                 $requestForDanhGia = new Request($request->only(['month', 'year', 'ban_nganh_id', 'diem_manh', 'diem_manh_id', 'diem_yeu', 'diem_yeu_id']));
-                $this->saveDanhGiaTrungLao($requestForDanhGia);
+                $this->saveDanhGiaWeb($requestForDanhGia, $config);
             }
 
             if ($request->has('kehoach')) {
                 $requestForKeHoach = new Request($request->only(['month', 'year', 'ban_nganh_id', 'kehoach']));
-                $this->saveKeHoachTrungLao($requestForKeHoach);
+                $this->saveKeHoach($requestForKeHoach, $config);
             }
 
             if ($request->has('kiennghi')) {
                 $requestForKienNghi = new Request($request->only(['month', 'year', 'ban_nganh_id', 'kiennghi']));
-                $this->saveKienNghiTrungLao($requestForKienNghi);
+                $this->saveKienNghi($requestForKienNghi, $config);
             }
 
             DB::commit();
-            Log::info('luuBaoCaoBanCoDocGiaoDuc: Lưu thành công');
+            Log::info("luuBaoCao {$config['name']}: Lưu thành công");
             return response()->json([
                 'success' => true,
                 'message' => 'Đã lưu báo cáo thành công!'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('luuBaoCaoBanCoDocGiaoDuc: Lỗi lưu báo cáo tổng hợp', [
+            Log::error("luuBaoCao {$config['name']}: Lỗi lưu báo cáo tổng hợp", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra khi lưu báo cáo: ' . $e->getMessage()
+                'message' => "Có lỗi xảy ra khi lưu báo cáo: {$e->getMessage()}"
             ], 500);
         }
     }
 
     /**
-     * Cập nhật số lượng tham dự
+     * Cập nhật số lượng tham dự (alias cho updateThamDu)
      */
-    public function capNhatSoLuongThamDu(Request $request)
+    public function capNhatSoLuongThamDu(Request $request, array $config): JsonResponse
     {
-        return $this->updateThamDuTrungLao($request);
+        return $this->updateThamDu($request, $config);
     }
 
     /**
      * Xóa đánh giá (điểm mạnh hoặc điểm yếu)
      */
-    public function xoaDanhGia($id)
+    public function xoaDanhGia($id, array $config): JsonResponse
     {
-        Log::info('xoaDanhGia: Nhận yêu cầu', ['id' => $id]);
+        Log::info("xoaDanhGia {$config['name']}: Nhận yêu cầu", ['id' => $id]);
 
         try {
             $danhGia = DanhGia::where('id', $id)
-                ->where('ban_nganh_id', self::BAN_NGANH_ID)
+                ->where('ban_nganh_id', $config['id'])
                 ->firstOrFail();
             $danhGia->delete();
-            Log::info('xoaDanhGia: Xóa thành công', ['id' => $id]);
+            Log::info("xoaDanhGia {$config['name']}: Xóa thành công", ['id' => $id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Xóa đánh giá thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('xoaDanhGia: Lỗi xóa đánh giá', [
+            Log::error("xoaDanhGia {$config['name']}: Lỗi xóa đánh giá", [
                 'id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa đánh giá: ' . $e->getMessage()
+                'message' => "Đã xảy ra lỗi khi xóa đánh giá: {$e->getMessage()}"
             ], 500);
         }
     }
@@ -701,19 +955,18 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
     /**
      * Xóa kiến nghị
      */
-    public function xoaKienNghi($id)
+    public function xoaKienNghi($id, array $config): JsonResponse
     {
-        Log::info('xoaKienNghi: Nhận yêu cầu', ['id' => $id]);
+        Log::info("xoaKienNghi {$config['name']}: Nhận yêu cầu", ['id' => $id]);
 
         try {
             $kienNghi = KienNghi::where('id', $id)
-                ->where('ban_nganh_id', self::BAN_NGANH_ID)
+                ->where('ban_nganh_id', $config['id'])
                 ->firstOrFail();
 
-            // Kiểm tra quyền xóa (ví dụ: chỉ admin hoặc người tạo kiến nghị được xóa)
             $user = Auth::user();
             if (!$user || !$user->tin_huu_id) {
-                Log::error('xoaKienNghi: Người dùng không có tin_huu_id', ['user_id' => $user ? $user->id : null]);
+                Log::error("xoaKienNghi {$config['name']}: Người dùng không có tin_huu_id", ['user_id' => $user ? $user->id : null]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Không thể xác định người dùng. Vui lòng kiểm tra thông tin (tin_huu_id không tồn tại).'
@@ -721,7 +974,7 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             }
 
             if ($kienNghi->nguoi_de_xuat_id !== $user->tin_huu_id) {
-                Log::warning('xoaKienNghi: Người dùng không có quyền xóa', [
+                Log::warning("xoaKienNghi {$config['name']}: Người dùng không có quyền xóa", [
                     'user_tin_huu_id' => $user->tin_huu_id,
                     'nguoi_de_xuat_id' => $kienNghi->nguoi_de_xuat_id
                 ]);
@@ -732,100 +985,21 @@ class BanCoDocGiaoDucBaoCaoController extends Controller
             }
 
             $kienNghi->delete();
-            Log::info('xoaKienNghi: Xóa thành công', ['id' => $id]);
+            Log::info("xoaKienNghi {$config['name']}: Xóa thành công", ['id' => $id]);
             return response()->json([
                 'success' => true,
                 'message' => 'Xóa kiến nghị thành công!'
             ]);
         } catch (\Exception $e) {
-            Log::error('xoaKienNghi: Lỗi xóa kiến nghị', [
+            Log::error("xoaKienNghi {$config['name']}: Lỗi xóa kiến nghị", [
                 'id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi xóa kiến nghị: ' . $e->getMessage()
+                'message' => "Đã xảy ra lỗi khi xóa kiến nghị: {$e->getMessage()}"
             ], 500);
         }
-    }
-
-    /**
-     * Lấy dữ liệu tóm tắt cho báo cáo
-     */
-    private function getSummaryData($month, $year, $banId)
-    {
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-
-        $totalMeetings = BuoiNhom::where(function ($query) use ($banId) {
-            $query->where('ban_nganh_id', $banId)
-                ->orWhereNull('ban_nganh_id');
-        })
-            ->whereMonth('ngay_dien_ra', $month)
-            ->whereYear('ngay_dien_ra', $year)
-            ->count();
-
-        $avgAttendance = BuoiNhom::where(function ($query) use ($banId) {
-            $query->where('ban_nganh_id', $banId)
-                ->orWhereNull('ban_nganh_id');
-        })
-            ->whereMonth('ngay_dien_ra', $month)
-            ->whereYear('ngay_dien_ra', $year)
-            ->avg('so_luong_tin_huu') ?? 0;
-
-        $totalVisits = ThamVieng::where('id_ban', $banId)
-            ->whereMonth('ngay_tham', $month)
-            ->whereYear('ngay_tham', $year)
-            ->count();
-
-        $totalOffering = $this->getFinancialData($month, $year, $banId)['tongTon'] ?? 0;
-
-        return [
-            'totalMeetings' => $totalMeetings,
-            'avgAttendance' => round($avgAttendance),
-            'totalVisits' => $totalVisits,
-            'totalOffering' => $totalOffering
-        ];
-    }
-
-    /**
-     * Lấy dữ liệu tài chính
-     */
-    private function getFinancialData($month, $year, $banId)
-    {
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
-
-        $hasTransactions = GiaoDichTaiChinh::where('ban_nganh_id', $banId)
-            ->whereMonth('ngay_giao_dich', $month)
-            ->whereYear('ngay_giao_dich', $year)
-            ->exists();
-
-        if (!$hasTransactions) {
-            return [
-                'giaoDich' => collect([]),
-                'tongThu' => 0,
-                'tongChi' => 0,
-                'tongTon' => 0
-            ];
-        }
-
-        $giaoDich = GiaoDichTaiChinh::where('ban_nganh_id', $banId)
-            ->whereMonth('ngay_giao_dich', $month)
-            ->whereYear('ngay_giao_dich', $year)
-            ->orderBy('ngay_giao_dich')
-            ->get();
-
-        $tongThu = $giaoDich->where('loai', 'thu')->sum('so_tien');
-        $tongChi = $giaoDich->where('loai', 'chi')->sum('so_tien');
-        $tongTon = $tongThu - $tongChi;
-
-        return [
-            'giaoDich' => $giaoDich,
-            'tongThu' => $tongThu,
-            'tongChi' => $tongChi,
-            'tongTon' => $tongTon
-        ];
     }
 }

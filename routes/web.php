@@ -9,7 +9,6 @@ use App\Http\Controllers\{
     BanAmThucController,
     BanCauNguyenController,
     BanChungDaoController,
-    BanCoDocGiaoDucController,
     BanDanController,
     BanHauCanController,
     BanHatThoPhuongController,

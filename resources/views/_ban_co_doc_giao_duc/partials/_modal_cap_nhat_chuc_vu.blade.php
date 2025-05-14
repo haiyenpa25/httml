@@ -1,7 +1,6 @@
-{{--
-Partial Modal Cập Nhật Chức Vụ cho Ban Cơ Đốc Giáo Dục
-File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_cap_nhat_chuc_vu.blade.php
---}}
+@php
+    $banType = isset($banType) ? $banType : 'co_doc_giao_duc';
+@endphp
 
 <div class="modal fade" id="modal-edit-chuc-vu">
     <div class="modal-dialog">
@@ -12,9 +11,8 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_cap_nhat_c
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <form id="form-sua-chuc-vu" action="{{ route('api.ban_co_doc_giao_duc.cap_nhat_chuc_vu') }}" method="POST">
+            <form id="form-sua-chuc-vu" action="{{ route('api._ban_' . $banType . '.cap_nhat_chuc_vu', ['banType' => 'ban-co-doc-giao-duc']) }}" method="POST">
                 @csrf
-                @method('PUT')
                 <div class="modal-body">
                     <input type="hidden" name="tin_huu_id" id="edit_tin_huu_id">
                     <input type="hidden" name="ban_nganh_id" id="edit_ban_nganh_id">
@@ -24,7 +22,7 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_cap_nhat_c
                     </div>
                     <div class="form-group">
                         <label for="edit_chuc_vu">Chức Vụ</label>
-                        <select class="form-control" name="chuc_vu" id="edit_chuc_vu" style="width: 100%">
+                        <select class="form-control select2bs4" name="chuc_vu" id="edit_chuc_vu" style="width: 100%">
                             <option value="">-- Thành viên --</option>
                             <option value="Cố Vấn Linh Vụ">Cố Vấn Linh Vụ</option>
                             <option value="Trưởng Ban">Trưởng Ban</option>
@@ -40,8 +38,5 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_cap_nhat_c
                 </div>
             </form>
         </div>
-        <!-- /.modal-content -->
     </div>
-    <!-- /.modal-dialog -->
 </div>
-<!-- /.modal -->

@@ -1,7 +1,6 @@
-{{--
-Partial Modal Xóa Thành Viên cho Ban Cơ Đốc Giáo Dục
-File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_xoa_thanh_vien.blade.php
---}}
+@php
+    $banType = isset($banType) ? $banType : 'co_doc_giao_duc';
+@endphp
 
 <div class="modal fade" id="modal-xoa-thanh-vien">
     <div class="modal-dialog">
@@ -13,9 +12,7 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_xoa_thanh_
                 </button>
             </div>
             <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa thành viên <strong id="delete_ten_tin_huu"></strong> khỏi Ban Cơ Đốc Giáo
-                    Dục?
-                </p>
+                <p>Bạn có chắc chắn muốn xóa thành viên <strong id="delete_ten_tin_huu"></strong> khỏi {{ $config['name'] }}?</p>
                 <input type="hidden" id="delete_tin_huu_id">
                 <input type="hidden" id="delete_ban_nganh_id">
             </div>
@@ -26,4 +23,3 @@ File lưu tại: resources/views/_ban_co_doc_giao_duc/partials/_modal_xoa_thanh_
         </div>
     </div>
 </div>
-<!-- /.modal -->

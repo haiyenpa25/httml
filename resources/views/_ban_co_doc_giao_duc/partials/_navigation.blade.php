@@ -1,74 +1,61 @@
-{{-- Partial cho thanh điều hướng nhanh của Ban Cơ Đốc Giáo Dục --}}
-{{-- File được lưu tại: resources/views/partials/_ban_co_doc_giao_duc_navigation.blade.php --}}
+@php
+    // Mặc định banType là 'co_doc_giao_duc' nếu không được truyền
+    $banType = isset($banType) ? $banType : 'co_doc_giao_duc';
+@endphp
 
-<!-- Các nút chức năng - Bố cục được tối ưu hóa -->
-<!-- Các nút chức năng - Bố cục được tối ưu hóa -->
-<!-- Các nút chức năng - Bố cục được tối ưu hóa -->
-<div class="action-buttons-container">
-    <!-- Hàng 1: Chức năng điều hướng chính -->
-    <div class="button-row">
-        <a href="{{ route('_ban_co_doc_giao_duc.index') }}" class="action-btn btn-primary-custom">
-            <i class="fas fa-home"></i> Trang chính
+<!-- Navigation for Ban Ngành management interface -->
+<ul class="nav nav-pills nav-sidebar flex-column" role="menu" data-accordion="false">
+    <!-- Tổng quan -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_' . $banType . '.index', ['banType' => 'ban-co-doc-giao-duc']) }}"
+           class="nav-link {{ request()->routeIs('_ban_' . $banType . '.index') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-tachometer-alt"></i>
+            <p>Tổng quan</p>
         </a>
-        <a href="{{ route('_ban_co_doc_giao_duc.diem_danh') }}" class="action-btn btn-success-custom">
-            <i class="fas fa-clipboard-check"></i> Điểm danh
-        </a>
-        <a href="{{ route('_ban_co_doc_giao_duc.tham_vieng') }}" class="action-btn btn-info-custom">
-            <i class="fas fa-user-friends"></i> Thăm viếng
-        </a>
-        <a href="{{ route('_ban_co_doc_giao_duc.phan_cong') }}" class="action-btn btn-warning-custom">
-            <i class="fas fa-tasks"></i> Phân công
-        </a>
-    </div>
+    </li>
 
-    <!-- Hàng 2: Chức năng phân công và báo cáo -->
-    <div class="button-row">
-        <a href="{{ route('_ban_co_doc_giao_duc.phan_cong_chi_tiet') }}" class="action-btn btn-info-custom">
-            <i class="fas fa-clipboard-list"></i> Chi tiết PC
+    <!-- Điểm danh -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_' . $banType . '.diem_danh', ['banType' => 'ban-co-doc-giao-duc']) }}"
+           class="nav-link {{ request()->routeIs('_ban_' . $banType . '.diem_danh') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-check-square"></i>
+            <p>Điểm danh</p>
         </a>
-        <a href="{{ route('_ban_co_doc_giao_duc.nhap_lieu_bao_cao') }}" class="action-btn btn-success-custom">
-            <i class="fas fa-file-alt"></i> Nhập báo cáo
+    </li>
+
+    <!-- Phân công -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_' . $banType . '.phan_cong', ['banType' => 'ban-co-doc-giao-duc']) }}"
+           class="nav-link {{ request()->routeIs('_ban_' . $banType . '.phan_cong') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-tasks"></i>
+            <p>Phân công</p>
         </a>
-        <a href="{{ route('_bao_cao.ban_co_doc_giao_duc') }}" class="action-btn btn-success-custom">
-            <i class="fas fa-file-alt"></i> Báo cáo
+    </li>
+
+    <!-- Phân công chi tiết -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_' . $banType . '.phan_cong_chi_tiet', ['banType' => 'ban-co-doc-giao-duc']) }}"
+           class="nav-link {{ request()->routeIs('_ban_' . $banType . '.phan_cong_chi_tiet') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-list-alt"></i>
+            <p>Phân công chi tiết</p>
         </a>
-        <button type="button" class="action-btn btn-success-custom" data-toggle="modal"
-            data-target="#modal-them-thanh-vien">
-            <i class="fas fa-user-plus"></i> Thêm thành viên
-        </button>
-    </div>
+    </li>
 
-    <!-- Hàng 3: Chức năng quản lý -->
-    <div class="button-row">
+    <!-- Nhập liệu báo cáo -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_' . $banType . '.nhap_lieu_bao_cao', ['banType' => 'ban-co-doc-giao-duc']) }}"
+           class="nav-link {{ request()->routeIs('_ban_' . $banType . '.nhap_lieu_bao_cao') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-edit"></i>
+            <p>Nhập liệu báo cáo</p>
+        </a>
+    </li>
 
-    </div>
-</div>
-
-<style>
-    /* Kiểu cho nút đang được active */
-    .action-btn.active {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        position: relative;
-    }
-
-    .action-btn.active:after {
-        content: '';
-        position: absolute;
-        bottom: -5px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40%;
-        height: 3px;
-        background-color: rgba(255, 255, 255, 0.7);
-        border-radius: 3px;
-    }
-
-    /* Tối ưu hóa cho thiết bị di động */
-    @media (max-width: 767px) {
-        .action-btn.active:after {
-            bottom: -3px;
-            height: 2px;
-        }
-    }
-</style>
+    <!-- Báo cáo -->
+    <li class="nav-item">
+        <a href="{{ route('_ban_' . $banType . '.bao_cao', ['banType' => 'ban-co-doc-giao-duc']) }}"
+           class="nav-link {{ request()->routeIs('_ban_' . $banType . '.bao_cao') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-chart-bar"></i>
+            <p>Báo cáo</p>
+        </a>
+    </li>
+</ul>
