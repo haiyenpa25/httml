@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\DienGia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DienGiaExport;
 
 class DienGiaController extends Controller
 {
@@ -13,7 +16,7 @@ class DienGiaController extends Controller
      */
     public function index()
     {
-        $dienGias = DienGia::orderBy('ho_ten')->get();
+        $dienGias = DienGia::orderBy('ho_ten')->paginate(10);
         return view('_dien_gia.index', compact('dienGias'));
     }
 
@@ -42,13 +45,41 @@ class DienGiaController extends Controller
     }
 
     /**
-     * API: Lấy danh sách diễn giả
+     * API: Lấy danh sách diễn giả cho DataTables (server-side)
      */
-    public function getDienGias()
+    public function getDienGias(Request $request)
     {
         try {
-            $dienGias = DienGia::orderBy('ho_ten')->get();
-            return response()->json($dienGias);
+            $query = DienGia::query();
+
+            // Xử lý lọc
+            if ($request->has('ho_ten') && $request->ho_ten) {
+                $query->where('ho_ten', 'like', '%' . $request->ho_ten . '%');
+            }
+            if ($request->has('chuc_danh') && $request->chuc_danh) {
+                $query->where('chuc_danh', $request->chuc_danh);
+            }
+            if ($request->has('hoi_thanh') && $request->hoi_thanh) {
+                $query->where('hoi_thanh', 'like', '%' . $request->hoi_thanh . '%');
+            }
+
+            return DataTables::of($query)
+                ->addIndexColumn() // Thêm cột chỉ số cho STT
+                ->addColumn('action', function ($dienGia) {
+                    return '<div class="btn-group">
+                        <a href="javascript:void(0)" class="btn btn-sm btn-primary btn-view" data-id="' . $dienGia->id . '" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                        <button type="button" class="btn btn-sm btn-info btn-edit" data-id="' . $dienGia->id . '" title="Sửa"><i class="fas fa-edit"></i></button>
+                        <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="' . $dienGia->id . '" data-name="' . $dienGia->ho_ten . '" title="Xóa"><i class="fas fa-trash"></i></button>
+                    </div>';
+                })
+                ->editColumn('hoi_thanh', function ($dienGia) {
+                    return $dienGia->hoi_thanh ?: '(Không có)';
+                })
+                ->editColumn('so_dien_thoai', function ($dienGia) {
+                    return $dienGia->so_dien_thoai ? '<a href="tel:' . $dienGia->so_dien_thoai . '" class="text-primary"><i class="fas fa-phone-alt mr-1"></i>' . $dienGia->so_dien_thoai . '</a>' : '(Không có)';
+                })
+                ->rawColumns(['ho_ten', 'chuc_danh', 'so_dien_thoai', 'action'])
+                ->make(true);
         } catch (\Exception $e) {
             Log::error('Lỗi lấy danh sách diễn giả: ' . $e->getMessage());
             return response()->json(['error' => 'Không thể lấy danh sách diễn giả'], 500);
@@ -99,7 +130,7 @@ class DienGiaController extends Controller
             Log::error('Lỗi thêm diễn giả: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể thêm diễn giả: ' . $e->getMessage()
+                'message' => 'Không thể thêm diễn giả'
             ], 500);
         }
     }
@@ -135,7 +166,7 @@ class DienGiaController extends Controller
             Log::error('Lỗi cập nhật diễn giả: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể cập nhật diễn giả: ' . $e->getMessage()
+                'message' => 'Không thể cập nhật diễn giả'
             ], 500);
         }
     }
@@ -147,7 +178,6 @@ class DienGiaController extends Controller
     {
         try {
             $dienGia->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => 'Xóa diễn giả thành công'
@@ -156,8 +186,21 @@ class DienGiaController extends Controller
             Log::error('Lỗi xóa diễn giả: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Không thể xóa diễn giả: ' . $e->getMessage()
+                'message' => 'Không thể xóa diễn giả'
             ], 500);
+        }
+    }
+
+    /**
+     * Xuất danh sách diễn giả ra Excel
+     */
+    public function exportExcel()
+    {
+        try {
+            return Excel::download(new DienGiaExport, 'danh_sach_dien_gia_' . date('Ymd_His') . '.xlsx');
+        } catch (\Exception $e) {
+            Log::error('Lỗi xuất Excel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Không thể xuất Excel');
         }
     }
 }

@@ -199,4 +199,6 @@
 @include('_tin_huu.partials.modal_xoa_tin_huu')
 @endsection
 
-@include('_tin_huu.scripts._scripts_index')
+@section('page-scripts')
+    @include('_tin_huu.scripts._scripts_index')
+@endsection

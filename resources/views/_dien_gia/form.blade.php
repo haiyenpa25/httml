@@ -1,24 +1,33 @@
+@php
+    $prefix = isset($prefix) ? $prefix : '';
+@endphp
+
 <div class="form-group">
-    <label>Họ Tên</label>
-    <input type="text" name="ho_ten" class="form-control" value="{{ old('ho_ten', $dienGia->ho_ten ?? '') }}" required>
+    <label for="{{ $prefix }}ho_ten">Họ Tên <span class="text-danger">*</span></label>
+    <input type="text" class="form-control" id="{{ $prefix }}ho_ten" name="ho_ten" placeholder="Nhập họ tên" required>
 </div>
+
 <div class="form-group">
-    <label>Chức Danh</label>
-    <select name="chuc_danh" class="form-control" required>
+    <label for="{{ $prefix }}chuc_danh">Chức Danh <span class="text-danger">*</span></label>
+    <select class="form-control" id="{{ $prefix }}chuc_danh" name="chuc_danh" required>
+        <option value="">-- Chọn chức danh --</option>
         @foreach(['Thầy', 'Cô', 'Mục sư', 'Mục sư nhiệm chức', 'Truyền Đạo', 'Chấp Sự'] as $cd)
-            <option value="{{ $cd }}" {{ (old('chuc_danh', $dienGia->chuc_danh ?? '') == $cd) ? 'selected' : '' }}>{{ $cd }}</option>
+            <option value="{{ $cd }}">{{ $cd }}</option>
         @endforeach
     </select>
 </div>
+
 <div class="form-group">
-    <label>Hội Thánh</label>
-    <input type="text" name="hoi_thanh" class="form-control" value="{{ old('hoi_thanh', $dienGia->hoi_thanh ?? '') }}">
+    <label for="{{ $prefix }}hoi_thanh">Hội Thánh</label>
+    <input type="text" class="form-control" id="{{ $prefix }}hoi_thanh" name="hoi_thanh" placeholder="Nhập hội thánh">
 </div>
+
 <div class="form-group">
-    <label>Địa Chỉ</label>
-    <input type="text" name="dia_chi" class="form-control" value="{{ old('dia_chi', $dienGia->dia_chi ?? '') }}">
+    <label for="{{ $prefix }}dia_chi">Địa Chỉ</label>
+    <input type="text" class="form-control" id="{{ $prefix }}dia_chi" name="dia_chi" placeholder="Nhập địa chỉ">
 </div>
+
 <div class="form-group">
-    <label>Số Điện Thoại</label>
-    <input type="text" name="so_dien_thoai" class="form-control" value="{{ old('so_dien_thoai', $dienGia->so_dien_thoai ?? '') }}">
+    <label for="{{ $prefix }}so_dien_thoai">Số Điện Thoại</label>
+    <input type="text" class="form-control" id="{{ $prefix }}so_dien_thoai" name="so_dien_thoai" placeholder="Nhập số điện thoại">
 </div>

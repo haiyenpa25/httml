@@ -152,39 +152,6 @@ Route::prefix('ho-gia-dinh')->middleware(['auth'])->group(function () {
         ->name('_ho_gia_dinh.destroy');
 });
 
-// ==== Quản lý Diễn Giả ====
-Route::prefix('dien-gia')->middleware(['auth'])->name('_dien_gia.')->group(function () {
-    Route::get('/', [DienGiaController::class, 'index'])
-        ->middleware('checkPermission:view-dien-gia')
-        ->name('index');
-    Route::get('/create', [DienGiaController::class, 'create'])
-        ->middleware('checkPermission:manage-dien-gia')
-        ->name('create');
-    Route::get('/{dienGia}/edit', [DienGiaController::class, 'edit'])
-        ->middleware('checkPermission:manage-dien-gia')
-        ->name('edit');
-    Route::get('/{dienGia}', [DienGiaController::class, 'show'])
-        ->middleware('checkPermission:view-dien-gia')
-        ->name('show');
-});
-
-Route::prefix('api/dien-gia')->middleware(['auth'])->name('api.dien_gia.')->group(function () {
-    Route::get('/', [DienGiaController::class, 'getDienGias'])
-        ->middleware('checkPermission:view-dien-gia')
-        ->name('list');
-    Route::get('/{dienGia}', [DienGiaController::class, 'getDienGiaJson'])
-        ->middleware('checkPermission:view-dien-gia')
-        ->name('details');
-    Route::post('/', [DienGiaController::class, 'store'])
-        ->middleware('checkPermission:manage-dien-gia')
-        ->name('store');
-    Route::put('/{dienGia}', [DienGiaController::class, 'update'])
-        ->middleware('checkPermission:manage-dien-gia')
-        ->name('update');
-    Route::delete('/{dienGia}', [DienGiaController::class, 'destroy'])
-        ->middleware('checkPermission:manage-dien-gia')
-        ->name('destroy');
-});
 
 // ==== Quản lý Thân Hữu / Thiết Bị ====
 Route::prefix('quan-ly-than-huu')->middleware(['auth'])->group(function () {
@@ -374,6 +341,8 @@ Route::prefix('bao-cao')->middleware(['auth'])->group(function () {
 });
 
 // ==== Quản lý Ban Ngành ====
+require __DIR__ . '/than_huu.php';
+require __DIR__ . '/dien_gia.php';
 require __DIR__ . '/quan_ly/thong_bao.php';
 require __DIR__ . '/tai_chinh/tai_chinh.php';
 require __DIR__ . '/quan_ly/thiet_bi.php';
