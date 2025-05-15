@@ -374,11 +374,10 @@ Route::prefix('bao-cao')->middleware(['auth'])->group(function () {
 });
 
 // ==== Quản lý Ban Ngành ====
+require __DIR__ . '/quan_ly/thong_bao.php';
 require __DIR__ . '/tai_chinh/tai_chinh.php';
 require __DIR__ . '/quan_ly/thiet_bi.php';
 require __DIR__ . '/ban_nganh/ban_nganh.php';
 require __DIR__ . '/ban_nganh/ban_trung_lao.php';
 require __DIR__ . '/ban_nganh/ban_co_doc_giao_duc.php';
 require __DIR__ . '/ban_nganh/ban_thanh_trang.php';
-
-require __DIR__ . '/quan_ly/thong_bao.php';
