@@ -1,3 +1,4 @@
+@section('page-scripts')
 <script>
     $(function () {
         // Khởi tạo Select2
@@ -18,8 +19,8 @@
             return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Cập nhật số lượng tham dự và dâng hiến
-        $('.update-count').on('click', function () {
+        // Cập nhật số lượng tham dự và dâng hiến (sử dụng event delegation)
+        $(document).on('click', '.update-count', function () {
             const btn = $(this);
             const row = btn.closest('tr');
             const id = btn.data('id');
@@ -41,6 +42,9 @@
                     so_luong: soLuong,
                     dang_hien: dangHien
                 };
+
+                // Log dữ liệu gửi để debug
+                console.log('Sending update request:', data);
             }
 
             if (url) {
@@ -53,26 +57,38 @@
                         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
                     },
                     success: function (response) {
+                        console.log('Update response:', response);
                         if (response.success) {
-                            toastr.success('Đã cập nhật thành công', 'Thành công');
+                            toastr.success(response.message || 'Đã cập nhật thành công', 'Thành công');
                         } else {
                             toastr.error(response.message || 'Có lỗi xảy ra', 'Lỗi');
                         }
                     },
                     error: function (xhr) {
-                        console.log(xhr.responseText);
-                        toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
+                        console.log('Update error:', xhr);
+                        let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            message = xhr.responseJSON.message;
+                            if (xhr.responseJSON.errors) {
+                                message += ': ' + Object.values(xhr.responseJSON.errors).flat().join(', ');
+                            }
+                        }
+                        toastr.error(message, 'Lỗi');
                     },
                     complete: function () {
-                        btn.prop('disabled', false).html('<i class="fas fa-save"></i>');
+                        btn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu');
                     }
                 });
             }
         });
 
-        // Xử lý form điểm danh
+        // Xử lý form điểm danh (giữ nguyên)
         $('#thamdu-form').on('submit', function (e) {
             e.preventDefault();
+            if ($(this).find('input[name^="buoi_nhom"]').length === 0) {
+                toastr.warning('Không có dữ liệu để lưu', 'Cảnh báo');
+                return;
+            }
 
             $.ajax({
                 url: $(this).attr('action'),
@@ -90,8 +106,14 @@
                     }
                 },
                 error: function (xhr) {
-                    console.log(xhr.responseText);
-                    toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
+                    let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                        if (xhr.responseJSON.errors) {
+                            message += ': ' + Object.values(xhr.responseJSON.errors).flat().join(', ');
+                        }
+                    }
+                    toastr.error(message, 'Lỗi');
                 },
                 complete: function () {
                     $('#thamdu-form button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Lưu tất cả');
@@ -99,56 +121,42 @@
             });
         });
 
-        // Xử lý thêm/xóa kế hoạch
+        // Xử lý thêm kế hoạch
         $('#add-kehoach').on('click', function () {
-            const count = $('#plans-container .planning-item').length;
+            const count = $('#kehoach-tbody .kehoach-row').length;
             const template = `
-            <div class="planning-item">
-                <div class="row">
-                    <div class="col-md-12 col-lg-4 mb-3 mb-lg-0">
-                        <div class="form-group mb-lg-0">
-                            <label class="font-weight-medium"><i class="fas fa-tasks mr-1"></i>Hoạt động</label>
-                            <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]"
-                                value="" required placeholder="Tên hoạt động">
-                            <input type="hidden" name="kehoach[${count}][id]" value="0">
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-2 mb-3 mb-lg-0">
-                        <div class="form-group mb-lg-0">
-                            <label class="font-weight-medium"><i class="fas fa-clock mr-1"></i>Thời gian</label>
-                            <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]"
-                                value="" placeholder="Ngày/giờ">
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-3 mb-lg-0">
-                        <div class="form-group mb-lg-0">
-                            <label class="font-weight-medium"><i class="fas fa-user mr-1"></i>Người phụ trách</label>
-                            <select class="form-control select2-new" name="kehoach[${count}][nguoi_phu_trach_id]">
-                                <option value="">-- Chọn người phụ trách --</option>
+                <tr class="kehoach-row">
+                    <td>${count + 1}</td>
+                    <td>
+                        <input type="text" class="form-control" name="kehoach[${count}][hoat_dong]" value="" required>
+                        <input type="hidden" name="kehoach[${count}][id]" value="0">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="kehoach[${count}][thoi_gian]" value="">
+                    </td>
+                    <td>
+                        <select class="form-control select2-new" name="kehoach[${count}][nguoi_phu_trach_id]">
+                            <option value="">-- Chọn người phụ trách --</option>
+                            @if (!empty($tinHuu) && $tinHuu instanceof \Illuminate\Support\Collection && $tinHuu->isNotEmpty())
                                 @foreach ($tinHuu as $tinHuu)
                                     <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
                                 @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-10 col-lg-2 mb-3 mb-md-0">
-                        <div class="form-group mb-lg-0">
-                            <label class="font-weight-medium"><i class="fas fa-sticky-note mr-1"></i>Ghi chú</label>
-                            <textarea class="form-control" name="kehoach[${count}][ghi_chu]" rows="1" placeholder="Ghi chú"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-md-2 col-lg-1 d-flex align-items-end justify-content-end">
-                        <button type="button" class="btn btn-danger remove-kehoach">
-                            <i class="fas fa-trash-alt"></i>
+                            @else
+                                <option value="" disabled>Không có tín hữu nào</option>
+                            @endif
+                        </select>
+                    </td>
+                    <td>
+                        <textarea class="form-control" name="kehoach[${count}][ghi_chu]"></textarea>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm remove-kehoach">
+                            <i class="fas fa-trash"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-            $('#plans-container').append(template);
-
-            // Khởi tạo select2 cho các phần tử mới
+                    </td>
+                </tr>
+            `;
+            $('#kehoach-tbody').append(template);
             $('.select2-new').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Chọn một mục',
@@ -159,8 +167,18 @@
 
         // Xóa một kế hoạch
         $(document).on('click', '.remove-kehoach', function () {
-            if ($('#plans-container .planning-item').length > 1) {
-                $(this).closest('.planning-item').remove();
+            if ($('#kehoach-tbody .kehoach-row').length > 1) {
+                $(this).closest('.kehoach-row').remove();
+                // Cập nhật STT và tên trường
+                $('#kehoach-tbody .kehoach-row').each(function (index) {
+                    $(this).find('td:first').text(index + 1);
+                    $(this).find('input, select, textarea').each(function () {
+                        const name = $(this).attr('name');
+                        if (name) {
+                            $(this).attr('name', name.replace(/\[\d+\]/, `[${index}]`));
+                        }
+                    });
+                });
             } else {
                 toastr.warning('Cần ít nhất một kế hoạch', 'Cảnh báo');
             }
@@ -169,7 +187,6 @@
         // Xử lý form kế hoạch
         $('#kehoach-form').on('submit', function (e) {
             e.preventDefault();
-
             $.ajax({
                 url: $(this).attr('action'),
                 method: 'POST',
@@ -186,8 +203,14 @@
                     }
                 },
                 error: function (xhr) {
-                    console.log(xhr.responseText);
-                    toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
+                    let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                        if (xhr.responseJSON.errors) {
+                            message += ': ' + Object.values(xhr.responseJSON.errors).flat().join(', ');
+                        }
+                    }
+                    toastr.error(message, 'Lỗi');
                 },
                 complete: function () {
                     $('#kehoach-form button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Lưu kế hoạch');
@@ -195,47 +218,50 @@
             });
         });
 
-        // Xử lý thêm/xóa kiến nghị
+        // Xử lý thêm kiến nghị
         $('#add-kiennghi').on('click', function () {
-            const count = $('#kiennghi-container .suggestion-card').length;
+            const count = $('#kiennghi-container .kiennghi-card').length;
             const template = `
-            <div class="col-md-6 mb-4">
-                <div class="suggestion-card h-100">
-                    <div class="card-header d-flex align-items-center">
-                        <h6 class="m-0 font-weight-bold">Kiến nghị #${count + 1}</h6>
-                        <button type="button" class="btn btn-sm btn-outline-danger ml-auto remove-kiennghi">
-                            <i class="fas fa-times"></i>
-                        </button>
+                <div class="card mb-3 kiennghi-card">
+                    <div class="card-header bg-light">
+                        <div class="row">
+                            <div class="col">
+                                <h6 class="m-0">Kiến nghị #${count + 1}</h6>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-danger btn-sm remove-kiennghi">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label class="font-weight-medium"><i class="fas fa-heading mr-1"></i>Tiêu đề</label>
-                            <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]"
-                                    value="" required placeholder="Nhập tiêu đề kiến nghị">
+                            <label>Tiêu đề</label>
+                            <input type="text" class="form-control" name="kiennghi[${count}][tieu_de]" value="" required>
                             <input type="hidden" name="kiennghi[${count}][id]" value="0">
                         </div>
                         <div class="form-group">
-                            <label class="font-weight-medium"><i class="fas fa-align-left mr-1"></i>Nội dung</label>
-                            <textarea class="form-control" name="kiennghi[${count}][noi_dung]"
-                                    rows="3" required placeholder="Mô tả chi tiết kiến nghị..."></textarea>
+                            <label>Nội dung</label>
+                            <textarea class="form-control" name="kiennghi[${count}][noi_dung]" rows="3" required></textarea>
                         </div>
-                        <div class="form-group mb-0">
-                            <label class="font-weight-medium"><i class="fas fa-user mr-1"></i>Người đề xuất</label>
+                        <div class="form-group">
+                            <label>Người đề xuất</label>
                             <select class="form-control select2-new" name="kiennghi[${count}][nguoi_de_xuat_id]">
                                 <option value="">-- Chọn người đề xuất --</option>
-                                @foreach ($tinHuu as $tinHuu)
-                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                @endforeach
+                                @if (!empty($tinHuu) && $tinHuu instanceof \Illuminate\Support\Collection && $tinHuu->isNotEmpty())
+                                    @foreach ($tinHuu as $tinHuu)
+                                        <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Không có tín hữu nào</option>
+                                @endif
                             </select>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-
+            `;
             $('#kiennghi-container').append(template);
-
-            // Khởi tạo select2 cho các phần tử mới
             $('.select2-new').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Chọn một mục',
@@ -246,8 +272,18 @@
 
         // Xóa một kiến nghị
         $(document).on('click', '.remove-kiennghi', function () {
-            if ($('#kiennghi-container .suggestion-card').length > 1) {
-                $(this).closest('.col-md-6').remove();
+            if ($('#kiennghi-container .kiennghi-card').length > 1) {
+                $(this).closest('.kiennghi-card').remove();
+                // Cập nhật tiêu đề và tên trường
+                $('#kiennghi-container .kiennghi-card').each(function (index) {
+                    $(this).find('.card-header h6').text(`Kiến nghị #${index + 1}`);
+                    $(this).find('input, select, textarea').each(function () {
+                        const name = $(this).attr('name');
+                        if (name) {
+                            $(this).attr('name', name.replace(/\[\d+\]/, `[${index}]`));
+                        }
+                    });
+                });
             } else {
                 toastr.warning('Cần ít nhất một kiến nghị', 'Cảnh báo');
             }
@@ -256,7 +292,6 @@
         // Xử lý form kiến nghị
         $('#kiennghi-form').on('submit', function (e) {
             e.preventDefault();
-
             $.ajax({
                 url: $(this).attr('action'),
                 method: 'POST',
@@ -273,11 +308,17 @@
                     }
                 },
                 error: function (xhr) {
-                    console.log(xhr.responseText);
-                    toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
+                    let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                        if (xhr.responseJSON.errors) {
+                            message += ': ' + Object.values(xhr.responseJSON.errors).flat().join(', ');
+                        }
+                    }
+                    toastr.error(message, 'Lỗi');
                 },
                 complete: function () {
-                    $('#kiennghi-form button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Lưu tất cả');
+                    $('#kiennghi-form button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Lưu kiến nghị');
                 }
             });
         });
@@ -285,7 +326,6 @@
         // Xử lý form đánh giá điểm mạnh
         $('#add-diem-manh-form').on('submit', function (e) {
             e.preventDefault();
-
             $.ajax({
                 url: $(this).attr('action'),
                 method: 'POST',
@@ -305,11 +345,17 @@
                     }
                 },
                 error: function (xhr) {
-                    console.log(xhr.responseText);
-                    toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
+                    let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                        if (xhr.responseJSON.errors) {
+                            message += ': ' + Object.values(xhr.responseJSON.errors).flat().join(', ');
+                        }
+                    }
+                    toastr.error(message, 'Lỗi');
                 },
                 complete: function () {
-                    $('#add-diem-manh-form button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Lưu điểm mạnh');
+                    $('#add-diem-manh-form button[type="submit"]').prop('disabled', false).html('Lưu');
                 }
             });
         });
@@ -317,7 +363,6 @@
         // Xử lý form đánh giá điểm yếu
         $('#add-diem-yeu-form').on('submit', function (e) {
             e.preventDefault();
-
             $.ajax({
                 url: $(this).attr('action'),
                 method: 'POST',
@@ -337,11 +382,17 @@
                     }
                 },
                 error: function (xhr) {
-                    console.log(xhr.responseText);
-                    toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
+                    let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                        if (xhr.responseJSON.errors) {
+                            message += ': ' + Object.values(xhr.responseJSON.errors).flat().join(', ');
+                        }
+                    }
+                    toastr.error(message, 'Lỗi');
                 },
                 complete: function () {
-                    $('#add-diem-yeu-form button[type="submit"]').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Lưu điểm cần cải thiện');
+                    $('#add-diem-yeu-form button[type="submit"]').prop('disabled', false).html('Lưu');
                 }
             });
         });
@@ -350,6 +401,14 @@
         function loadDanhGia() {
             const manh_url = "{{ route('api._ban_co_doc_giao_duc.danh_gia_list', ['banType' => 'ban-co-doc-giao-duc']) }}?month={{ $month }}&year={{ $year }}&ban_nganh_id={{ $config['id'] }}&loai=diem_manh";
             const yeu_url = "{{ route('api._ban_co_doc_giao_duc.danh_gia_list', ['banType' => 'ban-co-doc-giao-duc']) }}?month={{ $month }}&year={{ $year }}&ban_nganh_id={{ $config['id'] }}&loai=diem_yeu";
+
+            // Hủy DataTables nếu đã tồn tại
+            if ($.fn.DataTable.isDataTable('#diem-manh-table')) {
+                $('#diem-manh-table').DataTable().destroy();
+            }
+            if ($.fn.DataTable.isDataTable('#diem-yeu-table')) {
+                $('#diem-yeu-table').DataTable().destroy();
+            }
 
             // Tải dữ liệu điểm mạnh
             $('#diem-manh-table').DataTable({
@@ -382,7 +441,7 @@
                     }
                 ],
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Vietnamese.json'
+                    url: '{{ asset("dist/js/Vietnamese.json") }}'
                 },
                 responsive: true,
                 autoWidth: false
@@ -419,46 +478,58 @@
                     }
                 ],
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Vietnamese.json'
+                    url: '{{ asset("dist/js/Vietnamese.json") }}'
                 },
                 responsive: true,
                 autoWidth: false
             });
         }
 
-        // Cập nhật dữ liệu đánh giá sau khi thêm
+        // Cập nhật dữ liệu đánh giá
         function refreshDanhGia() {
-            $('#diem-manh-table').DataTable().ajax.reload();
-            $('#diem-yeu-table').DataTable().ajax.reload();
+            loadDanhGia();
         }
 
         // Xóa đánh giá
         $(document).on('click', '.delete-danh-gia', function () {
             const id = $(this).data('id');
-            const url = "{{ route('api._ban_co_doc_giao_duc.xoa_danh_gia', ['banType' => 'ban-co-doc-giao-duc', 'id' => '']) }}/" + id;
+            // Sử dụng placeholder và thay thế bằng id
+            const url = "{{ route('api._ban_co_doc_giao_duc.xoa_danh_gia', ['banType' => 'ban-co-doc-giao-duc', 'id' => ':id']) }}".replace(':id', id);
 
-            if (confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
-                $.ajax({
-                    url: url,
-                    method: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    dataType: 'json',
-                    success: function (response) {
-                        if (response.success) {
-                            toastr.success(response.message || 'Đã xóa đánh giá thành công', 'Thành công');
-                            refreshDanhGia();
-                        } else {
-                            toastr.error(response.message || 'Có lỗi xảy ra', 'Lỗi');
+            Swal.fire({
+                title: 'Xác nhận xóa',
+                text: 'Bạn có chắc chắn muốn xóa đánh giá này?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: url,
+                        method: 'DELETE',
+                        data: { _token: "{{ csrf_token() }}" },
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                toastr.success(response.message || 'Đã xóa đánh giá thành công', 'Thành công');
+                                refreshDanhGia();
+                            } else {
+                                toastr.error(response.message || 'Có lỗi xảy ra', 'Lỗi');
+                            }
+                        },
+                        error: function (xhr) {
+                            let message = 'Có lỗi xảy ra khi xử lý yêu cầu';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                message = xhr.responseJSON.message;
+                            }
+                            toastr.error(message, 'Lỗi');
                         }
-                    },
-                    error: function (xhr) {
-                        console.log(xhr.responseText);
-                        toastr.error('Có lỗi xảy ra khi xử lý yêu cầu', 'Lỗi');
-                    }
-                });
-            }
+                    });
+                }
+            });
         });
 
         // Khởi tạo DataTables khi trang tải xong
@@ -490,3 +561,4 @@
         }
     });
 </script>
+@endsection

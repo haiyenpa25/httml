@@ -9,21 +9,21 @@ $controller = BanCDGDController::class;
 // Nhóm route cho ban ngành với prefix {banType} (ví dụ: ban-co-doc-giao-duc)
 Route::prefix('{banType}')->name('_ban_')->group(function () use ($controller) {
     // Trang chính (URL: /{banType})
-    Route::get('/', [$controller, 'index'])->name('co_doc_giao_duc.index');
+    Route::get('/', [$controller, 'index'])->name('co_doc_giao_duc.index')->middleware('auth');
     // Trang điểm danh (URL: /{banType}/diem-danh)
-    Route::get('/diem-danh', [$controller, 'diemDanh'])->name('co_doc_giao_duc.diem_danh');
+    Route::get('/diem-danh', [$controller, 'diemDanh'])->name('co_doc_giao_duc.diem_danh')->middleware('auth');
     // Trang phân công (URL: /{banType}/phan-cong)
-    Route::get('/phan-cong', [$controller, 'phanCong'])->name('co_doc_giao_duc.phan_cong');
+    Route::get('/phan-cong', [$controller, 'phanCong'])->name('co_doc_giao_duc.phan_cong')->middleware('auth');
     // Trang phân công chi tiết (URL: /{banType}/phan-cong-chi-tiet)
-    Route::get('/phan-cong-chi-tiet', [$controller, 'phanCongChiTiet'])->name('co_doc_giao_duc.phan_cong_chi_tiet');
+    Route::get('/phan-cong-chi-tiet', [$controller, 'phanCongChiTiet'])->name('co_doc_giao_duc.phan_cong_chi_tiet')->middleware('auth');
     // Trang báo cáo (URL: /{banType}/bao-cao)
-    Route::get('/bao-cao', [$controller, 'baoCaoBan'])->name('co_doc_giao_duc.bao_cao');
+    Route::get('/bao-cao', [$controller, 'baoCaoBan'])->name('co_doc_giao_duc.bao_cao')->middleware('auth');
     // Trang nhập liệu báo cáo (URL: /{banType}/nhap-lieu-bao-cao)
-    Route::get('/nhap-lieu-bao-cao', [$controller, 'formBaoCaoBan'])->name('co_doc_giao_duc.nhap_lieu_bao_cao');
+    Route::get('/nhap-lieu-bao-cao', [$controller, 'formBaoCaoBan'])->name('co_doc_giao_duc.nhap_lieu_bao_cao')->middleware('auth');
 });
 
 // Nhóm route API cho ban ngành (URL: api/{banType}/*)
-Route::prefix('api/{banType}')->name('api._ban_')->group(function () use ($controller) {
+Route::prefix('api/{banType}')->name('api._ban_')->middleware(['auth'])->group(function () use ($controller) {
     Route::post('/them-thanh-vien', [$controller, 'themThanhVien'])->name('co_doc_giao_duc.them_thanh_vien');
     Route::post('/xoa-thanh-vien', [$controller, 'xoaThanhVien'])->name('co_doc_giao_duc.xoa_thanh_vien');
     Route::post('/cap-nhat-chuc-vu', [$controller, 'capNhatChucVu'])->name('co_doc_giao_duc.cap_nhat_chuc_vu');
@@ -42,9 +42,7 @@ Route::prefix('api/{banType}')->name('api._ban_')->group(function () use ($contr
     Route::post('/save-ke-hoach', [$controller, 'saveKeHoach'])->name('co_doc_giao_duc.save_ke_hoach');
     Route::post('/save-kien-nghi', [$controller, 'saveKienNghi'])->name('co_doc_giao_duc.save_kien_nghi');
     Route::post('/luu-bao-cao', [$controller, 'luuBaoCao'])->name('co_doc_giao_duc.luu_bao_cao');
-    Route::post('/cap-nhat-so-luong-tham-du', [$controller, 'capNhatSoLuongThamDu'])->name('co_doc_giao_duc.cap_nhat_so_luong_tham_du');
     Route::delete('/xoa-danh-gia/{id}', [$controller, 'xoaDanhGia'])->name('co_doc_giao_duc.xoa_danh_gia');
     Route::delete('/xoa-kien-nghi/{id}', [$controller, 'xoaKienNghi'])->name('co_doc_giao_duc.xoa_kien_nghi');
-    // Route mới cho danh sách đánh giá
     Route::get('/danh-gia-list', [$controller, 'danhGiaList'])->name('co_doc_giao_duc.danh_gia_list');
 });

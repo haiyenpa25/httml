@@ -82,6 +82,9 @@
                 font-size: 0.9rem;
                 padding: 8px 12px;
             }
+            .table-responsive {
+                font-size: 0.85rem;
+            }
         }
     </style>
 
@@ -248,6 +251,9 @@
                                                     </thead>
                                                     <tbody>
                                                         @forelse ($buoiNhomBN as $index => $buoiNhom)
+                                                            @php
+                                                                $giaoDich = $buoiNhom->getGiaoDichTaiChinhByBanNganhIdGoi($banNganhIdGoi);
+                                                            @endphp
                                                             <tr>
                                                                 <td>{{ $index + 1 }}</td>
                                                                 <td>{{ \Carbon\Carbon::parse($buoiNhom->ngay_dien_ra)->format('d/m/Y') }}</td>
@@ -255,13 +261,13 @@
                                                                 <td>{{ $buoiNhom->dienGia->ho_ten ?? 'N/A' }}</td>
                                                                 <td>
                                                                     <input type="number" class="form-control"
-                                                                           name="buoi_nhom[{{ $buoiNhom->id }}][so_luong]"
-                                                                           min="0" value="{{ $selectedBanNganh == 'trung_lao' ? ($buoiNhom->so_luong_trung_lao ?? 0) : ($selectedBanNganh == 'thanh_trang' ? ($buoiNhom->so_luong_thanh_trang ?? 0) : ($buoiNhom->so_luong_thanh_nien ?? 0)) }}">
+                                                                        name="buoi_nhom[{{ $buoiNhom->id }}][so_luong]"
+                                                                        min="0" value="{{ $selectedBanNganh == 'trung_lao' ? ($buoiNhom->so_luong_trung_lao ?? 0) : ($selectedBanNganh == 'thanh_trang' ? ($buoiNhom->so_luong_thanh_trang ?? 0) : ($buoiNhom->so_luong_thanh_nien ?? 0)) }}">
                                                                 </td>
                                                                 <td>
                                                                     <input type="text" class="form-control money-format"
-                                                                           name="buoi_nhom[{{ $buoiNhom->id }}][dang_hien]"
-                                                                           value="{{ number_format($buoiNhom->giaoDichTaiChinh->so_tien ?? 0, 0, ',', '.') }}">
+                                                                        name="buoi_nhom[{{ $buoiNhom->id }}][dang_hien]"
+                                                                        value="{{ number_format($giaoDich ? $giaoDich->so_tien : 0, 0, ',', '.') }}">
                                                                 </td>
                                                                 <td>
                                                                     <input type="hidden" name="buoi_nhom[{{ $buoiNhom->id }}][id]" value="{{ $buoiNhom->id }}">
@@ -312,19 +318,21 @@
                                             </div>
                                         </div>
                                         <div class="card-body">
-                                            <table id="diem-manh-table" class="table table-bordered table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="width: 50px">STT</th>
-                                                        <th>Nội dung</th>
-                                                        <th>Người đánh giá</th>
-                                                        <th style="width: 120px">Thao tác</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <!-- Dữ liệu sẽ được tải bằng DataTable qua API danh-gia-list -->
-                                                </tbody>
-                                            </table>
+                                            <div class="table-responsive">
+                                                <table id="diem-manh-table" class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 50px">STT</th>
+                                                            <th>Nội dung</th>
+                                                            <th>Người đánh giá</th>
+                                                            <th style="width: 120px">Thao tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <!-- Dữ liệu sẽ được tải bằng DataTable qua API danh-gia-list -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -339,19 +347,21 @@
                                             </div>
                                         </div>
                                         <div class="card-body">
-                                            <table id="diem-yeu-table" class="table table-bordered table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="width: 50px">STT</th>
-                                                        <th>Nội dung</th>
-                                                        <th>Người đánh giá</th>
-                                                        <th style="width: 120px">Thao tác</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <!-- Dữ liệu sẽ được tải bằng DataTable qua API danh-gia-list -->
-                                                </tbody>
-                                            </table>
+                                            <div class="table-responsive">
+                                                <table id="diem-yeu-table" class="table table-bordered table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 50px">STT</th>
+                                                            <th>Nội dung</th>
+                                                            <th>Người đánh giá</th>
+                                                            <th style="width: 120px">Thao tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <!-- Dữ liệu sẽ được tải bằng DataTable qua API danh-gia-list -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -463,12 +473,16 @@
                                                             <td>
                                                                 <select class="form-control select2bs4" name="kehoach[{{ $index }}][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
-                                                                    @foreach ($tinHuu as $tinHuu)
-                                                                        <option value="{{ $tinHuu->id }}"
-                                                                                {{ $item->nguoi_phu_trach_id == $tinHuu->id ? 'selected' : '' }}>
-                                                                            {{ $tinHuu->ho_ten }}
-                                                                        </option>
-                                                                    @endforeach
+                                                                    @if (!empty($tinHuu) && $tinHuu instanceof \Illuminate\Support\Collection && $tinHuu->isNotEmpty())
+                                                                        @foreach ($tinHuu as $tinHuu)
+                                                                            <option value="{{ $tinHuu->id }}"
+                                                                                    {{ $item->nguoi_phu_trach_id == $tinHuu->id ? 'selected' : '' }}>
+                                                                                {{ $tinHuu->ho_ten }}
+                                                                            </option>
+                                                                        @endforeach
+                                                                    @else
+                                                                        <option value="" disabled>Không có tín hữu nào</option>
+                                                                    @endif
                                                                 </select>
                                                             </td>
                                                             <td>
@@ -495,9 +509,13 @@
                                                             <td>
                                                                 <select class="form-control select2bs4" name="kehoach[0][nguoi_phu_trach_id]">
                                                                     <option value="">-- Chọn người phụ trách --</option>
-                                                                    @foreach ($tinHuu as $tinHuu)
-                                                                        <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                                    @endforeach
+                                                                    @if (!empty($tinHuu) && $tinHuu instanceof \Illuminate\Support\Collection && $tinHuu->isNotEmpty())
+                                                                        @foreach ($tinHuu as $tinHuu)
+                                                                            <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                        @endforeach
+                                                                    @else
+                                                                        <option value="" disabled>Không có tín hữu nào</option>
+                                                                    @endif
                                                                 </select>
                                                             </td>
                                                             <td>
@@ -539,7 +557,7 @@
                                         </h3>
                                     </div>
                                     <div class="card-body">
-                                        <div id="kiennghi-container">
+                                        <div id="kiennghi-container" class="table-responsive">
                                             @forelse ($kienNghi as $index => $item)
                                                 <div class="card mb-3 kiennghi-card">
                                                     <div class="card-header bg-light">
@@ -570,12 +588,16 @@
                                                             <label>Người đề xuất</label>
                                                             <select class="form-control select2bs4" name="kiennghi[{{ $index }}][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
-                                                                @foreach ($tinHuu as $tinHuu)
-                                                                    <option value="{{ $tinHuu->id }}"
-                                                                            {{ $item->nguoi_de_xuat_id == $tinHuu->id ? 'selected' : '' }}>
-                                                                        {{ $tinHuu->ho_ten }}
-                                                                    </option>
-                                                                @endforeach
+                                                                @if (!empty($tinHuu) && $tinHuu instanceof \Illuminate\Support\Collection && $tinHuu->isNotEmpty())
+                                                                    @foreach ($tinHuu as $tinHuu)
+                                                                        <option value="{{ $tinHuu->id }}"
+                                                                                {{ $item->nguoi_de_xuat_id == $tinHuu->id ? 'selected' : '' }}>
+                                                                            {{ $tinHuu->ho_ten }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                @else
+                                                                    <option value="" disabled>Không có tín hữu nào</option>
+                                                                @endif
                                                             </select>
                                                         </div>
                                                     </div>
@@ -610,9 +632,13 @@
                                                             <label>Người đề xuất</label>
                                                             <select class="form-control select2bs4" name="kiennghi[0][nguoi_de_xuat_id]">
                                                                 <option value="">-- Chọn người đề xuất --</option>
-                                                                @foreach ($tinHuu as $tinHuu)
-                                                                    <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
-                                                                @endforeach
+                                                                @if (!empty($tinHuu) && $tinHuu instanceof \Illuminate\Support\Collection && $tinHuu->isNotEmpty())
+                                                                    @foreach ($tinHuu as $tinHuu)
+                                                                        <option value="{{ $tinHuu->id }}">{{ $tinHuu->ho_ten }}</option>
+                                                                    @endforeach
+                                                                @else
+                                                                    <option value="" disabled>Không có tín hữu nào</option>
+                                                                @endif
                                                             </select>
                                                         </div>
                                                     </div>

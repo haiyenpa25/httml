@@ -87,10 +87,24 @@ class BuoiNhom extends Model
     {
         return $this->belongsTo(BanNganh::class, 'ban_nganh_id');
     }
+    // public function giaoDichTaiChinh()
+    // {
+    //     return $this->hasOne(GiaoDichTaiChinh::class, 'buoi_nhom_id')
+    //         ->where('loai', 'thu')
+    //         ->where('ban_nganh_id', 1);
+    // }
+
+    // Quan hệ với GiaoDichTaiChinh, lọc theo ban_nganh_id_goi
     public function giaoDichTaiChinh()
     {
         return $this->hasOne(GiaoDichTaiChinh::class, 'buoi_nhom_id')
-            ->where('loai', 'thu')
-            ->where('ban_nganh_id', 1);
+            ->where('ban_nganh_id', $this->ban_nganh_id)
+            ->where('hinh_thuc', 'dang_hien');
+    }
+
+    // Quan hệ động để lọc theo ban_nganh_id_goi
+    public function getGiaoDichTaiChinhByBanNganhIdGoi($banNganhIdGoi)
+    {
+        return $this->giaoDichTaiChinh()->where('ban_nganh_id_goi', $banNganhIdGoi)->first();
     }
 }

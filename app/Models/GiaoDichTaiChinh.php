@@ -27,6 +27,7 @@ class GiaoDichTaiChinh extends Model
         'ly_do_tu_choi',
         'ban_nganh_id',
         'buoi_nhom_id',
+        'ban_nganh_id_goi',
         'chi_dinh_ky_id',
         'duong_dan_hoa_don'
     ];
