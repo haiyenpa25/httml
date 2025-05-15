@@ -101,9 +101,6 @@ class BanCDGDThanhVienController extends Controller
                         'gioi_tinh',
                         'tinh_trang_hon_nhan'
                     );
-                },
-                'banNganh' => function ($query) {
-                    $query->select('id', 'ten');
                 }
             ])
                 ->where('ban_nganh_id', $config['id'])
@@ -197,9 +194,6 @@ class BanCDGDThanhVienController extends Controller
                 ->addColumn('so_dien_thoai', function ($row) {
                     return $row->tinHuu->so_dien_thoai ?? 'N/A';
                 })
-                ->addColumn('ban_nganh', function ($row) {
-                    return $row->banNganh->ten ?? 'N/A';
-                })
                 ->addColumn('loai_tin_huu', function ($row) {
                     return $row->tinHuu->loai_tin_huu ?? 'N/A';
                 })
@@ -231,7 +225,8 @@ class BanCDGDThanhVienController extends Controller
                 });
 
             $response = $dataTable->make(true);
-            Log::info('Dữ liệu trả về từ DataTables (banVienList):', json_decode(json_encode($response->getData()), true));
+            $data = json_decode(json_encode($response->getData()), true);
+            Log::info('Dữ liệu trả về từ DataTables (banVienList):', ['count' => $data['recordsTotal'], 'data' => $data['data']]);
 
             return $response;
         } catch (\Exception $e) {
@@ -748,7 +743,8 @@ class BanCDGDThanhVienController extends Controller
 
         $currentBuoiNhom = $selectedBuoiNhom ? BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])->find($selectedBuoiNhom) : null;
 
-        $danhSachNhiemVu = NhiemVu::all();
+        // Chỉ lấy các nhiệm vụ có id_ban_nganh = 6
+        $danhSachNhiemVu = NhiemVu::where('id_ban_nganh', 6)->get();
 
         $thanhVienBan = TinHuuBanNganh::with('tinHuu')
             ->where('ban_nganh_id', $banNganh->id)
@@ -760,6 +756,9 @@ class BanCDGDThanhVienController extends Controller
         if ($selectedBuoiNhom) {
             $nhiemVuPhanCong = BuoiNhomNhiemVu::with(['nhiemVu', 'tinHuu'])
                 ->where('buoi_nhom_id', $selectedBuoiNhom)
+                ->whereHas('nhiemVu', function ($query) {
+                    $query->where('id_ban_nganh', 6);
+                })
                 ->orderBy('vi_tri')
                 ->get();
 
@@ -895,7 +894,11 @@ class BanCDGDThanhVienController extends Controller
             Log::info('Gọi dieuHanhList với config:', $config);
             Log::info('Request data:', $request->all());
 
-            $query = TinHuuBanNganh::with('tinHuu')
+            $query = TinHuuBanNganh::with([
+                'tinHuu' => function ($query) {
+                    $query->select('id', 'ho_ten');
+                }
+            ])
                 ->where('ban_nganh_id', $config['id'])
                 ->whereNotNull('chuc_vu')
                 ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên']);
@@ -910,7 +913,7 @@ class BanCDGDThanhVienController extends Controller
                 $query->where('chuc_vu', $chucVu);
             }
 
-            return DataTables::of($query)
+            $dataTable = DataTables::of($query)
                 ->addColumn('id', function ($row) {
                     return $row->id;
                 })
@@ -933,8 +936,13 @@ class BanCDGDThanhVienController extends Controller
                         '<button class="btn btn-sm btn-warning btn-edit" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-chuc-vu="' . htmlspecialchars($chucVu) . '" data-toggle="modal" data-target="#modal-edit-chuc-vu" title="Chỉnh sửa chức vụ"><i class="fas fa-edit"></i></button>' .
                         '<button class="btn btn-sm btn-danger btn-delete" data-tin-huu-id="' . $tinHuuId . '" data-ban-nganh-id="' . $banNganhId . '" data-ten-tin-huu="' . htmlspecialchars($hoTen) . '" data-toggle="modal" data-target="#modal-xoa-thanh-vien" title="Xóa"><i class="fas fa-trash"></i></button>' .
                         '</div>';
-                })
-                ->make(true);
+                });
+
+            $response = $dataTable->make(true);
+            $data = json_decode(json_encode($response->getData()), true);
+            Log::info('Dữ liệu trả về từ DataTables (dieuHanhList):', ['count' => $data['recordsTotal'], 'data' => $data['data']]);
+
+            return $response;
         } catch (\Exception $e) {
             Log::error("Lỗi lấy danh sách Ban Điều Hành: {$e->getMessage()}", ['exception' => $e]);
             return $this->errorResponse("Lỗi hệ thống: {$e->getMessage()}", 500);

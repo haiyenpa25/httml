@@ -175,15 +175,11 @@
                 </div>
             </div>
 
-            <!-- Bảng Ban Điều Hành -->
+            <!-- Ban Điều Hành Table -->
             <div class="card card-primary card-outline">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-user-tie"></i> Ban Điều Hành</h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                            data-target="#modal-them-thanh-vien">
-                            <i class="fas fa-plus"></i> Thêm thành viên
-                        </button>
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
                         </button>
@@ -193,22 +189,27 @@
                     <table id="ban-dieu-hanh-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
-                                <th style="width: 40px"></th> <!-- Cột mở rộng -->
+                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
                                 <th style="width: 50px" data-priority="1">STT</th>
-                                <th data-priority="3">Họ tên</th>
-                                <th data-priority="4">Chức vụ</th>
+                                <th data-priority="1">Họ tên</th>
+                                <th data-priority="3">Chức vụ</th>
                                 <th style="width: 120px" data-priority="2">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được nạp từ DataTables AJAX -->
+                        </tbody>
                     </table>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Không có dữ liệu ban điều hành.</small>
                 </div>
             </div>
 
-            <!-- Bảng Ban Viên -->
+            <!-- Ban Viên Table -->
             <div class="card card-success card-outline">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-users"></i> Ban Viên</h3>
+                    <h3 class="card-title"><i class="fas fa-users"></i> Thành Viên</h3>
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                             <i class="fas fa-minus"></i>
@@ -219,19 +220,22 @@
                     <table id="ban-vien-table" class="table table-bordered table-striped w-100">
                         <thead>
                             <tr>
-                                <th style="width: 40px"></th> <!-- Cột mở rộng -->
+                                <th style="width: 40px"></th> <!-- Cột điều khiển mở rộng -->
                                 <th style="width: 50px" data-priority="1">STT</th>
                                 <th data-priority="1">Họ tên</th>
                                 <th data-priority="3">Ngày sinh</th>
-                                <th data-priority="3">Số điện thoại</th>
-                                <th data-priority="4">Địa chỉ</th>
-                                <th data-priority="4">Ban ngành</th>
-                                <th data-priority="4">Loại tín hữu</th>
+                                <th data-priority="4">Số điện thoại</th>
+                                <th data-priority="5">Địa chỉ</th>
                                 <th style="width: 120px" data-priority="2">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được nạp từ DataTables AJAX -->
+                        </tbody>
                     </table>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Không có dữ liệu ban viên.</small>
                 </div>
             </div>
 

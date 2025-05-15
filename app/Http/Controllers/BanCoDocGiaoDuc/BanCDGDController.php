@@ -32,10 +32,20 @@ class BanCDGDController extends Controller
 
         // Middleware nội tuyến để share $banType tới tất cả view
         $this->middleware(function ($request, $next) {
-            $banType = $this->mapBanType($request->route('banType'));
-            Log::info("BanType gốc: {$request->route('banType')}, BanType ánh xạ: {$banType}");
-            view()->share('banType', $banType);
-            $request->merge(['banType' => $banType]);
+            $banType = $request->route('banType');
+
+            // Danh sách banType hợp lệ cho Ban Trung Lão
+            $validBanTypes = ['trung-lao']; // Chỉ cho phép trung-lao
+
+            // Kiểm tra nếu banType không hợp lệ
+            if (!in_array($banType, $validBanTypes)) {
+                abort(404, "Trang không tồn tại hoặc bạn không có quyền truy cập.");
+            }
+
+            $mappedBanType = $this->mapBanType($banType);
+            Log::info("BanType gốc: {$banType}, BanType ánh xạ: {$mappedBanType}");
+            view()->share('banType', $mappedBanType);
+            $request->merge(['banType' => $mappedBanType]);
             return $next($request);
         });
     }

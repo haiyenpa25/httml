@@ -213,7 +213,7 @@ class BanCDGDBaoCaoController extends Controller
                 $query->select('id', 'ho_ten');
             }
         ])
-            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao', 'so_luong_thanh_trang', 'so_luong_thanh_nien')
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao', 'so_luong_thanh_trang', 'so_luong_thanh_nien', 'kinh_thanh', 'ghi_chu')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->where('ban_nganh_id', $config['hoi_thanh_id'])
@@ -232,7 +232,7 @@ class BanCDGDBaoCaoController extends Controller
                 $query->select('id', 'buoi_nhom_id', 'so_tien', 'mo_ta', 'ban_nganh_id_goi');
             }
         ])
-            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao', 'so_luong_thanh_trang', 'so_luong_thanh_nien')
+            ->select('id', 'ban_nganh_id', 'dien_gia_id', 'chu_de', 'ngay_dien_ra', 'so_luong_trung_lao', 'so_luong_thanh_trang', 'so_luong_thanh_nien', 'kinh_thanh', 'ghi_chu')
             ->whereYear('ngay_dien_ra', $year)
             ->whereMonth('ngay_dien_ra', $month)
             ->where('ban_nganh_id', $config['id'])
@@ -254,10 +254,18 @@ class BanCDGDBaoCaoController extends Controller
         $tongChi = $giaoDich->where('loai', 'chi')->sum('so_tien');
         $tongTon = $tongThu - $tongChi;
 
+        // Tính tổng thu theo từng lớp
+        $tongThuTrungLao = $giaoDich->where('loai', 'thu')->where('ban_nganh_id_goi', config('ban_nganh.trung_lao.id', 1))->sum('so_tien');
+        $tongThuThanhTrang = $giaoDich->where('loai', 'thu')->where('ban_nganh_id_goi', config('ban_nganh.thanh_trang.id', 2))->sum('so_tien');
+        $tongThuThanhNien = $giaoDich->where('loai', 'thu')->where('ban_nganh_id_goi', config('ban_nganh.thanh_nien.id', 3))->sum('so_tien');
+
         $taiChinh = [
             'tongThu' => $tongThu,
             'tongChi' => $tongChi,
             'tongTon' => $tongTon,
+            'tongThuTrungLao' => $tongThuTrungLao,
+            'tongThuThanhTrang' => $tongThuThanhTrang,
+            'tongThuThanhNien' => $tongThuThanhNien,
             'giaoDich' => $giaoDich,
         ];
 
@@ -265,7 +273,31 @@ class BanCDGDBaoCaoController extends Controller
             'tongThu' => $tongThu,
             'tongChi' => $tongChi,
             'tongTon' => $tongTon,
+            'tongThuTrungLao' => $tongThuTrungLao,
+            'tongThuThanhTrang' => $tongThuThanhTrang,
+            'tongThuThanhNien' => $tongThuThanhNien,
             'giaoDich_count' => $giaoDich->count()
+        ]);
+
+        $thamVieng = Cache::remember("tham_vieng_{$config['id']}_{$month}_{$year}", now()->addHour(), function () use ($config, $month, $year) {
+            return \App\Models\ThamVieng::with([
+                'tinHuu' => function ($query) {
+                    $query->select('id', 'ho_ten');
+                },
+                'nguoiTham' => function ($query) {
+                    $query->select('id', 'ho_ten');
+                }
+            ])
+                ->select('id', 'id_ban', 'tin_huu_id', 'nguoi_tham_id', 'ngay_tham', 'noi_dung') // Xóa 'loai_tham'
+                ->whereYear('ngay_tham', $year)
+                ->whereMonth('ngay_tham', $month)
+                ->where('id_ban', $config['id'])
+                ->orderBy('ngay_tham')
+                ->get();
+        });
+
+        Log::info("baoCaoBan {$logName}: Dữ liệu thăm viếng", [
+            'count' => $thamVieng->count()
         ]);
 
         $keHoach = Cache::remember("ke_hoach_{$config['id']}_{$nextMonth}_{$nextYear}", now()->addHour(), function () use ($config, $nextMonth, $nextYear) {
@@ -334,11 +366,13 @@ class BanCDGDBaoCaoController extends Controller
         $totalMeetings = $buoiNhomBN->count();
         $avgAttendance = $totalMeetings > 0 ? round(($buoiNhomBN->sum('so_luong_trung_lao') + $buoiNhomBN->sum('so_luong_thanh_trang') + $buoiNhomBN->sum('so_luong_thanh_nien')) / $totalMeetings) : 0;
         $totalOffering = $tongThu;
+        $totalVisits = $thamVieng->count();
 
         $summary = [
             'totalMeetings' => $totalMeetings,
             'avgAttendance' => $avgAttendance,
             'totalOffering' => $totalOffering,
+            'totalVisits' => $totalVisits,
         ];
 
         Log::info("baoCaoBan {$logName}: Thống kê", [
@@ -355,6 +389,7 @@ class BanCDGDBaoCaoController extends Controller
             'buoiNhomHT',
             'buoiNhomBN',
             'taiChinh',
+            'thamVieng',
             'keHoach',
             'summary',
             'diemManh',
