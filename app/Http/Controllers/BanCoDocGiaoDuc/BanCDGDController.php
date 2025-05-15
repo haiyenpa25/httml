@@ -254,11 +254,11 @@ class BanCDGDController extends Controller
     /**
      * Lưu tất cả số lượng tham dự và dâng hiến
      */
-    // public function saveThamDu(Request $request, string $banType): JsonResponse
-    // {
-    //     $config = $this->getBanConfig($banType);
-    //     return $this->baoCaoController->saveThamDu($request, $config);
-    // }
+    public function saveThamDu(Request $request, string $banType): JsonResponse
+    {
+        $config = $this->getBanConfig($banType);
+        return $this->baoCaoController->saveThamDu($request, $config);
+    }
 
     /**
      * Lưu đánh giá báo cáo
@@ -312,6 +312,15 @@ class BanCDGDController extends Controller
     {
         $config = $this->getBanConfig($banType);
         return $this->baoCaoController->xoaDanhGia($id, $config);
+    }
+
+    /**
+     * Lấy danh sách đánh giá (điểm mạnh/yếu) cho DataTable
+     */
+    public function danhGiaList(Request $request, string $banType): JsonResponse
+    {
+        $config = $this->getBanConfig($banType);
+        return $this->baoCaoController->danhGiaList($request, $config);
     }
 
     /**

@@ -424,6 +424,7 @@ class BanCDGDThanhVienController extends Controller
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
         $selectedBuoiNhom = $request->input('buoi_nhom_id');
+        $selectedBanNganh = $request->input('ban_nganh');
 
         $months = [];
         for ($i = 1; $i <= 12; $i++) {
@@ -440,37 +441,40 @@ class BanCDGDThanhVienController extends Controller
             ->orderBy('ngay_dien_ra', 'desc')
             ->get();
 
-        $currentBuoiNhom = $selectedBuoiNhom ? BuoiNhom::with(['dienGia', 'tinHuuHdct', 'tinHuuDoKt'])->find($selectedBuoiNhom) : null;
-
-        $danhSachTinHuu = TinHuu::whereHas('banNganhs', function ($query) use ($banNganh) {
-            $query->where('ban_nganh_id', $banNganh->id);
-        })->orderBy('ho_ten')->get();
-
+        $danhSachTinHuu = [];
         $diemDanhData = [];
-        $stats = ['co_mat' => 0, 'vang_mat' => 0, 'vang_co_phep' => 0, 'ti_le_tham_du' => 0];
+        $stats = ['co_mat' => 0, 'vang' => 0, 'ti_le_tham_du' => 0];
 
-        if ($selectedBuoiNhom) {
-            $chiTietThamGia = ChiTietThamGia::where('buoi_nhom_id', $selectedBuoiNhom)
-                ->get()
-                ->keyBy('tin_huu_id');
+        if ($selectedBuoiNhom && $selectedBanNganh) {
+            // Ánh xạ ban_nganh sang ban_nganh_id từ config
+            $banNganhMap = [
+                'trung_lao' => config('ban_nganh.trung_lao.id'),
+                'thanh_trang' => config('ban_nganh.thanh_trang.id'),
+                'thanh_nien' => config('ban_nganh.thanh_nien.id'),
+            ];
 
-            foreach ($chiTietThamGia as $id => $chiTiet) {
-                $diemDanhData[$id] = [
-                    'status' => $chiTiet->trang_thai,
-                    'note' => $chiTiet->ghi_chu
-                ];
+            $banNganhId = $banNganhMap[$selectedBanNganh] ?? null;
+            if ($banNganhId) {
+                $danhSachTinHuu = TinHuu::whereHas('banNganhs', function ($query) use ($banNganhId) {
+                    $query->where('ban_nganh_id', $banNganhId);
+                })->orderBy('ho_ten')->get();
 
-                if ($chiTiet->trang_thai == 'co_mat') {
-                    $stats['co_mat']++;
-                } elseif ($chiTiet->trang_thai == 'vang_mat') {
-                    $stats['vang_mat']++;
-                } elseif ($chiTiet->trang_thai == 'vang_co_phep') {
-                    $stats['vang_co_phep']++;
+                $chiTietThamGia = ChiTietThamGia::where('buoi_nhom_id', $selectedBuoiNhom)
+                    ->whereIn('tin_huu_id', $danhSachTinHuu->pluck('id'))
+                    ->get()
+                    ->keyBy('tin_huu_id');
+
+                foreach ($chiTietThamGia as $id => $chiTiet) {
+                    $diemDanhData[$id] = ['status' => $chiTiet->trang_thai];
+                    if ($chiTiet->trang_thai == 'co_mat') {
+                        $stats['co_mat']++;
+                    }
                 }
-            }
 
-            $totalMembers = $danhSachTinHuu->count();
-            $stats['ti_le_tham_du'] = $totalMembers > 0 ? round(($stats['co_mat'] / $totalMembers) * 100) : 0;
+                $totalMembers = $danhSachTinHuu->count();
+                $stats['vang'] = $totalMembers - $stats['co_mat'];
+                $stats['ti_le_tham_du'] = $totalMembers > 0 ? round(($stats['co_mat'] / $totalMembers) * 100) : 0;
+            }
         }
 
         $dienGias = DienGia::orderBy('ho_ten')->get();
@@ -483,7 +487,7 @@ class BanCDGDThanhVienController extends Controller
             'year',
             'buoiNhomOptions',
             'selectedBuoiNhom',
-            'currentBuoiNhom',
+            'selectedBanNganh',
             'danhSachTinHuu',
             'diemDanhData',
             'stats',
@@ -499,9 +503,8 @@ class BanCDGDThanhVienController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'buoi_nhom_id' => 'required|exists:buoi_nhom,id',
-            'attendance' => 'required|array',
-            'attendance.*.status' => 'required|in:co_mat,vang_mat,vang_co_phep',
-            'attendance.*.note' => 'nullable|string'
+            'ban_nganh' => 'required|in:trung_lao,thanh_trang,thanh_nien',
+            'attendance' => 'array',
         ]);
 
         if ($validator->fails()) {
@@ -511,23 +514,47 @@ class BanCDGDThanhVienController extends Controller
         try {
             DB::beginTransaction();
             $buoiNhomId = $request->buoi_nhom_id;
-            $attendanceData = $request->attendance;
+            $banNganh = $request->ban_nganh;
+            $attendanceData = $request->attendance ?? [];
 
-            ChiTietThamGia::where('buoi_nhom_id', $buoiNhomId)->delete();
+            // Ánh xạ ban_nganh sang ban_nganh_id từ config
+            $banNganhMap = [
+                'trung_lao' => config('ban_nganh.trung_lao.id'),
+                'thanh_trang' => config('ban_nganh.thanh_trang.id'),
+                'thanh_nien' => config('ban_nganh.thanh_nien.id'),
+            ];
+            $banNganhId = $banNganhMap[$banNganh] ?? null;
 
-            foreach ($attendanceData as $tinHuuId => $data) {
+            if (!$banNganhId) {
+                return $this->errorResponse("Ban ngành không hợp lệ!", 422);
+            }
+
+            // Xóa điểm danh cũ cho ban này
+            $tinHuuIds = TinHuuBanNganh::where('ban_nganh_id', $banNganhId)->pluck('tin_huu_id');
+            ChiTietThamGia::where('buoi_nhom_id', $buoiNhomId)
+                ->whereIn('tin_huu_id', $tinHuuIds)
+                ->delete();
+
+            // Lưu điểm danh mới
+            $coMatCount = 0;
+            foreach ($attendanceData as $tinHuuId => $status) {
                 ChiTietThamGia::create([
                     'buoi_nhom_id' => $buoiNhomId,
                     'tin_huu_id' => $tinHuuId,
-                    'trang_thai' => $data['status'],
-                    'ghi_chu' => $data['note'] ?? null
+                    'trang_thai' => 'co_mat',
                 ]);
+                $coMatCount++;
             }
 
+            // Cập nhật số lượng vào BuoiNhom
             $buoiNhom = BuoiNhom::find($buoiNhomId);
-            $buoiNhom->so_luong_tin_huu = collect($attendanceData)->filter(function ($item) {
-                return $item['status'] === 'co_mat' || $item['status'] === 'vang_co_phep';
-            })->count();
+            if ($banNganh == 'trung_lao') {
+                $buoiNhom->so_luong_trung_lao = $coMatCount;
+            } elseif ($banNganh == 'thanh_trang') {
+                $buoiNhom->so_luong_thanh_trang = $coMatCount;
+            } elseif ($banNganh == 'thanh_nien') {
+                $buoiNhom->so_luong_thanh_nien = $coMatCount;
+            }
             $buoiNhom->save();
 
             DB::commit();

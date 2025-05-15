@@ -13,7 +13,9 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('_ban_' . $banType . '.index', ['banType' => 'ban-co-doc-giao-duc']) }}">{{ $config['name'] }}</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('_ban_' . $banType . '.index', ['banType' => 'ban-co-doc-giao-duc']) }}">{{ $config['name'] }}</a>
+                        </li>
                         <li class="breadcrumb-item active">Thành viên</li>
                     </ol>
                 </div>
@@ -43,7 +45,7 @@
             </div>
 
             <!-- Thanh điều hướng nhanh -->
-            @include('_ban_co_doc_giao_duc.partials._ban_nganh_navigation', ['banType' => $banType])
+            @include('_ban_co_doc_giao_duc.partials._navigation', ['banType' => $banType])
 
             <!-- Bộ lọc nâng cao -->
             <div class="card card-secondary card-outline">
@@ -60,7 +62,8 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="form-group">
                                 <label for="filter-ho-ten">Họ tên</label>
-                                <input type="text" class="form-control form-control-sm" id="filter-ho-ten" placeholder="Nhập họ tên">
+                                <input type="text" class="form-control form-control-sm" id="filter-ho-ten"
+                                    placeholder="Nhập họ tên">
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
@@ -77,13 +80,15 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="form-group">
                                 <label for="filter-so-dien-thoai">Số điện thoại</label>
-                                <input type="text" class="form-control form-control-sm" id="filter-so-dien-thoai" placeholder="Nhập số điện thoại">
+                                <input type="text" class="form-control form-control-sm" id="filter-so-dien-thoai"
+                                    placeholder="Nhập số điện thoại">
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="form-group">
                                 <label for="filter-dia-chi">Địa chỉ</label>
-                                <input type="text" class="form-control form-control-sm" id="filter-dia-chi" placeholder="Nhập địa chỉ">
+                                <input type="text" class="form-control form-control-sm" id="filter-dia-chi"
+                                    placeholder="Nhập địa chỉ">
                             </div>
                         </div>
                     </div>
@@ -175,7 +180,8 @@
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-user-tie"></i> Ban Điều Hành</h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-them-thanh-vien">
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                            data-target="#modal-them-thanh-vien">
                             <i class="fas fa-plus"></i> Thêm thành viên
                         </button>
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
