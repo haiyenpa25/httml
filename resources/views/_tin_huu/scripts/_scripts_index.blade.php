@@ -125,6 +125,56 @@
             font-weight: 600 !important;
             padding: 10px 20px !important;
         }
+
+
+
+        /* CSS cho tabs trong modal */
+        .modal .nav-tabs .nav-link {
+            color: #495057;
+            border-radius: 0;
+            font-weight: 500;
+        }
+
+        .modal .nav-tabs .nav-link.active {
+            color: #007bff;
+            background-color: #f8f9fa;
+            border-color: #dee2e6 #dee2e6 #f8f9fa;
+        }
+
+        .modal .tab-content {
+            padding: 20px 0;
+        }
+
+        /* Input group styling */
+        .input-group-text {
+            min-width: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Required field styling */
+        .control-label {
+            font-weight: 500;
+        }
+
+        /* Modal header styling */
+        .modal-header {
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0.25rem;
+        }
+
+        /* Select2 custom styling */
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: calc(2.25rem + 2px) !important;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            line-height: calc(2.25rem + 2px) !important;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            height: calc(2.25rem + 2px) !important;
+        }
     </style>
 @endsection
 
