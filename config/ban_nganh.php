@@ -1,7 +1,15 @@
 <?php
 
 return [
-
+    'co_doc_giao_duc' => [
+        'id' => 6, // ID của Ban Cơ Đốc Giáo Dục trong bảng ban_nganh
+        'hoi_thanh_id' => 20, // ID của Hội Thánh
+        'name' => 'Ban Cơ Đốc Giáo Dục',
+        'view_prefix' => '_ban_co_doc_giao_duc',
+        'quantity_field' => 'so_luong_trung_lao',
+        'quantity_field2' => 'so_luong_thanh_trang',
+        'quantity_field3' => 'so_luong_thanh_nien',
+    ],
     'trung_lao' => [
         'id' => 1,
         'hoi_thanh_id' => 20,
@@ -30,13 +38,5 @@ return [
         'view_prefix' => '_ban_nganh',
         'name' => 'Ban Thiếu Nhi',
     ],
-    'co_doc_giao_duc' => [
-        'id' => 6, // ID của Ban Cơ Đốc Giáo Dục trong bảng ban_nganh
-        'hoi_thanh_id' => 20, // ID của Hội Thánh
-        'name' => 'Ban Cơ Đốc Giáo Dục',
-        'view_prefix' => '_ban_co_doc_giao_duc',
-        'quantity_field' => 'so_luong_trung_lao',
-        'quantity_field2' => 'so_luong_thanh_trang',
-        'quantity_field3' => 'so_luong_thanh_nien',
-    ],
+    
 ];

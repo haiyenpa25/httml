@@ -49,6 +49,11 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// ==== Dashboard ====
+Route::middleware(['auth'])->get('/trang-chu', fn() => view('dashboard'))
+    ->middleware('checkPermission:view-dashboard')
+    ->name('dashboard');
+
 
 // Quản lý Phân Quyền Người Dùng
 Route::prefix('quan-ly-phan-quyen')->middleware(['auth'])->group(function () {
@@ -93,12 +98,6 @@ Route::prefix('quan-ly-phan-quyen')->middleware(['auth'])->group(function () {
         ->name('_phan_quyen.update_default_url');
 });
 
-
-
-// ==== Dashboard ====
-Route::middleware(['auth'])->get('/trang-chu', fn() => view('dashboard'))
-    ->middleware('checkPermission:view-dashboard')
-    ->name('dashboard');
 
 // ==== Quản lý Tín Hữu ====
 require __DIR__ . '/quan_ly/tin_huu.php';

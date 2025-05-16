@@ -1,6 +1,6 @@
 @php
-    // Mặc định banType là 'co_doc_giao_duc' nếu không được truyền
-    $banType = isset($banType) ? $banType : 'co_doc_giao_duc';
+    // Lấy banType từ route, đảm bảo không bị ghi đè
+    $banType = request()->route('banType') ?? 'ban-co-doc-giao-duc';
 @endphp
 
 @section('page-styles')

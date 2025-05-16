@@ -30,12 +30,11 @@ class BanCDGDController extends Controller
         $this->baoCaoController = $baoCaoController;
         $this->banConfig = config('ban_nganh');
 
-        // Middleware nội tuyến để share $banType tới tất cả view
         $this->middleware(function ($request, $next) {
             $banType = $request->route('banType');
 
-            // Danh sách banType hợp lệ cho Ban Trung Lão
-            $validBanTypes = ['trung-lao']; // Chỉ cho phép trung-lao
+            // Danh sách banType hợp lệ
+            $validBanTypes = ['trung-lao', 'ban-co-doc-giao-duc']; // Thêm ban-co-doc-giao-duc
 
             // Kiểm tra nếu banType không hợp lệ
             if (!in_array($banType, $validBanTypes)) {
@@ -57,6 +56,7 @@ class BanCDGDController extends Controller
     {
         $map = [
             'ban-co-doc-giao-duc' => 'co_doc_giao_duc',
+            'co_doc_giao_duc' => 'co_doc_giao_duc', // Thêm ánh xạ cho API
             // Thêm ánh xạ cho các ban khác nếu cần, ví dụ:
             // 'ban-trung-lao' => 'trung_lao',
         ];

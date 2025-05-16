@@ -1,3 +1,8 @@
+@php
+    // Sử dụng banType đúng
+    $banType = isset($banType) ? $banType : 'ban-co-doc-giao-duc';
+@endphp
+
 @extends('layouts.app')
 
 @section('title', 'Quản lý thành viên - ' . $config['name'])
@@ -13,9 +18,7 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a
-                                href="{{ route('_ban_' . $banType . '.index', ['banType' => 'ban-co-doc-giao-duc']) }}">{{ $config['name'] }}</a>
-                        </li>
+                        <li class="breadcrumb-item"><a href="{{ route('_ban_co_doc_giao_duc.index', ['banType' => 'ban-co-doc-giao-duc']) }}">{{ $config['name'] }}</a></li>
                         <li class="breadcrumb-item active">Thành viên</li>
                     </ol>
                 </div>

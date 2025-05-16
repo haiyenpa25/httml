@@ -102,19 +102,18 @@ class NguoiDungPhanQuyenController extends Controller
                 'manage-bao-cao-ban-nganh-thieu-nhi' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/thieu-nhi/bao-cao'],
             ],
             'Ban Ngành - Cơ Đốc Giáo Dục' => [
-                'view-ban-co-doc-giao-duc' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-nganh/co-doc-giao-duc'],
-                'diem-danh-ban-co-doc-giao-duc' => ['description' => 'Điểm danh', 'default_url' => '/ban-nganh/co-doc-giao-duc/diem-danh'],
-                'tham-vieng-ban-co-doc-giao-duc' => ['description' => 'Thăm viếng', 'default_url' => '/ban-nganh/co-doc-giao-duc/tham-vieng'],
-                'phan-cong-ban-co-doc-giao-duc' => ['description' => 'Phân công', 'default_url' => '/ban-nganh/co-doc-giao-duc/phan-cong'],
-                'phan-cong-chi-tiet-ban-co-doc-giao-duc' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-nganh/co-doc-giao-duc/phan-cong-chi-tiet'],
-                'nhap-lieu-bao-cao-ban-co-doc-giao-duc' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-nganh/co-doc-giao-duc/nhap-lieu-bao-cao'],
-                'bao-cao-ban-co-doc-giao-duc' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-nganh/co-doc-giao-duc/bao-cao'],
-                'manage-thanh-vien-ban-co-doc-giao-duc' => ['description' => 'Quản lý thành viên', 'default_url' => '/ban-nganh/co-doc-giao-duc/thanh-vien'],
-                'view-thanh-vien-ban-co-doc-giao-duc' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-nganh/co-doc-giao-duc/thanh-vien'],
-                'manage-buoi-nhom-ban-co-doc-giao-duc' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/ban-nganh/co-doc-giao-duc/buoi-nhom'],
-                'manage-tham-vieng-ban-co-doc-giao-duc' => ['description' => 'Quản lý thăm viếng', 'default_url' => '/ban-nganh/co-doc-giao-duc/tham-vieng'],
-                'manage-phan-cong-ban-co-doc-giao-duc' => ['description' => 'Quản lý phân công', 'default_url' => '/ban-nganh/co-doc-giao-duc/phan-cong'],
-                'manage-bao-cao-ban-co-doc-giao-duc' => ['description' => 'Quản lý báo cáo', 'default_url' => '/ban-nganh/co-doc-giao-duc/bao-cao'],
+                'view-ban-co-doc-giao-duc' => ['description' => 'Xem tổng quan', 'default_url' => '/ban-co-doc-giao-duc'],
+                'diem-danh-ban-co-doc-giao-duc' => ['description' => 'Điểm danh', 'default_url' => '/ban-co-doc-giao-duc/diem-danh'],
+                'phan-cong-ban-co-doc-giao-duc' => ['description' => 'Phân công', 'default_url' => '/ban-co-doc-giao-duc/phan-cong'],
+                'phan-cong-chi-tiet-ban-co-doc-giao-duc' => ['description' => 'Phân công chi tiết', 'default_url' => '/ban-co-doc-giao-duc/phan-cong-chi-tiet'],
+                'nhap-lieu-bao-cao-ban-co-doc-giao-duc' => ['description' => 'Nhập liệu báo cáo', 'default_url' => '/ban-co-doc-giao-duc/nhap-lieu-bao-cao'],
+                'bao-cao-ban-co-doc-giao-duc' => ['description' => 'Xem báo cáo', 'default_url' => '/ban-co-doc-giao-duc/bao-cao'],
+                'manage-thanh-vien-ban-co-doc-giao-duc' => ['description' => 'Quản lý thành viên (thêm, xóa, cập nhật chức vụ)', 'default_url' => '/ban-co-doc-giao-duc'],
+                'view-thanh-vien-ban-co-doc-giao-duc' => ['description' => 'Xem danh sách thành viên', 'default_url' => '/ban-co-doc-giao-duc'],
+                'manage-buoi-nhom-ban-co-doc-giao-duc' => ['description' => 'Quản lý buổi nhóm (thêm, cập nhật, xóa)', 'default_url' => '/ban-co-doc-giao-duc'],
+                'manage-phan-cong-ban-co-doc-giao-duc' => ['description' => 'Quản lý phân công nhiệm vụ', 'default_url' => '/ban-co-doc-giao-duc/phan-cong'],
+                'manage-diem-danh-ban-co-doc-giao-duc' => ['description' => 'Quản lý điểm danh và tham dự', 'default_url' => '/ban-co-doc-giao-duc/diem-danh'],
+                'manage-bao-cao-ban-co-doc-giao-duc' => ['description' => 'Quản lý báo cáo (đánh giá, kế hoạch, kiến nghị)', 'default_url' => '/ban-co-doc-giao-duc/bao-cao'],
             ],
             'Ban Ngành - Khác' => [
                 'view-ban-chap-su' => ['description' => 'Xem Ban Chấp Sự', 'default_url' => '/ban/chap-su'],
@@ -306,11 +305,13 @@ class NguoiDungPhanQuyenController extends Controller
             'role' => 'required|string|in:quan_tri,truong_ban,thanh_vien',
         ]);
 
-        $user = NguoiDung::findOrFail($userId);
-        if ($user->vai_tro === 'quan_tri' && $user->email === 'admin1@example.com') {
-            return response()->json(['error' => 'Không thể chỉnh sửa vai trò của tài khoản quản trị mặc định.'], 403);
+        // Kiểm tra quyền của người dùng hiện tại
+        $currentUser = auth()->user();
+        if (!$currentUser || $currentUser->vai_tro !== 'quan_tri') {
+            return response()->json(['error' => 'Bạn không có quyền chỉnh sửa vai trò.'], 403);
         }
 
+        $user = NguoiDung::findOrFail($userId);
         $user->vai_tro = $request->role;
         $user->id_ban_nganh = null; // Loại bỏ ban ngành
         $user->save();
@@ -320,6 +321,8 @@ class NguoiDungPhanQuyenController extends Controller
 
         // Gán quyền mới dựa trên vai trò
         $rolePermissions = $this->getRolePermissions($request)->getData();
+        Log::info("Gán quyền cho user {$userId} với vai trò {$request->role}", ['permissions' => $rolePermissions]);
+
         foreach ($rolePermissions as $permission) {
             $defaultUrl = null;
             foreach ($this->permissions as $group => $groupPermissions) {
@@ -336,7 +339,7 @@ class NguoiDungPhanQuyenController extends Controller
             ]);
         }
 
-        // Nếu vai trò là quan_tri, gán thêm quyền admin-access
+        // Đảm bảo quyền admin-access cho quan_tri
         if ($request->role === 'quan_tri') {
             NguoiDungPhanQuyen::create([
                 'nguoi_dung_id' => $userId,
@@ -382,15 +385,18 @@ class NguoiDungPhanQuyenController extends Controller
 
     public function updateUserPermissions(Request $request, $userId)
     {
-        $user = NguoiDung::findOrFail($userId);
-        if ($user->vai_tro === 'quan_tri') {
-            return response()->json(['error' => 'Không thể chỉnh sửa quyền của tài khoản quản trị.'], 403);
-        }
-
         $request->validate([
             'permissions' => 'required|array',
             'permissions.*' => 'string',
         ]);
+
+        // Kiểm tra quyền của người dùng hiện tại
+        $currentUser = auth()->user();
+        if (!$currentUser || $currentUser->vai_tro !== 'quan_tri') {
+            return response()->json(['error' => 'Bạn không có quyền chỉnh sửa quyền.'], 403);
+        }
+
+        $user = NguoiDung::findOrFail($userId);
 
         try {
             // Lấy danh sách quyền hiện tại của người dùng
@@ -401,7 +407,7 @@ class NguoiDungPhanQuyenController extends Controller
             $selectedPermissions = $request->permissions;
 
             // Log để debug
-            \Log::info('Updating permissions for user: ' . $userId, [
+            Log::info('Updating permissions for user: ' . $userId, [
                 'current_permissions' => $currentPermissions,
                 'selected_permissions' => $selectedPermissions,
             ]);
@@ -410,14 +416,14 @@ class NguoiDungPhanQuyenController extends Controller
             $permissionsToRemove = array_diff($currentPermissions, $selectedPermissions);
             $permissionsToRemove = array_values($permissionsToRemove);
             if (!empty($permissionsToRemove)) {
-                \Log::info('Removing permissions for user ' . $userId . ': ', ['permissions' => $permissionsToRemove]);
+                Log::info('Removing permissions for user ' . $userId . ': ', ['permissions' => $permissionsToRemove]);
                 $query = NguoiDungPhanQuyen::where('nguoi_dung_id', $userId)
                     ->whereIn('quyen', $permissionsToRemove);
-                \Log::info('Delete query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
+                Log::info('Delete query SQL: ' . $query->toSql(), ['bindings' => $query->getBindings()]);
                 $deletedRows = $query->delete();
-                \Log::info('Deleted rows for user ' . $userId . ': ' . $deletedRows);
+                Log::info('Deleted rows for user ' . $userId . ': ' . $deletedRows);
             } else {
-                \Log::info('No permissions to remove for user ' . $userId);
+                Log::info('No permissions to remove for user ' . $userId);
             }
 
             // Xác định quyền cần thêm
@@ -431,7 +437,7 @@ class NguoiDungPhanQuyenController extends Controller
                             break;
                         }
                     }
-                    \Log::info('Adding permission for user ' . $userId . ': ' . $permission . ' with default_url: ' . ($defaultUrl ?? 'null'));
+                    Log::info('Adding permission for user ' . $userId . ': ' . $permission . ' with default_url: ' . ($defaultUrl ?? 'null'));
                     NguoiDungPhanQuyen::create([
                         'nguoi_dung_id' => $userId,
                         'quyen' => $permission,
@@ -440,20 +446,20 @@ class NguoiDungPhanQuyenController extends Controller
                     ]);
                 }
             } else {
-                \Log::info('No permissions to add for user ' . $userId);
+                Log::info('No permissions to add for user ' . $userId);
             }
 
             // Nếu không có quyền nào được chọn, xóa tất cả quyền
             if (empty($selectedPermissions) && !empty($currentPermissions)) {
-                \Log::info('No permissions selected, removing all permissions for user ' . $userId);
+                Log::info('No permissions selected, removing all permissions for user ' . $userId);
                 $deletedRows = NguoiDungPhanQuyen::where('nguoi_dung_id', $userId)
                     ->delete();
-                \Log::info('Deleted all rows for user ' . $userId . ': ' . $deletedRows);
+                Log::info('Deleted all rows for user ' . $userId . ': ' . $deletedRows);
             }
 
             return response()->json(['success' => 'Đã cập nhật quyền thành công.']);
         } catch (\Exception $e) {
-            \Log::error('Error updating permissions for user ' . $userId . ': ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error updating permissions for user ' . $userId . ': ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => 'Không thể cập nhật quyền: ' . $e->getMessage()], 500);
         }
     }
@@ -464,15 +470,16 @@ class NguoiDungPhanQuyenController extends Controller
             'default_url' => 'nullable|string|max:255',
         ]);
 
-        $user = NguoiDung::findOrFail($userId);
-        if ($user->email === 'admin1@example.com') {
-            return response()->json(['error' => 'Không thể chỉnh sửa URL mặc định của tài khoản quản trị mặc định.'], 403);
+        // Kiểm tra quyền của người dùng hiện tại
+        $currentUser = auth()->user();
+        if (!$currentUser || $currentUser->vai_tro !== 'quan_tri') {
+            return response()->json(['error' => 'Bạn không có quyền chỉnh sửa URL mặc định.'], 403);
         }
 
+        $user = NguoiDung::findOrFail($userId);
         $user->default_url = $request->default_url ?: null;
         $user->save();
 
         return response()->json(['success' => 'Đã cập nhật URL mặc định thành công.']);
     }
 }
-?>
