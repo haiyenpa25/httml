@@ -40,7 +40,8 @@ use App\Http\Controllers\{
     ThongBao\QuanLyThongBaoController,
     BanMucVuController,
     BanMucVu\BanMucVuThanhVienController,
-    NguoiDungPhanQuyenController
+    NguoiDungPhanQuyenController,
+    TrangChuController
 };
 
 // ==== Auth Routes ====
@@ -48,11 +49,14 @@ Route::get('/', fn() => redirect()->route('login'));
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/trang-chu', [App\Http\Controllers\TrangChuController::class, 'index'])->name('trang-chu');
+Route::get('/trang-chu2', [TrangChuController::class, 'index'])->name('dashboard');
 
 // ==== Dashboard ====
-Route::middleware(['auth'])->get('/trang-chu', fn() => view('dashboard'))
-    ->middleware('checkPermission:view-dashboard')
-    ->name('dashboard');
+// Route::middleware(['auth'])->get('/trang-chu', fn() => view('dashboard'))
+//     ->middleware('checkPermission:view-dashboard')
+//     ->name('dashboard');
+
 
 
 // Quản lý Phân Quyền Người Dùng
