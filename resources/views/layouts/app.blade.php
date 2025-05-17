@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="utf-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -7,7 +8,8 @@
     <title>HTTL Thạnh Mỹ Lợi | @yield('title', 'Dashboard')</title>
 
     <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&subset=vietnamese">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&subset=vietnamese">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
     <!-- Theme style -->
@@ -38,7 +40,7 @@
             background-color: #007bff;
         }
 
-        .nav-treeview > .nav-item > .nav-link.active {
+        .nav-treeview>.nav-item>.nav-link.active {
             background-color: rgba(255, 255, 255, 0.1) !important;
         }
 
@@ -55,9 +57,9 @@
         }
 
         .sidebar-footer {
-            color: rgba(255,255,255,.5);
+            color: rgba(255, 255, 255, .5);
             padding: 0.75rem 1rem;
-            border-top: 1px solid rgba(255,255,255,.1);
+            border-top: 1px solid rgba(255, 255, 255, .1);
         }
 
         .brand-link {
@@ -84,71 +86,75 @@
             overflow-y: auto;
         }
     </style>
-        @yield('page-styles')
+    @yield('page-styles')
     @yield('page-styles')
 </head>
+
 <body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">
-    <!-- Preloader -->
-    <div class="preloader flex-column justify-content-center align-items-center">
-        <img class="animation__shake" src="{{ asset('dist/img/AdminLTELogo.png') }}" alt="AdminLTELogo" height="60" width="60">
+    <div class="wrapper">
+        <!-- Preloader -->
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="{{ asset('dist/img/AdminLTELogo.png') }}" alt="AdminLTELogo" height="60"
+                width="60">
+        </div>
+
+        <!-- Navbar -->
+        @include('partials.header')
+
+        <!-- Main Sidebar Container -->
+        @include('partials.sidebar')
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            @yield('content')
+        </div>
+
+        <!-- Footer -->
+        @include('partials.footer')
+
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
     </div>
 
-    <!-- Navbar -->
-    @include('partials.header')
+    <!-- jQuery (từ CDN để đảm bảo tải đúng) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!-- jQuery UI -->
+    <script src="{{ asset('plugins/jquery-ui/jquery-ui.min.js') }}"></script>
+    <script>
+        $.widget.bridge('uibutton', $.ui.button);
+    </script>
+    <!-- Bootstrap -->
+    <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <!-- Select2 -->
+    <script src="{{ asset('plugins/select2/js/select2.min.js') }}"></script>
+    <!-- Moment.js -->
+    <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
+    <!-- Daterange picker -->
+    <script src="{{ asset('plugins/daterangepicker/daterangepicker.js') }}"></script>
+    <!-- Tempusdominus Bootstrap 4 -->
+    <script src="{{ asset('plugins/tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.js') }}"></script>
+    <!-- DataTables -->
+    <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
+    <!-- Toastr -->
+    <script src="{{ asset('plugins/toastr/toastr.min.js') }}"></script>
+    <!-- SweetAlert2 -->
+    <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
+    <!-- AdminLTE -->
+    <script src="{{ asset('plugins/adminlte/adminlte.min.js') }}"></script>
+    <!-- Chart.js (nếu cần cho biểu đồ) -->
+    <script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
 
-    <!-- Main Sidebar Container -->
-    @include('partials.sidebar')
+    <!-- Scripts chung -->
+    @include('scripts')
 
-    <!-- Content Wrapper -->
-    <div class="content-wrapper">
-        @yield('content')
-    </div>
-
-    <!-- Footer -->
-    @include('partials.footer')
-
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-        <!-- Control sidebar content goes here -->
-    </aside>
-</div>
-
-<!-- jQuery (từ CDN để đảm bảo tải đúng) -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<!-- jQuery UI -->
-<script src="{{ asset('plugins/jquery-ui/jquery-ui.min.js') }}"></script>
-<script>
-    $.widget.bridge('uibutton', $.ui.button);
-</script>
-<!-- Bootstrap -->
-<script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<!-- Select2 -->
-<script src="{{ asset('plugins/select2/js/select2.min.js') }}"></script>
-<!-- Moment.js -->
-<script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
-<!-- Daterange picker -->
-<script src="{{ asset('plugins/daterangepicker/daterangepicker.js') }}"></script>
-<!-- Tempusdominus Bootstrap 4 -->
-<script src="{{ asset('plugins/tempusdominus-bootstrap-4/tempusdominus-bootstrap-4.min.js') }}"></script>
-<!-- DataTables -->
-<script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables/dataTables.bootstrap4.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables/dataTables.responsive.min.js') }}"></script>
-<script src="{{ asset('plugins/datatables/responsive.bootstrap4.min.js') }}"></script>
-<!-- Toastr -->
-<script src="{{ asset('plugins/toastr/toastr.min.js') }}"></script>
-<!-- SweetAlert2 -->
-<script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
-<!-- AdminLTE -->
-<script src="{{ asset('plugins/adminlte/adminlte.min.js') }}"></script>
-<!-- Chart.js (nếu cần cho biểu đồ) -->
-<script src="{{ asset('plugins/chart.js/Chart.min.js') }}"></script>
-
-<!-- Scripts chung -->
-@include('scripts')
-
-<!-- Scripts riêng của trang -->
-@yield('page-scripts')
+    <!-- Scripts riêng của trang -->
+    @yield('page-scripts')
 </body>
+
 </html>

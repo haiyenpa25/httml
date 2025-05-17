@@ -9,6 +9,9 @@ use App\Models\TinHuu;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Http\JsonResponse;
+
 
 class TrangChuController extends Controller
 {
@@ -44,8 +47,6 @@ class TrangChuController extends Controller
         }
 
         $buoiNhomSapToi = $buoiNhomQuery->take(10)->get();
-
-
 
 
         // 3. Dữ liệu cho biểu đồ 1: Thống kê số lượng tín hữu theo ban ngành
@@ -238,5 +239,85 @@ class TrangChuController extends Controller
         }
 
         return $result;
+    }
+
+    /**
+     * Lấy danh sách tín hữu có sinh nhật (phân trang server-side)
+     */
+    public function getBirthdayList(Request $request): JsonResponse
+    {
+        try {
+            $thang = $request->input('thang', Carbon::now()->month);
+            $nam = $request->input('nam', Carbon::now()->year);
+
+            $query = TinHuu::whereMonth('ngay_sinh', $thang)
+                ->orderBy(DB::raw('DAY(ngay_sinh)'));
+
+            return DataTables::of($query)
+                ->addColumn('ho_ten', function ($row) {
+                    return $row->ho_ten ?? 'N/A';
+                })
+                ->addColumn('ngay_sinh', function ($row) {
+                    return $row->ngay_sinh;
+                })
+                ->addColumn('tuoi', function ($row) {
+                    return $row->ngay_sinh ? Carbon::parse($row->ngay_sinh)->age : null;
+                })
+                ->addColumn('anh_dai_dien', function ($row) {
+                    return $row->anh_dai_dien ? asset('storage/' . $row->anh_dai_dien) : null;
+                })
+                ->make(true);
+        } catch (\Exception $e) {
+            Log::error("Lỗi lấy danh sách Sinh Nhật Tín Hữu: {$e->getMessage()}", ['exception' => $e]);
+            return response()->json(['error' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách buổi nhóm (phân trang server-side)
+     */
+    public function getEventList(Request $request): JsonResponse
+    {
+        try {
+            $thang = $request->input('thang', Carbon::now()->month);
+            $nam = $request->input('nam', Carbon::now()->year);
+            $banNganhId = $request->input('ban_nganh_id');
+
+            $query = BuoiNhom::with(['banNganh', 'dienGia'])
+                ->whereMonth('ngay_dien_ra', $thang)
+                ->whereYear('ngay_dien_ra', $nam)
+                ->where('trang_thai', '!=', 'huy');
+
+            if ($banNganhId) {
+                $query->where('ban_nganh_id', $banNganhId);
+            }
+
+            return DataTables::of($query)
+                ->addColumn('ngay_dien_ra', function ($row) {
+                    return $row->ngay_dien_ra;
+                })
+                ->addColumn('gio_bat_dau', function ($row) {
+                    return $row->gio_bat_dau;
+                })
+                ->addColumn('ban_nganh', function ($row) {
+                    return $row->banNganh;
+                })
+                ->addColumn('chu_de', function ($row) {
+                    return $row->chu_de;
+                })
+                ->addColumn('cau_goc', function ($row) {
+                    return $row->cau_goc;
+                })
+                ->addColumn('dien_gia', function ($row) {
+                    return $row->dienGia;
+                })
+                ->addColumn('dia_diem', function ($row) {
+                    return $row->dia_diem;
+                })
+                ->make(true);
+        } catch (\Exception $e) {
+            Log::error("Lỗi lấy danh sách Lịch Buổi Nhóm: {$e->getMessage()}", ['exception' => $e]);
+            return response()->json(['error' => 'Lỗi hệ thống: ' . $e->getMessage()], 500);
+        }
     }
 }

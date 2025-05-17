@@ -51,7 +51,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/trang-chu', [App\Http\Controllers\TrangChuController::class, 'index'])->name('trang-chu');
 Route::get('/trang-chu2', [TrangChuController::class, 'index'])->name('dashboard');
-
+// API cho Trang Chủ
+Route::prefix('api/trang-chu')->middleware(['auth'])->name('api.trang_chu.')->group(function () {
+    Route::get('/birthday-list', [TrangChuController::class, 'getBirthdayList'])
+        ->middleware('checkPermission:view-dashboard')
+        ->name('birthday_list');
+    Route::get('/event-list', [TrangChuController::class, 'getEventList'])
+        ->middleware('checkPermission:view-dashboard')
+        ->name('event_list');
+});
 // ==== Dashboard ====
 // Route::middleware(['auth'])->get('/trang-chu', fn() => view('dashboard'))
 //     ->middleware('checkPermission:view-dashboard')
