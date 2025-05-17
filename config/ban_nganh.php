@@ -32,11 +32,11 @@ return [
         'name' => 'Ban Thanh Niên',
     ],
     'thieu_nhi' => [
-        'id' => 4, // Giả sử ID của Ban Thiếu Nhi
+        'id' => 7, // Giả sử ID của Ban Thiếu Nhi
         'hoi_thanh_id' => 20,
         'quantity_field' => 'so_luong_thieu_nhi',
         'view_prefix' => '_ban_nganh',
         'name' => 'Ban Thiếu Nhi',
     ],
-    
+
 ];

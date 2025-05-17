@@ -107,4 +107,12 @@ class BuoiNhom extends Model
     {
         return $this->giaoDichTaiChinh()->where('ban_nganh_id_goi', $banNganhIdGoi)->first();
     }
+
+
+
+    // Quan hệ với ChiTietThamGia (mới thêm)
+    public function chiTietThamGia()
+    {
+        return $this->hasMany(ChiTietThamGia::class, 'buoi_nhom_id');
+    }
 }

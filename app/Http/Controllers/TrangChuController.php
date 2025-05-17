@@ -45,6 +45,9 @@ class TrangChuController extends Controller
 
         $buoiNhomSapToi = $buoiNhomQuery->take(10)->get();
 
+
+
+
         // 3. Dữ liệu cho biểu đồ 1: Thống kê số lượng tín hữu theo ban ngành
         $thongKeBanNganh = BanNganh::withCount('tinHuu')
             ->orderBy('tin_huu_count', 'desc')
@@ -129,36 +132,36 @@ class TrangChuController extends Controller
         // Xác định khoảng thời gian
         $thoiGianFunc = match ($thoiGian) {
             'tuan' => function ($i) use ($now) {
-                return [
+                    return [
                     'start' => $now->copy()->subWeeks($i)->startOfWeek(),
                     'end' => $now->copy()->subWeeks($i)->endOfWeek(),
                     'label' => $now->copy()->subWeeks($i)->startOfWeek()->format('d/m') . ' - ' .
                         $now->copy()->subWeeks($i)->endOfWeek()->format('d/m')
-                ];
-            },
+                    ];
+                },
             'thang' => function ($i) use ($now) {
-                return [
+                    return [
                     'start' => $now->copy()->subMonths($i)->startOfMonth(),
                     'end' => $now->copy()->subMonths($i)->endOfMonth(),
                     'label' => $now->copy()->subMonths($i)->format('m/Y')
-                ];
-            },
+                    ];
+                },
             'quy' => function ($i) use ($now) {
-                $quarter = $now->copy()->subQuarters($i);
-                return [
+                    $quarter = $now->copy()->subQuarters($i);
+                    return [
                     'start' => $quarter->copy()->startOfQuarter(),
                     'end' => $quarter->copy()->endOfQuarter(),
                     'label' => 'Q' . $quarter->quarter . '/' . $quarter->year
-                ];
-            },
+                    ];
+                },
             default => function ($i) use ($now) {
-                return [
+                    return [
                     'start' => $now->copy()->subWeeks($i)->startOfWeek(),
                     'end' => $now->copy()->subWeeks($i)->endOfWeek(),
                     'label' => $now->copy()->subWeeks($i)->startOfWeek()->format('d/m') . ' - ' .
                         $now->copy()->subWeeks($i)->endOfWeek()->format('d/m')
-                ];
-            }
+                    ];
+                }
         };
 
         // Khởi tạo mảng ban ngành
