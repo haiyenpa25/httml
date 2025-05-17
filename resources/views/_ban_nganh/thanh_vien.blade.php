@@ -11,14 +11,15 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="{{ route('_ban_nganh.' . $banType . '.index') }}">Ban Ngành</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('_ban_nganh.' . $banType . '.index') }}">Ban Ngành</a>
+                        </li>
                         <li class="breadcrumb-item active">{{ $config['name'] }}</li>
                     </ol>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Nội dung chính: bộ lọc -->
     <section class="content">
         <div class="container-fluid">
@@ -49,7 +50,8 @@
                         <div class="card-header">
                             <h3 class="card-title">Danh sách thành viên</h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modal-them-thanh-vien">
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                    data-target="#modal-them-thanh-vien">
                                     <i class="fas fa-plus"></i> Thêm thành viên
                                 </button>
                             </div>
@@ -58,7 +60,8 @@
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="filter-ho-ten">Họ tên</label>
-                                    <input type="text" class="form-control form-control-sm" id="filter-ho-ten" placeholder="Nhập họ tên">
+                                    <input type="text" class="form-control form-control-sm" id="filter-ho-ten"
+                                        placeholder="Nhập họ tên">
                                 </div>
                                 <div class="col-md-4">
                                     <label for="filter-loai-tin-huu">Loại tín hữu</label>
@@ -71,7 +74,8 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label for="filter-so-dien-thoai">Số điện thoại</label>
-                                    <input type="text" class="form-control form-control-sm" id="filter-so-dien-thoai" placeholder="Nhập số điện thoại">
+                                    <input type="text" class="form-control form-control-sm" id="filter-so-dien-thoai"
+                                        placeholder="Nhập số điện thoại">
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -234,9 +238,12 @@
                         <div class="form-group">
                             <label for="edit_chuc_vu">Chức vụ</label>
                             <select name="chuc_vu" id="edit_chuc_vu" class="form-control" required>
-                                <option value="Trưởng ban">Trưởng ban</option>
-                                <option value="Phó ban">Phó ban</option>
-                                <option value="Thư ký">Thư ký</option>
+                                <option value="Cố Vấn">Cố Vấn</option>
+                                <option value="Cố Vấn Linh Vụ">Cố Vấn Linh Vụ</option>
+                                <option value="Trưởng Ban">Trưởng Ban</option>
+                                <option value="Thư Ký">Thư Ký</option>
+                                <option value="Thủ Quỹ">Thủ Quỹ</option>
+                                <option value="Ủy Viên">Ủy Viên</option>
                                 <option value="Thành viên">Thành viên</option>
                             </select>
                         </div>
@@ -261,7 +268,9 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>Bạn có chắc chắn muốn xóa thành viên <strong id="delete_ten_tin_huu"></strong> khỏi {{ $config['name'] }}?</p>
+                    <p>Bạn có chắc chắn muốn xóa thành viên <strong id="delete_ten_tin_huu"></strong> khỏi
+                        {{ $config['name'] }}?
+                    </p>
                     <input type="hidden" id="delete_tin_huu_id">
                     <input type="hidden" id="delete_ban_nganh_id">
                 </div>
