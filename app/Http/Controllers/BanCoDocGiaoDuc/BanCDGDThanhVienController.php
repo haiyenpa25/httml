@@ -901,7 +901,7 @@ class BanCDGDThanhVienController extends Controller
             ])
                 ->where('ban_nganh_id', $config['id'])
                 ->whereNotNull('chuc_vu')
-                ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên']);
+                ->whereIn('chuc_vu', ['Cố Vấn', 'Cố Vấn Linh Vụ', 'Trưởng Ban', 'Thư Ký', 'Thủ Quỹ', 'Ủy Viên', 'Giáo Viên']);
 
             if ($hoTen = $request->input('ho_ten')) {
                 $query->whereHas('tinHuu', function ($q) use ($hoTen) {

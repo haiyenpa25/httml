@@ -11,7 +11,9 @@
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <form id="form-sua-chuc-vu" action="{{ route('api._ban_' . $banType . '.cap_nhat_chuc_vu', ['banType' => 'ban-co-doc-giao-duc']) }}" method="POST">
+            <form id="form-sua-chuc-vu"
+                action="{{ route('api._ban_' . $banType . '.cap_nhat_chuc_vu', ['banType' => 'ban-co-doc-giao-duc']) }}"
+                method="POST">
                 @csrf
                 <div class="modal-body">
                     <input type="hidden" name="tin_huu_id" id="edit_tin_huu_id">
@@ -28,6 +30,7 @@
                             <option value="Trưởng Ban">Trưởng Ban</option>
                             <option value="Thư Ký">Thư Ký</option>
                             <option value="Thủ Quỹ">Thủ Quỹ</option>
+                            <option value="Giáo Viên">Giáo Viên</option>
                             <option value="Ủy Viên">Ủy Viên</option>
                         </select>
                     </div>

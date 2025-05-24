@@ -18,7 +18,9 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('_ban_co_doc_giao_duc.index', ['banType' => 'ban-co-doc-giao-duc']) }}">{{ $config['name'] }}</a></li>
+                        <li class="breadcrumb-item"><a
+                                href="{{ route('_ban_co_doc_giao_duc.index', ['banType' => 'ban-co-doc-giao-duc']) }}">{{ $config['name'] }}</a>
+                        </li>
                         <li class="breadcrumb-item active">Thành viên</li>
                     </ol>
                 </div>
@@ -165,6 +167,7 @@
                                     <option value="Phó Ban">Phó Ban</option>
                                     <option value="Thư Ký">Thư Ký</option>
                                     <option value="Ủy Viên">Ủy Viên</option>
+                                    <option value="Giáo Viên">Giáo Viên</option>
                                     <option value="Thành Viên">Thành Viên</option>
                                 </select>
                             </div>
