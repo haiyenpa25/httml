@@ -12,6 +12,8 @@ class CheckPermission
 {
     public function handle(Request $request, Closure $next, $permission)
     {
+        // Thêm PHPDoc để khai báo kiểu trả về
+        /** @var \App\Models\NguoiDung|null $user */
         $user = Auth::user();
         if (!$user) {
             if ($request->ajax() || $request->wantsJson()) {

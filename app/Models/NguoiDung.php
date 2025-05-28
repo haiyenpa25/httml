@@ -89,14 +89,22 @@ class NguoiDung extends Authenticatable
         return $this->hasMany(NguoiDungPhanQuyen::class, 'nguoi_dung_id');
     }
 
+
+
     public function hasPermission($permission, $banNganhId = null)
     {
-        return $this->quyen()->where('quyen', $permission)
-            ->where(function ($query) use ($banNganhId) {
-                $query->where('id_ban_nganh', $banNganhId)
-                    ->orWhereNull('id_ban_nganh');
-            })
+        // Nếu banNganhId được cung cấp, kiểm tra quyền cụ thể cho ban ngành
+        if ($banNganhId) {
+            return $this->quyen()
+                ->where('quyen', $permission)
+                ->where('id_ban_nganh', $banNganhId)
+                ->exists();
+        }
+
+        // Nếu không có banNganhId, kiểm tra quyền toàn hệ thống
+        return $this->quyen()
+            ->where('quyen', $permission)
+            ->whereNull('id_ban_nganh')
             ->exists();
     }
 }
-?>

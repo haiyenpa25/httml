@@ -59,4 +59,19 @@ class TinHuuController extends Controller
     {
         return $this->thanhVienController->edit($id);
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        $page = $request->input('page', 1);
+        $perPage = 10;
+
+        $tinHuus = TinHuu::where('ho_ten', 'like', '%' . $query . '%')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'items' => $tinHuus->items(),
+            'hasMore' => $tinHuus->hasMorePages(),
+        ]);
+    }
 }

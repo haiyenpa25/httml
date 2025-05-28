@@ -16,6 +16,8 @@ class CheckRole
             return redirect('/login');
         }
 
+        // Thêm PHPDoc để khai báo kiểu trả về
+        /** @var \App\Models\NguoiDung $user */
         $user = Auth::user();
 
         foreach ($roles as $role) {
@@ -31,4 +33,3 @@ class CheckRole
         abort(403, 'Bạn không có quyền truy cập trang này.');
     }
 }
-?>

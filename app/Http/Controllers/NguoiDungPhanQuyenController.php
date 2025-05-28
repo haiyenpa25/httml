@@ -192,9 +192,18 @@ class NguoiDungPhanQuyenController extends Controller
                 'view-buoi-nhom' => ['description' => 'Xem buổi nhóm', 'default_url' => '/buoi-nhom'],
                 'manage-buoi-nhom' => ['description' => 'Quản lý buổi nhóm', 'default_url' => '/buoi-nhom'],
             ],
+            // Thêm nhóm quyền Lớp Học
+            'Lớp Học' => [
+                'view-lop-hoc' => ['description' => 'Xem danh sách lớp học', 'default_url' => '/lop-hoc'],
+                'create-lop-hoc' => ['description' => 'Tạo lớp học', 'default_url' => '/lop-hoc/create'],
+                'edit-lop-hoc' => ['description' => 'Sửa lớp học', 'default_url' => null],
+                'delete-lop-hoc' => ['description' => 'Xóa lớp học', 'default_url' => null],
+                'manage-hoc-vien' => ['description' => 'Quản lý học viên (thêm, xóa học viên)', 'default_url' => null],
+            ],
         ];
     }
 
+    // Các phương thức còn lại giữ nguyên
     public function index()
     {
         $users = NguoiDung::with('quyen.banNganh', 'tinHuu')->get();
@@ -284,12 +293,20 @@ class NguoiDungPhanQuyenController extends Controller
                 $rolePermissions[] = 'view-thong-bao';
                 $rolePermissions[] = 'send-thong-bao';
                 $rolePermissions[] = 'view-buoi-nhom';
+                // Thêm quyền Lớp Học cho trưởng ban
+                $rolePermissions[] = 'view-lop-hoc';
+                $rolePermissions[] = 'create-lop-hoc';
+                $rolePermissions[] = 'edit-lop-hoc';
+                $rolePermissions[] = 'delete-lop-hoc';
+                $rolePermissions[] = 'manage-hoc-vien';
                 break;
             case 'thanh_vien':
                 $rolePermissions = [
                     'view-thong-bao',
                     'view-thong-bao-inbox',
                     'view-buoi-nhom',
+                    // Thêm quyền xem lớp học cho thành viên
+                    'view-lop-hoc',
                 ];
                 break;
             default:
@@ -299,6 +316,7 @@ class NguoiDungPhanQuyenController extends Controller
         return response()->json($rolePermissions);
     }
 
+    // Các phương thức còn lại giữ nguyên
     public function updateRole(Request $request, $userId)
     {
         $request->validate([

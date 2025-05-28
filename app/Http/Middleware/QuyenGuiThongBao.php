@@ -6,17 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
 class QuyenGuiThongBao
 {
-    /**
-     * Kiểm tra quyền gửi thông báo.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string|null  $guard
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->guest()) {
@@ -27,6 +18,8 @@ class QuyenGuiThongBao
             return redirect()->route('login');
         }
 
+        // Thêm PHPDoc để khai báo kiểu trả về
+        /** @var \App\Models\NguoiDung $user */
         $user = Auth::user();
 
         // Kiểm tra quyền gửi thông báo dựa trên vai trò
@@ -42,13 +35,6 @@ class QuyenGuiThongBao
         return $next($request);
     }
 
-    /**
-     * Kiểm tra xem người dùng có quyền gửi thông báo không.
-     *
-     * @param  \App\Models\NguoiDung  $user
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
-     */
     private function canSendNotification($user, $request)
     {
         // Quản trị viên luôn có quyền gửi thông báo

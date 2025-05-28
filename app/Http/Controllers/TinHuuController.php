@@ -18,6 +18,7 @@ use App\Models\TinHuuBanNganh;
 use App\Enums\LoaiTinHuu; // Import enum
 use App\Enums\GioiTinh; // Import enum
 use App\Enums\TinhTrangHonNhan; // Import enum
+use App\Models\LopHoc; // Import LopHoc model
 
 class TinHuuController extends Controller
 {
@@ -207,5 +208,24 @@ class TinHuuController extends Controller
     public function show(TinHuu $tinHuu)
     {
         return response()->json($tinHuu);
+    }
+
+
+    //Kớp học
+    public function lopHocs()
+    {
+        return $this->belongsToMany(LopHoc::class, 'lop_hoc_tin_huu')
+            ->withPivot('vai_tro')
+            ->withTimestamps();
+    }
+
+    public function lopHocsAsGiaoVien()
+    {
+        return $this->lopHocs()->wherePivot('vai_tro', 'giao_vien');
+    }
+
+    public function lopHocsAsHocVien()
+    {
+        return $this->lopHocs()->wherePivot('vai_tro', 'hoc_vien');
     }
 }

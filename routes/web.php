@@ -60,6 +60,53 @@ Route::prefix('api/trang-chu')->middleware(['auth'])->name('api.trang_chu.')->gr
         ->middleware('checkPermission:view-dashboard')
         ->name('event_list');
 });
+
+
+
+Route::get('tin-huu/search', [App\Http\Controllers\TinHuuController::class, 'search'])
+    ->middleware(['auth', 'verified'])
+    ->name('tin-huu.search');
+Route::prefix('lop-hoc')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [App\Http\Controllers\LopHocController::class, 'index'])
+        ->middleware('check.permission:view-lop-hoc')
+        ->name('lop-hoc.index');
+
+    Route::get('/create', [App\Http\Controllers\LopHocController::class, 'create'])
+        ->middleware('check.permission:create-lop-hoc')
+        ->name('lop-hoc.create');
+
+    Route::post('/', [App\Http\Controllers\LopHocController::class, 'store'])
+        ->middleware('check.permission:create-lop-hoc')
+        ->name('lop-hoc.store');
+
+    Route::get('/{lopHoc}', [App\Http\Controllers\LopHocController::class, 'show'])
+        ->middleware('check.permission:view-lop-hoc')
+        ->name('lop-hoc.show');
+
+    Route::get('/{lopHoc}/edit', [App\Http\Controllers\LopHocController::class, 'edit'])
+        ->middleware('check.permission:edit-lop-hoc')
+        ->name('lop-hoc.edit');
+
+    Route::put('/{lopHoc}', [App\Http\Controllers\LopHocController::class, 'update'])
+        ->middleware('check.permission:edit-lop-hoc')
+        ->name('lop-hoc.update');
+
+    Route::delete('/{lopHoc}', [App\Http\Controllers\LopHocController::class, 'destroy'])
+        ->middleware('check.permission:delete-lop-hoc')
+        ->name('lop-hoc.destroy');
+});
+
+Route::post('lop-hoc/{lopHoc}/hoc-vien', [App\Http\Controllers\LopHocController::class, 'themHocVien'])
+    ->middleware(['auth', 'verified', 'check.permission:manage-hoc-vien'])
+    ->name('lop-hoc.them-hoc-vien');
+
+Route::delete('lop-hoc/{lopHoc}/hoc-vien/{tinHuu}', [App\Http\Controllers\LopHocController::class, 'xoaHocVien'])
+    ->middleware(['auth', 'verified', 'check.permission:manage-hoc-vien'])
+    ->name('lop-hoc.xoa-hoc-vien');
+
+
+
+
 // ==== Dashboard ====
 // Route::middleware(['auth'])->get('/trang-chu', fn() => view('dashboard'))
 //     ->middleware('checkPermission:view-dashboard')
