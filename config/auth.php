@@ -38,7 +38,7 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'nguoi_dung',
         ],
     ],
 
@@ -60,10 +60,9 @@ return [
     */
 
     'providers' => [
-        'users' => [
+        'nguoi_dung' => [
             'driver' => 'eloquent',
-            //'model' => env('AUTH_MODEL', App\Models\User::class),
-            'model' => env('AUTH_MODEL', App\Models\NguoiDung::class),
+            'model' => App\Models\NguoiDung::class,
         ],
 
         // 'users' => [

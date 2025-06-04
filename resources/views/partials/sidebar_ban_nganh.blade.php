@@ -1,46 +1,46 @@
 <ul class="nav nav-treeview">
     @php
         $banIcons = [
-            'trung_lao' => 'fas fa-user-friends',
-            'thanh_trang' => 'fas fa-user-tie',
-            'thanh_nien' => 'fas fa-user-graduate',
-            'thieu_nhi' => 'fas fa-child',
-            'co_doc_giao_duc' => 'fas fa-book-reader',
+            'trung-lao' => 'fas fa-user-friends',
+            'thanh-trang' => 'fas fa-user-tie',
+            'thanh-nien' => 'fas fa-user-graduate',
+            'thieu-nhi' => 'fas fa-child',
+            'co_doc-giao_duc' => 'fas fa-book-reader',
         ];
         
         $banNames = [
-            'trung_lao' => 'Ban Trung Lão',
-            'thanh_trang' => 'Ban Thanh Tráng',
-            'thanh_nien' => 'Ban Thanh Niên',
-            'thieu_nhi' => 'Ban Thiếu Nhi Ấu',
-            'co_doc_giao_duc' => 'Ban Cơ Đốc Giáo Dục',
+            'trung-lao' => 'Ban Trung Lão',
+            'thanh-trang' => 'Ban Thanh Tráng',
+            'thanh-nien' => 'Ban Thanh Niên',
+            'thieu-nhi' => 'Ban Thiếu Nhi Ấu',
+            'co_doc-giao_duc' => 'Ban Cơ Đốc Giáo Dục',
         ];
         
         $banColors = [
-            'trung_lao' => 'text-info',
-            'thanh_trang' => 'text-success',
-            'thanh_nien' => 'text-primary',
-            'thieu_nhi' => 'text-warning',
-            'co_doc_giao_duc' => 'text-purple',
+            'trung-lao' => 'text-info',
+            'thanh-trang' => 'text-success',
+            'thanh-nien' => 'text-primary',
+            'thieu-nhi' => 'text-warning',
+            'co_doc-giao_duc' => 'text-purple',
         ];
     @endphp
     
-    @foreach(['trung_lao', 'thanh_trang', 'thanh_nien', 'thieu_nhi', 'co_doc_giao_duc'] as $ban)
-        @if($isAdmin || in_array('view-ban-nganh-' . $ban, $userPermissions))
-            <li class="nav-item {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.*' : '_ban_nganh.' . $ban . '.*') ? 'menu-open' : '' }}">
-                <a href="#" class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.*' : '_ban_nganh.' . $ban . '.*') ? 'active' : '' }}">
+    @foreach(['trung-lao', 'thanh-trang', 'thanh-nien', 'thieu-nhi', 'co_doc-giao_duc'] as $ban)
+        @can('view-ban-nganh-' . $ban)
+            <li class="nav-item {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.*' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.*') ? 'menu-open' : '' }}">
+                <a href="#" class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.*' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.*') ? 'active' : '' }}">
                     <i class="{{ $banIcons[$ban] ?? 'far fa-circle' }} nav-icon {{ $banColors[$ban] ?? '' }}"></i>
                     <p>
                         {{ $banNames[$ban] }}
                         <i class="fas fa-angle-left right"></i>
-                        @if(request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.*' : '_ban_nganh.' . $ban . '.*'))
+                        @if(request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.*' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.*'))
                             <span class="badge badge-primary right">
                                 {{ count(array_filter([
-                                    in_array('diem-danh-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions),
-                                    in_array('phan-cong-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions),
-                                    in_array('phan-cong-chi-tiet-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions),
-                                    in_array('nhap-lieu-bao-cao-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions),
-                                    in_array('bao-cao-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions),
+                                    Auth::user()->hasPermissionTo('diem-danh-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban)),
+                                    Auth::user()->hasPermissionTo('phan-cong-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban)),
+                                    Auth::user()->hasPermissionTo('phan-cong-chi-tiet-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban)),
+                                    Auth::user()->hasPermissionTo('nhap-lieu-bao-cao-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban)),
+                                    Auth::user()->hasPermissionTo('bao-cao-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban)),
                                 ])) }}
                             </span>
                         @endif
@@ -49,8 +49,8 @@
                 <ul class="nav nav-treeview">
                     <!-- Tổng quan -->
                     <li class="nav-item">
-                        <a href="{{ route($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.index' : '_ban_nganh.' . $ban . '.index', $ban == 'co_doc_giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
-                           class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.index' : '_ban_nganh.' . $ban . '.index') ? 'active' : '' }}">
+                        <a href="{{ route($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.index' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.index', $ban == 'co_doc-giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
+                           class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.index' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.index') ? 'active' : '' }}">
                             <i class="fas fa-th-large nav-icon"></i>
                             <p>Tổng quan</p>
                         </a>
@@ -65,42 +65,42 @@
                     </li>
                     
                     <!-- Điểm danh -->
-                    @if($isAdmin || in_array('diem-danh-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions))
+                    @can('diem-danh-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban))
                         <li class="nav-item">
-                            <a href="{{ route($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.diem_danh' : '_ban_nganh.' . $ban . '.diem_danh', $ban == 'co_doc_giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
-                               class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.diem_danh' : '_ban_nganh.' . $ban . '.diem_danh') ? 'active' : '' }}">
+                            <a href="{{ route($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.diem_danh' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.diem_danh', $ban == 'co_doc-giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
+                               class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.diem_danh' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.diem_danh') ? 'active' : '' }}">
                                 <i class="fas fa-clipboard-check nav-icon"></i>
                                 <p>Điểm danh</p>
                             </a>
                         </li>
-                    @endif
+                    @endcan
                     
                     <!-- Phân công -->
-                    @if($isAdmin || in_array('phan-cong-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions))
+                    @can('phan-cong-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban))
                         <li class="nav-item">
-                            <a href="{{ route($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.phan_cong' : '_ban_nganh.' . $ban . '.phan_cong', $ban == 'co_doc_giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
-                               class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.phan_cong' : '_ban_nganh.' . $ban . '.phan_cong') ? 'active' : '' }}">
+                            <a href="{{ route($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.phan_cong' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.phan_cong', $ban == 'co_doc-giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
+                               class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.phan_cong' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.phan_cong') ? 'active' : '' }}">
                                 <i class="fas fa-tasks nav-icon"></i>
                                 <p>Phân công</p>
                             </a>
                         </li>
-                    @endif
+                    @endcan
                     
                     <!-- Phân công chi tiết -->
-                    @if($isAdmin || in_array('phan-cong-chi-tiet-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions))
+                    @can('phan-cong-chi-tiet-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban))
                         <li class="nav-item">
-                            <a href="{{ route($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.phan_cong_chi_tiet' : '_ban_nganh.' . $ban . '.phan_cong_chi_tiet', $ban == 'co_doc_giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
-                               class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.phan_cong_chi_tiet' : '_ban_nganh.' . $ban . '.phan_cong_chi_tiet') ? 'active' : '' }}">
+                            <a href="{{ route($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.phan_cong_chi_tiet' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.phan_cong_chi_tiet', $ban == 'co_doc-giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
+                               class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.phan_cong_chi_tiet' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.phan_cong_chi_tiet') ? 'active' : '' }}">
                                 <i class="fas fa-list-check nav-icon"></i>
                                 <p>Phân công chi tiết</p>
                             </a>
                         </li>
-                    @endif
+                    @endcan
                     
                     <!-- Báo Cáo -->
-                    @if($isAdmin || in_array('nhap-lieu-bao-cao-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions) || in_array('bao-cao-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions))
-                        <li class="nav-item {{ request()->routeIs($ban == 'co_doc_giao_duc' ? ['_ban_co_doc_giao_duc.nhap_lieu_bao_cao', '_ban_co_doc_giao_duc.bao_cao'] : ['_ban_nganh.' . $ban . '.nhap_lieu_bao_cao', '_ban_nganh.' . $ban . '.bao_cao']) ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? ['_ban_co_doc_giao_duc.nhap_lieu_bao_cao', '_ban_co_doc_giao_duc.bao_cao'] : ['_ban_nganh.' . $ban . '.nhap_lieu_bao_cao', '_ban_nganh.' . $ban . '.bao_cao']) ? 'active' : '' }}">
+                    @if(Auth::user()->hasAnyPermission(['nhap-lieu-bao-cao-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), 'bao-cao-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban)]))
+                        <li class="nav-item {{ request()->routeIs($ban == 'co_doc-giao_duc' ? ['_ban_co_doc_giao_duc.nhap_lieu_bao_cao', '_ban_co_doc_giao_duc.bao_cao'] : ['_ban_nganh.' . str_replace('-', '_', $ban) . '.nhap_lieu_bao_cao', '_ban_nganh.' . str_replace('-', '_', $ban) . '.bao_cao']) ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? ['_ban_co_doc_giao_duc.nhap_lieu_bao_cao', '_ban_co_doc_giao_duc.bao_cao'] : ['_ban_nganh.' . str_replace('-', '_', $ban) . '.nhap_lieu_bao_cao', '_ban_nganh.' . str_replace('-', '_', $ban) . '.bao_cao']) ? 'active' : '' }}">
                                 <i class="fas fa-chart-line nav-icon"></i>
                                 <p>
                                     Báo Cáo
@@ -108,34 +108,34 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
-                                @if($isAdmin || in_array('nhap-lieu-bao-cao-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions))
+                                @can('nhap-lieu-bao-cao-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban))
                                     <li class="nav-item">
-                                        <a href="{{ route($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.nhap_lieu_bao_cao' : '_ban_nganh.' . $ban . '.nhap_lieu_bao_cao', $ban == 'co_doc_giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
-                                           class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.nhap_lieu_bao_cao' : '_ban_nganh.' . $ban . '.nhap_lieu_bao_cao') ? 'active' : '' }}">
+                                        <a href="{{ route($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.nhap_lieu_bao_cao' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.nhap_lieu_bao_cao', $ban == 'co_doc-giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
+                                           class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.nhap_lieu_bao_cao' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.nhap_lieu_bao_cao') ? 'active' : '' }}">
                                             <i class="fas fa-keyboard nav-icon"></i>
                                             <p>Nhập liệu báo cáo</p>
                                         </a>
                                     </li>
-                                @endif
-                                @if($isAdmin || in_array('bao-cao-ban-' . ($ban == 'co_doc_giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban), $userPermissions))
+                                @endcan
+                                @can('bao-cao-ban-' . ($ban == 'co_doc-giao_duc' ? 'co-doc-giao-duc' : 'nganh-' . $ban))
                                     <li class="nav-item">
-                                        <a href="{{ route($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.bao_cao' : '_ban_nganh.' . $ban . '.bao_cao', $ban == 'co_doc_giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
-                                           class="nav-link {{ request()->routeIs($ban == 'co_doc_giao_duc' ? '_ban_co_doc_giao_duc.bao_cao' : '_ban_nganh.' . $ban . '.bao_cao') ? 'active' : '' }}">
+                                        <a href="{{ route($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.bao_cao' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.bao_cao', $ban == 'co_doc-giao_duc' ? ['banType' => 'ban-co-doc-giao-duc'] : []) }}"
+                                           class="nav-link {{ request()->routeIs($ban == 'co_doc-giao_duc' ? '_ban_co_doc_giao_duc.bao_cao' : '_ban_nganh.' . str_replace('-', '_', $ban) . '.bao_cao') ? 'active' : '' }}">
                                             <i class="fas fa-file-alt nav-icon"></i>
                                             <p>Xem báo cáo</p>
                                         </a>
                                     </li>
-                                @endif
+                                @endcan
                             </ul>
                         </li>
                     @endif
                 </ul>
             </li>
-        @endif
+        @endcan
     @endforeach
 
     <!-- Các Ban Khác -->
-    @if($isAdmin || in_array('view-ban-nganh', $userPermissions))
+    @can('view-ban-nganh')
         <li class="nav-item {{ request()->routeIs('_ban_*') ? 'menu-open' : '' }}">
             <a href="#" class="nav-link {{ request()->routeIs('_ban_*') ? 'active' : '' }}">
                 <i class="fas fa-sitemap nav-icon"></i>
@@ -153,5 +153,5 @@
                 </li>
             </ul>
         </li>
-    @endif
+    @endcan
 </ul>

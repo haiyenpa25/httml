@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Permission\Traits\HasRoles;
 
 class NguoiDung extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $table = 'nguoi_dung';
     protected $fillable = [
@@ -46,12 +47,12 @@ class NguoiDung extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->vai_tro === 'quan_tri';
+        return $this->hasRole('quan_tri');
     }
 
     public function isTruongBan()
     {
-        return $this->vai_tro === 'truong_ban';
+        return $this->hasRole('truong_ban');
     }
 
     public function cacBanNganh()
@@ -84,27 +85,15 @@ class NguoiDung extends Authenticatable
         return $this->tinHuu->banNganhs()->pluck('ban_nganh_id')->toArray();
     }
 
-    public function quyen()
-    {
-        return $this->hasMany(NguoiDungPhanQuyen::class, 'nguoi_dung_id');
-    }
-
-
-
     public function hasPermission($permission, $banNganhId = null)
     {
-        // Nếu banNganhId được cung cấp, kiểm tra quyền cụ thể cho ban ngành
-        if ($banNganhId) {
-            return $this->quyen()
-                ->where('quyen', $permission)
-                ->where('id_ban_nganh', $banNganhId)
-                ->exists();
-        }
+        // Kiểm tra quyền bằng Spatie Permission
+        return $this->hasPermissionTo($permission);
+    }
 
-        // Nếu không có banNganhId, kiểm tra quyền toàn hệ thống
-        return $this->quyen()
-            ->where('quyen', $permission)
-            ->whereNull('id_ban_nganh')
-            ->exists();
+    public function hasQuyen($quyen, $banNganhId = null)
+    {
+        // Tương thích với Spatie Permission
+        return $this->hasPermissionTo($quyen);
     }
 }
