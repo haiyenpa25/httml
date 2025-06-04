@@ -1,4 +1,5 @@
 @section('page-scripts')
+<script>
 $(function () {
     // Kiểm tra thư viện cần thiết
     if (typeof jQuery === 'undefined') {
@@ -17,10 +18,7 @@ $(function () {
         console.error('Toastr chưa được tải!');
         return;
     }
-    if (typeof moment === 'undefined') {
-        console.error('Moment.js chưa được tải!');
-        return;
-    }
+   
 
     // Cấu hình Toastr
     toastr.options = {
@@ -248,5 +246,5 @@ $(function () {
         });
     }
 });
-
+</script>
 @endsection

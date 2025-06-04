@@ -62,48 +62,47 @@ Route::prefix('api/trang-chu')->middleware(['auth'])->name('api.trang_chu.')->gr
 });
 
 
-
 Route::get('tin-huu/search', [App\Http\Controllers\TinHuuController::class, 'search'])
     ->middleware(['auth', 'verified'])
     ->name('tin-huu.search');
+
 Route::prefix('lop-hoc')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [App\Http\Controllers\LopHocController::class, 'index'])
-        ->middleware('check.permission:view-lop-hoc')
+        ->middleware('checkPermission:view-lop-hoc')
         ->name('lop-hoc.index');
 
     Route::get('/create', [App\Http\Controllers\LopHocController::class, 'create'])
-        ->middleware('check.permission:create-lop-hoc')
+        ->middleware('checkPermission:create-lop-hoc')
         ->name('lop-hoc.create');
 
     Route::post('/', [App\Http\Controllers\LopHocController::class, 'store'])
-        ->middleware('check.permission:create-lop-hoc')
+        ->middleware('checkPermission:create-lop-hoc')
         ->name('lop-hoc.store');
 
     Route::get('/{lopHoc}', [App\Http\Controllers\LopHocController::class, 'show'])
-        ->middleware('check.permission:view-lop-hoc')
+        ->middleware('checkPermission:view-lop-hoc')
         ->name('lop-hoc.show');
 
     Route::get('/{lopHoc}/edit', [App\Http\Controllers\LopHocController::class, 'edit'])
-        ->middleware('check.permission:edit-lop-hoc')
+        ->middleware('checkPermission:edit-lop-hoc')
         ->name('lop-hoc.edit');
 
     Route::put('/{lopHoc}', [App\Http\Controllers\LopHocController::class, 'update'])
-        ->middleware('check.permission:edit-lop-hoc')
+        ->middleware('checkPermission:edit-lop-hoc')
         ->name('lop-hoc.update');
 
     Route::delete('/{lopHoc}', [App\Http\Controllers\LopHocController::class, 'destroy'])
-        ->middleware('check.permission:delete-lop-hoc')
+        ->middleware('checkPermission:delete-lop-hoc')
         ->name('lop-hoc.destroy');
 });
 
 Route::post('lop-hoc/{lopHoc}/hoc-vien', [App\Http\Controllers\LopHocController::class, 'themHocVien'])
-    ->middleware(['auth', 'verified', 'check.permission:manage-hoc-vien'])
+    ->middleware(['auth', 'verified', 'checkPermission:manage-hoc-vien'])
     ->name('lop-hoc.them-hoc-vien');
 
 Route::delete('lop-hoc/{lopHoc}/hoc-vien/{tinHuu}', [App\Http\Controllers\LopHocController::class, 'xoaHocVien'])
-    ->middleware(['auth', 'verified', 'check.permission:manage-hoc-vien'])
+    ->middleware(['auth', 'verified', 'checkPermission:manage-hoc-vien'])
     ->name('lop-hoc.xoa-hoc-vien');
-
 
 
 
@@ -408,3 +407,4 @@ require __DIR__ . '/ban_nganh/ban_nganh.php';
 require __DIR__ . '/ban_nganh/ban_trung_lao.php';
 require __DIR__ . '/ban_nganh/ban_co_doc_giao_duc.php';
 require __DIR__ . '/ban_nganh/ban_thanh_trang.php';
+require __DIR__ . '/lop_hoc.php';

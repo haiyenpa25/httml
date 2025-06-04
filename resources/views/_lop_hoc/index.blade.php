@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('title', 'Quản lý Lớp học')
-
 @section('content')
     <!-- Content Header (Page header) -->
     <div class="content-header">
@@ -284,4 +283,6 @@
     </style>
 @endsection
 
-@include('_lop_hoc.js.lop_hoc')
+@section('page-scripts')
+    @include('_lop_hoc.scripts.lop_hoc')
+@endsection

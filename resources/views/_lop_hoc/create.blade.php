@@ -98,5 +98,5 @@
 @endsection
 
 @section('page-scripts')
-    <script src="{{ asset('views/_lop_hoc/js/lop_hoc.js') }}"></script>
+    @include('_lop_hoc.scripts.lop_hoc')
 @endsection
